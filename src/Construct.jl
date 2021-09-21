@@ -14,5 +14,6 @@ export
 
 include("base.jl")
 include("primitive.jl")
+include("wrapper.jl")
 
 end
