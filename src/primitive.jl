@@ -25,3 +25,16 @@ estimatesize(::Type{Char}) = Interval{UInt}(1, 4)
 deserialize(::Type{E}, s::IO) where {T<:Integer, E<:Base.Enum{T}} = E(deserialize(T, s))
 serialize(obj::Base.Enum{<:Integer}, s::IO) = serialize(Integer(obj), s)
 estimatesize(::Type{E}) where {T<:Integer, E<:Base.Enum{T}} = estimatesize(T)
+
+"""
+Represents `n`-bytes padding data.
+"""
+struct Padding{n} end
+Padding(n) = Padding{n}()
+
+function deserialize(::Type{Padding{n}}, s::IO) where {n}
+    skip(s, n)
+    Padding{n}()
+end
+serialize(::Padding{n}, s::IO) where {n} = write(s, zeros(UInt8, n))
+estimatesize(::Type{Padding{n}}) where {n} = n
