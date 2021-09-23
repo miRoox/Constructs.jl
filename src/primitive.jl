@@ -1,40 +1,45 @@
 # Nothing
-deserialize(::Type{Nothing}, ::IO) = nothing
-serialize(::Nothing, ::IO) = nothing
-estimatesize(::Type{Nothing}) = 0
+deserialize(::Default{Nothing}, ::IO) = nothing
+serialize(::Default{Nothing}, ::IO, ::Nothing) = nothing
+estimatesize(::Default{Nothing}) = 0
 
 # Missing
-deserialize(::Type{Missing}, ::IO) = missing
-serialize(::Missing, ::IO) = nothing
-estimatesize(::Type{Missing}) = 0
+deserialize(::Default{Missing}, ::IO) = missing
+serialize(::Default{Missing}, ::IO, ::Missing) = nothing
+estimatesize(::Default{Missing}) = 0
 
 # primitive numbers
 for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)
     @eval begin
-        Constructs.deserialize(::Type{$type}, s::IO) = Base.read(s, $type)
-        Constructs.serialize(value::$type, s::IO) = Base.write(s, value)
-        Constructs.estimatesize(::Type{$type}) = $(Base.sizeof(type))
+        Constructs.deserialize(::Default{$type}, s::IO) = Base.read(s, $type)
+        Constructs.serialize(::Default{$type}, s::IO, value::$type) = Base.write(s, value)
+        Constructs.estimatesize(::Default{$type}) = $(Base.sizeof(type))
     end
 end
 
-deserialize(::Type{Char}, s::IO) = read(s, Char)
-serialize(c::Char, s::IO) = write(s ,c)
-estimatesize(::Type{Char}) = Interval{UInt}(1, 4)
+deserialize(::Default{Char}, s::IO) = read(s, Char)
+serialize(::Default{Char}, s::IO, c::Char) = write(s ,c)
+estimatesize(::Default{Char}) = Interval{UInt}(1, 4)
 
 # enum
-deserialize(::Type{E}, s::IO) where {T<:Integer, E<:Base.Enum{T}} = E(deserialize(T, s))
-serialize(obj::Base.Enum{<:Integer}, s::IO) = serialize(Integer(obj), s)
-estimatesize(::Type{E}) where {T<:Integer, E<:Base.Enum{T}} = estimatesize(T)
+deserialize(::Default{E}, s::IO) where {T<:Integer, E<:Base.Enum{T}} = E(deserialize(T, s))
+serialize(::Default{E}, s::IO, obj::E) where {T<:Integer, E<:Base.Enum{T}} = serialize(Integer(obj), s)
+estimatesize(::Default{E}) where {T<:Integer, E<:Base.Enum{T}} = estimatesize(T)
 
 """
-Represents `n`-bytes padding data.
-"""
-struct Padding{n} end
-Padding(n) = Padding{n}()
+    Padding <: Construct{Nothing}
 
-function deserialize(::Type{Padding{n}}, s::IO) where {n}
-    skip(s, n)
-    Padding{n}()
+Represents padding data.
+"""
+struct Padding <: Construct{Nothing}
+    size::UInt
+
+    Padding(size::Integer = 0) = new(convert(UInt, size))
 end
-serialize(::Padding{n}, s::IO) where {n} = write(s, zeros(UInt8, n))
-estimatesize(::Type{Padding{n}}) where {n} = n
+
+function deserialize(cons::Padding, s::IO)
+    skip(s, cons.size)
+    nothing
+end
+serialize(cons::Padding, s::IO, ::Nothing) = write(s, zeros(UInt8, cons.size))
+estimatesize(cons::Padding) = cons.size

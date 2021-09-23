@@ -8,12 +8,13 @@ using Intervals
 using MacroTools
 
 export
+    Construct,
     deserialize,
     serialize,
     estimatesize
 
 include("base.jl")
 include("primitive.jl")
-include("wrapper.jl")
+# include("wrapper.jl")
 
 end
