@@ -8,7 +8,7 @@ version = "0.0.1"
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[Construct]]
+[[Constructs]]
 path = ".."
 uuid = "ba9efadc-3ee3-4b4a-abe2-d0e326fbcffa"
 version = "0.1.0"

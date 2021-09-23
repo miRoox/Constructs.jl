@@ -1,7 +1,7 @@
-using Construct
+using Constructs
 using Test
 
-@testset "Construct.jl" begin
+@testset "Constructs.jl" begin
     @testset "primitive type $type" for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)
         @test estimatesize(type) == sizeof(type)
         @test deserialize(type, zeros(UInt8, sizeof(type))) == zero(type)

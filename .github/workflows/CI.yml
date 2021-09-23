@@ -54,9 +54,9 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using Construct
-            DocMeta.setdocmeta!(Construct, :DocTestSetup, :(using Construct); recursive=true)
-            doctest(Construct)'
+            using Constructs
+            DocMeta.setdocmeta!(Constructs, :DocTestSetup, :(using Constructs); recursive=true)
+            doctest(Constructs)'
       - run: julia --project=docs docs/make.jl
         env:
           JULIA_PKG_SERVER: ""

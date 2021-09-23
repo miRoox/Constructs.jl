@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = Construct
+CurrentModule = Constructs
 ```
 
-# Construct
+# Constructs
 
-Documentation for [Construct](https://github.com/miRoox/Construct.jl).
+Documentation for [Constructs](https://github.com/miRoox/Constructs.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [Construct]
+Modules = [Constructs]
 ```

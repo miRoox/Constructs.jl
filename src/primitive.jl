@@ -11,9 +11,9 @@ estimatesize(::Type{Missing}) = 0
 # primitive numbers
 for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)
     @eval begin
-        Construct.deserialize(::Type{$type}, s::IO) = Base.read(s, $type)
-        Construct.serialize(value::$type, s::IO) = Base.write(s, value)
-        Construct.estimatesize(::Type{$type}) = $(Base.sizeof(type))
+        Constructs.deserialize(::Type{$type}, s::IO) = Base.read(s, $type)
+        Constructs.serialize(value::$type, s::IO) = Base.write(s, value)
+        Constructs.estimatesize(::Type{$type}) = $(Base.sizeof(type))
     end
 end
 

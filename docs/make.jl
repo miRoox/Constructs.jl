@@ -1,16 +1,16 @@
-using Construct
+using Constructs
 using Documenter
 
-DocMeta.setdocmeta!(Construct, :DocTestSetup, :(using Construct); recursive=true)
+DocMeta.setdocmeta!(Constructs, :DocTestSetup, :(using Constructs); recursive=true)
 
 makedocs(;
-    modules=[Construct],
+    modules=[Constructs],
     authors="Yong-an Lu <miroox@outlook.com>",
-    repo="https://github.com/miRoox/Construct.jl/blob/{commit}{path}#{line}",
-    sitename="Construct.jl",
+    repo="https://github.com/miRoox/Constructs.jl/blob/{commit}{path}#{line}",
+    sitename="Constructs.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://miRoox.github.io/Construct.jl",
+        canonical="https://miRoox.github.io/Constructs.jl",
         assets=String[],
     ),
     pages=[
@@ -19,5 +19,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/miRoox/Construct.jl",
+    repo="github.com/miRoox/Constructs.jl",
 )
