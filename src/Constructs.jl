@@ -11,10 +11,17 @@ export
     Construct,
     deserialize,
     serialize,
-    estimatesize
+    estimatesize,
+    Wrapper,
+    subcon,
+    Adapter,
+    encode,
+    decode,
+    LittleEndian,
+    BigEndian
 
 include("base.jl")
 include("primitive.jl")
-# include("wrapper.jl")
+include("adapters.jl")
 
 end

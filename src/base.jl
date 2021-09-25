@@ -145,3 +145,52 @@ abstract type Wrapper{TSub, T} <: Construct{T} end
 Get sub-construct of `wrapper`.
 """
 function subcon end
+
+estimatesize(wrapper::Wrapper) = estimatesize(subcon(wrapper))
+
+"""
+    Adapter{TSub, T} <: Wrapper{TSub, T}
+
+Abstract adapter type.
+
+## Methods
+
+* `subcon(wrapper::Wrapper{TSub, T})::Construct{TSub}`
+* `encode(adapter::Adapter{TSub, T}, obj::T; contextkw...)`
+* `decode(adapter::Adapter{TSub, T}, obj::TSub; contextkw...)`
+"""
+abstract type Adapter{TSub, T} <: Wrapper{TSub, T} end
+
+"""
+    encode(adapter::Adapter{TSub, T}, obj::T; contextkw...) where {TSub, T}
+"""
+function encode end
+
+"""
+    decode(adapter::Adapter{TSub, T}, obj::TSub; contextkw...) where {TSub, T}
+"""
+function decode end
+
+function serialize(adapter::Adapter{TSub, T}, s::IO, obj::T; contextkw...) where {TSub, T}
+    objsub = encode(adapter, obj; contextkw...)
+    serialize(subcon(adapter), s, objsub; contextkw...)
+end
+
+function deserialize(adapter::Adapter{TSub, T}, s::IO; contextkw...) where {TSub, T}
+    obj = deserialize(subcon(adapter), s; contextkw...)
+    decode(adapter, obj; contextkw...)
+end
+
+"""
+    SymmetricAdapter{T} <: Adapter{T, T}
+
+Abstract adapter type. `encode` both for serializing and deserializing.
+
+## Methods
+
+* `subcon(wrapper::Wrapper{T, T})::Construct{TSub}`
+* `encode(adapter::Adapter{T, T}, obj::T; contextkw...)`
+"""
+abstract type SymmetricAdapter{T} <: Adapter{T, T} end
+
+decode(adapter::SymmetricAdapter{T}, obj::T; contextkw...) where {T} = encode(adapter, obj; contextkw...)
