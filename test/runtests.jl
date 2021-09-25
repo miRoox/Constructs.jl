@@ -17,4 +17,27 @@ using Test
         @test deserialize(Char, transcode(UInt8, [codepoint(c)])) == c
         @test serialize(c) == transcode(UInt8, [codepoint(c)])
     end
+    @testset "byte order" begin
+        be = (
+            (0x0102, [0x01, 0x02]),
+            (0x01020304, [0x01, 0x02, 0x03, 0x04]),
+            (0x0102030405060708, [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]),
+            (Int32(-2140118960), [0x80, 0x70, 0x60, 0x50]),
+            (Inf16, [0x7c, 0x00]),
+            (Float32(-1.1), [0xbf, 0x8c, 0xcc, 0xcd]),
+            )
+        @testset "little endian for $n" for (n, bs) in be
+            type = typeof(n)
+            lbs = reverse(bs)
+            @test estimatesize(LittleEndian(type)) == sizeof(type)
+            @test deserialize(LittleEndian(type), lbs) == n
+            @test serialize(LittleEndian(type), n) == lbs
+        end
+        @testset "big endian for $n" for (n, bs) in be
+            type = typeof(n)
+            @test estimatesize(BigEndian(type)) == sizeof(type)
+            @test deserialize(BigEndian(type), bs) == n
+            @test serialize(BigEndian(type), n) == bs
+        end
+    end
 end
