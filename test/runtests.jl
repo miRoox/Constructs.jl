@@ -41,6 +41,15 @@ using Test
             @test serialize(BigEndian(type), n) == bs
         end
     end
+    @testset "magic" begin
+        @test estimatesize(Magic(0x0102)) == sizeof(0x0102)
+        @test estimatesize(Magic(Int32, 0x0102)) == sizeof(Int32)
+        @test estimatesize(Magic(BigEndian(Int32), 0x0102)) == sizeof(Int32)
+        @test deserialize(Magic(BigEndian(UInt16), 0x0102), [0x01, 0x02]) == 0x0102
+        @test_throws ValidationError deserialize(Magic(LittleEndian(UInt16), 0x0102), [0x01, 0x02])
+        @test serialize(Magic(BigEndian(UInt16), 0x0102), 0x0102) == [0x01, 0x02]
+        @test_throws ValidationError serialize(Magic(0x0102), 0x0201)
+    end
     @testset "macro" begin
         @testset "cons" begin
             @test @cons(Default(Int)) == Int
