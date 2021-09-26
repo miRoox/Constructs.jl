@@ -1,3 +1,27 @@
+
+"""
+    ValidationOk
+
+Placeholder type if there is no validatiion error.
+"""
+struct ValidationOk end
+
+"""
+    ValidationOK
+
+Placeholder if there is no validatiion error.
+"""
+const ValidationOK = ValidationOk()
+
+"""
+    ValidationError(msg)
+
+Error thrown when the validatiion failed.
+"""
+struct ValidationError <: Exception
+    msg::String
+end
+
 """
     Construct{T}
 
@@ -194,3 +218,28 @@ Abstract adapter type. `encode` both for serializing and deserializing.
 abstract type SymmetricAdapter{T} <: Adapter{T, T} end
 
 decode(adapter::SymmetricAdapter{T}, obj::T; contextkw...) where {T} = encode(adapter, obj; contextkw...)
+
+"""
+    Validator{T} <: SymmetricAdapter{T}
+
+Abstract validator type. Validates a condition on the encoded/decoded object..
+
+## Methods
+
+* `subcon(validator::Validator{T})::Construct{T}`
+* `validate(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOK, ValidationError}`
+"""
+abstract type Validator{T} <: SymmetricAdapter{T} end
+
+"""
+    validate(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOk, ValidationError}
+"""
+function validate end
+
+function encode(validator::Validator{T}, obj::T; contextkw...) where {T}
+    result = validate(validator, obj; contextkw...)
+    if result isa ValidationError
+        throw(result)
+    end
+    obj
+end
