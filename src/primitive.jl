@@ -1,11 +1,11 @@
 # Nothing
 deserialize(::Default{Nothing}, ::IO) = nothing
-serialize(::Default{Nothing}, ::IO, ::Nothing) = nothing
+serialize(::Default{Nothing}, ::IO, ::Nothing) = 0
 estimatesize(::Default{Nothing}) = 0
 
 # Missing
 deserialize(::Default{Missing}, ::IO) = missing
-serialize(::Default{Missing}, ::IO, ::Missing) = nothing
+serialize(::Default{Missing}, ::IO, ::Missing) = 0
 estimatesize(::Default{Missing}) = 0
 
 # primitive numbers
