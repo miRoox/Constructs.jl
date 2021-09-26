@@ -13,9 +13,10 @@ using Test
         @test serialize(type.instance) == UInt8[]
     end
     @testset "char $c" for c in ['\x00', 'A', 'α', '啊', '🆗']
-        @test length(transcode(UInt8, [codepoint(c)])) in estimatesize(Char)
-        @test deserialize(Char, transcode(UInt8, [codepoint(c)])) == c
-        @test serialize(c) == transcode(UInt8, [codepoint(c)])
+        codes = transcode(UInt8, [codepoint(c)])
+        @test length(codes) in estimatesize(Char)
+        @test deserialize(Char, codes) == c
+        @test serialize(c) == codes
     end
     @testset "byte order" begin
         be = (
