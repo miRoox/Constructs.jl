@@ -27,6 +27,16 @@ serialize(::Default{E}, s::IO, obj::E) where {T<:Integer, E<:Base.Enum{T}} = ser
 estimatesize(::Default{E}) where {T<:Integer, E<:Base.Enum{T}} = estimatesize(T)
 
 """
+    JuliaSerializer <: Construct{Any}
+
+Standard Julia serialization.
+"""
+struct JuliaSerializer <: Construct{Any} end
+
+deserialize(::JuliaSerializer, s::IO) = Serialization.deserialize(s)
+serialize(::JuliaSerializer, s::IO, obj) = Serialization.serialize(s, obj)
+
+"""
     Padding <: Construct{Nothing}
 
 Represents padding data.
