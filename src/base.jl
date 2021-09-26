@@ -155,7 +155,7 @@ Abstract adapter type.
 
 ## Methods
 
-* `subcon(wrapper::Wrapper{TSub, T})::Construct{TSub}`
+* `subcon(adapter::Adapter{TSub, T})::Construct{TSub}`
 * `encode(adapter::Adapter{TSub, T}, obj::T; contextkw...)`
 * `decode(adapter::Adapter{TSub, T}, obj::TSub; contextkw...)`
 """
@@ -188,8 +188,8 @@ Abstract adapter type. `encode` both for serializing and deserializing.
 
 ## Methods
 
-* `subcon(wrapper::Wrapper{T, T})::Construct{TSub}`
-* `encode(adapter::Adapter{T, T}, obj::T; contextkw...)`
+* `subcon(adapter::SymmetricAdapter{T})::Construct{T}`
+* `encode(adapter::SymmetricAdapter{T}, obj::T; contextkw...)`
 """
 abstract type SymmetricAdapter{T} <: Adapter{T, T} end
 
