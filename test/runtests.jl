@@ -41,4 +41,12 @@ using Test
             @test serialize(BigEndian(type), n) == bs
         end
     end
+    @testset "macro" begin
+        @testset "cons" begin
+            @test @cons(Default(Int)) == Int
+            @test @cons(JuliaSerializer()) == Any
+            @test @cons(Padding(4)) == Nothing
+            @test @cons(BigEndian(UInt)) == UInt
+        end
+    end
 end
