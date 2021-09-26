@@ -18,11 +18,13 @@ export
     subcon,
     encode,
     decode,
+    @cons,
     Padding,
     LittleEndian,
     BigEndian
 
 include("base.jl")
+include("macro.jl")
 include("primitive.jl")
 include("adapters.jl")
 
