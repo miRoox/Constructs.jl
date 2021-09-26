@@ -30,3 +30,23 @@ BigEndian(::Type{T}) where {T<:mbntypes} = BigEndian(Default(T))
 subcon(wrapper::BigEndian{T, TSubCon}) where {T, TSubCon} = wrapper.subcon
 encode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = hton(obj)
 decode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = ntoh(obj)
+
+"""
+    Magic{T, TSubCon<:Construct{T}} <: Validator{T}
+
+Field enforcing a constant.
+"""
+struct Magic{T, TSubCon<:Construct{T}} <: Validator{T}
+    subcon::TSubCon
+    value::T
+end
+
+Magic(value::T) where {T} = Magic(Default(T), value)
+Magic(::Type{T}, value::T) where {T} = Magic(Default(T), value)
+Magic(::Type{T}, value::U) where {T, U} = Magic(Default(T), convert(T, value))
+Magic(subcon::Construct{T}, value::U) where {T, U} = Magic(subcon, convert(T, value))
+
+subcon(wrapper::Magic{T, TSubCon}) where {T, TSubCon} = wrapper.subcon
+function validate(magic::Magic{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
+    magic.value == obj ? ValidationOK : ValidationError("$obj mismatch the magic value $(magic.value).")
+end

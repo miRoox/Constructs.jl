@@ -25,7 +25,8 @@ export
     @cons,
     Padding,
     LittleEndian,
-    BigEndian
+    BigEndian,
+    Magic
 
 include("base.jl")
 include("macro.jl")
