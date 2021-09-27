@@ -21,11 +21,6 @@ deserialize(::Default{Char}, s::IO) = read(s, Char)
 serialize(::Default{Char}, s::IO, c::Char) = write(s ,c)
 estimatesize(::Default{Char}) = Interval{UInt}(1, 4)
 
-# enum
-deserialize(::Default{E}, s::IO) where {T<:Integer, E<:Base.Enum{T}} = E(deserialize(T, s))
-serialize(::Default{E}, s::IO, obj::E) where {T<:Integer, E<:Base.Enum{T}} = serialize(Integer(obj), s)
-estimatesize(::Default{E}) where {T<:Integer, E<:Base.Enum{T}} = estimatesize(T)
-
 """
     JuliaSerializer <: Construct{Any}
 

@@ -27,6 +27,7 @@ export
     Padding,
     LittleEndian,
     BigEndian,
+    IntEnum,
     Magic
 
 include("base.jl")
