@@ -41,6 +41,28 @@ using Test
             @test serialize(BigEndian(type), n) == bs
         end
     end
+    @testset "enum" begin
+        @enum Fruit::Int8 begin
+            apple
+            banna
+            orange
+        end
+        @testset "auto type" begin
+            @test estimatesize(Fruit) == sizeof(Int8)
+            @test deserialize(Fruit, [0x01]) == banna
+            @test serialize(orange) == [0x02]
+        end
+        @testset "override base type" begin
+            @test estimatesize(IntEnum(UInt8, Fruit)) == sizeof(UInt8)
+            @test deserialize(IntEnum(UInt8, Fruit), [0x01]) == banna
+            @test serialize(IntEnum(UInt8, Fruit), orange) == [0x02]
+        end
+        @testset "override base type construct" begin
+            @test estimatesize(IntEnum(BigEndian(UInt16), Fruit)) == sizeof(UInt16)
+            @test deserialize(IntEnum(BigEndian(UInt16), Fruit), [0x00, 0x01]) == banna
+            @test serialize(IntEnum(BigEndian(UInt16), Fruit), orange) == [0x00, 0x02]
+        end
+    end
     @testset "magic" begin
         @test estimatesize(Magic(0x0102)) == sizeof(0x0102)
         @test estimatesize(Magic(Int32, 0x0102)) == sizeof(Int32)
