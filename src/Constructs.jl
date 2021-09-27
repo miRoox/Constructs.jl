@@ -18,6 +18,7 @@ export
     deserialize,
     serialize,
     estimatesize,
+    defaultcons,
     subcon,
     encode,
     decode,
