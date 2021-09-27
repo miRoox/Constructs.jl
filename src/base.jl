@@ -143,14 +143,14 @@ serialize(obj; contextkw...) = serialize(Default(typeof(obj)), obj; contextkw...
 
 Estimate the size of the type.
 """
-estimatesize(::Construct) = Interval(UInt(0), nothing)
+estimatesize(::Construct; contextkw...) = Interval(UInt(0), nothing)
 
 """
     estimatesize(T; contextkw...)
 
 Estimate the size of the type.
 """
-estimatesize(t::Type) = estimatesize(Default(t))
+estimatesize(t::Type; contextkw...) = estimatesize(Default(t); contextkw...)
 
 """
     Wrapper{TSub, T} <: Construct{T}
