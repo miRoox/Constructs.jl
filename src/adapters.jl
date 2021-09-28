@@ -10,7 +10,7 @@ struct LittleEndian{T<:mbntypes, TSubCon<:Construct{T}} <: Adapter{T, T}
     subcon::TSubCon
 end
 
-LittleEndian(::Type{T}) where {T<:mbntypes} = LittleEndian(Default(T))
+LittleEndian(::Type{T}) where {T<:mbntypes} = LittleEndian(defaultcons(T))
 
 subcon(wrapper::LittleEndian) = wrapper.subcon
 encode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = htol(obj)
@@ -25,7 +25,7 @@ struct BigEndian{T<:mbntypes, TSubCon<:Construct{T}} <: Adapter{T, T}
     subcon::TSubCon
 end
 
-BigEndian(::Type{T}) where {T<:mbntypes} = BigEndian(Default(T))
+BigEndian(::Type{T}) where {T<:mbntypes} = BigEndian(defaultcons(T))
 
 subcon(wrapper::BigEndian) = wrapper.subcon
 encode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = hton(obj)
@@ -60,9 +60,9 @@ struct Magic{T, TSubCon<:Construct{T}} <: Validator{T}
     value::T
 end
 
-Magic(value::T) where {T} = Magic(Default(T), value)
-Magic(::Type{T}, value::T) where {T} = Magic(Default(T), value)
-Magic(::Type{T}, value::U) where {T, U} = Magic(Default(T), convert(T, value))
+Magic(value::T) where {T} = Magic(defaultcons(T), value)
+Magic(::Type{T}, value::T) where {T} = Magic(defaultcons(T), value)
+Magic(::Type{T}, value::U) where {T, U} = Magic(defaultcons(T), convert(T, value))
 Magic(subcon::Construct{T}, value::U) where {T, U} = Magic(subcon, convert(T, value))
 
 subcon(wrapper::Magic) = wrapper.subcon
