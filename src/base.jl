@@ -44,14 +44,12 @@ Default construct for type `T`.
 """
 struct Default{T} <: Construct{T} end
 
-Default(::Type{T}) where {T} = Default{T}()
-
 """
     defaultcons(type)
 
 Get default construct for type.
 """
-defaultcons(type::Type) = Default(type)
+defaultcons(::Type{T}) where {T} = Default{T}()
 
 """
     deserialize(cons::Construct, s::IO; contextkw...)
