@@ -28,11 +28,13 @@ export
     LittleEndian,
     BigEndian,
     IntEnum,
-    Magic
+    Magic,
+    Repeat
 
 include("base.jl")
 include("macro.jl")
 include("primitive.jl")
 include("adapters.jl")
+include("collections.jl")
 
 end
