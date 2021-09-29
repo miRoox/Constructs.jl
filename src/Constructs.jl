@@ -29,7 +29,8 @@ export
     BigEndian,
     IntEnum,
     Magic,
-    Repeat
+    Repeat,
+    RepeatGreedily
 
 include("base.jl")
 include("macro.jl")
