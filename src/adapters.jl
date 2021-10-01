@@ -61,6 +61,7 @@ struct Magic{T, TSubCon<:Construct{T}} <: Validator{T}
 end
 
 Magic(value::T) where {T} = Magic(defaultcons(T), value)
+Magic(value::AbstractVector{V}) where {V} = Magic(Repeat(V, length(value)), value)
 Magic(::Type{T}, value::T) where {T} = Magic(defaultcons(T), value)
 Magic(::Type{T}, value::U) where {T, U} = Magic(defaultcons(T), convert(T, value))
 Magic(subcon::Construct{T}, value::U) where {T, U} = Magic(subcon, convert(T, value))

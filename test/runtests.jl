@@ -66,6 +66,7 @@ using Test
     end
     @testset "magic" begin
         @test estimatesize(Magic(0x0102)) == sizeof(0x0102)
+        @test estimatesize(Magic(b"BMP")) == sizeof(b"BMP")
         @test estimatesize(Magic(Int32, 0x0102)) == sizeof(Int32)
         @test estimatesize(Magic(BigEndian(Int32), 0x0102)) == sizeof(Int32)
         @test deserialize(Magic(BigEndian(UInt16), 0x0102), [0x01, 0x02]) == 0x0102
