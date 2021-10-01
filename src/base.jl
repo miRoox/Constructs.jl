@@ -36,6 +36,7 @@ Construct is used for serializing and deserializing objects.
 abstract type Construct{T} end
 
 constructtype(::Construct{T}) where {T} = T
+constructtype(type::Type) = type
 
 """
     Default{T} <: Construct{T}

@@ -89,6 +89,7 @@ using Test
     end
     @testset "macro" begin
         @testset "cons" begin
+            @test @cons(Int32) == Int32
             @test @cons(JuliaSerializer()) == Any
             @test @cons(Padding(4)) == Nothing
             @test @cons(BigEndian(UInt)) == UInt
