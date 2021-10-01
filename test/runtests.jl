@@ -1,4 +1,5 @@
 using Constructs
+using Intervals
 using Test
 
 @testset "Constructs.jl" begin
@@ -71,6 +72,20 @@ using Test
         @test_throws ValidationError deserialize(Magic(LittleEndian(UInt16), 0x0102), [0x01, 0x02])
         @test serialize(Magic(BigEndian(UInt16), 0x0102), 0x0102) == [0x01, 0x02]
         @test_throws ValidationError serialize(Magic(0x0102), 0x0201)
+    end
+    @testset "collections" begin
+        @testset "Repeat" begin
+            @test estimatesize(Repeat(Int64, 10)) == 10*sizeof(Int64)
+            @test deserialize(Repeat(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
+            @test serialize(Repeat(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+        end
+        @testset "RepeatGreedily" begin
+            @test estimatesize(RepeatGreedily(Int8)) == Interval(UInt(0), nothing)
+            @test deserialize(RepeatGreedily(Int8), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
+            @test serialize(RepeatGreedily(Int8), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+            @test deserialize(RepeatGreedily(BigEndian(UInt16)), [0x01, 0xff, 0x02, 0xab, 0xcc]) == [0x01ff, 0x02ab]
+            @test serialize(RepeatGreedily(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
+        end
     end
     @testset "macro" begin
         @testset "cons" begin
