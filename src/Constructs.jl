@@ -27,7 +27,7 @@ export
     LittleEndian,
     BigEndian,
     IntEnum,
-    Magic,
+    Const,
     Repeat,
     RepeatGreedily
 

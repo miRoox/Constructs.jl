@@ -64,15 +64,15 @@ using Test
             @test serialize(IntEnum(BigEndian(UInt16), Fruit), orange) == [0x00, 0x02]
         end
     end
-    @testset "magic" begin
-        @test estimatesize(Magic(0x0102)) == sizeof(0x0102)
-        @test estimatesize(Magic(b"BMP")) == sizeof(b"BMP")
-        @test estimatesize(Magic(Int32, 0x0102)) == sizeof(Int32)
-        @test estimatesize(Magic(BigEndian(Int32), 0x0102)) == sizeof(Int32)
-        @test deserialize(Magic(BigEndian(UInt16), 0x0102), [0x01, 0x02]) == 0x0102
-        @test_throws ValidationError deserialize(Magic(LittleEndian(UInt16), 0x0102), [0x01, 0x02])
-        @test serialize(Magic(BigEndian(UInt16), 0x0102), 0x0102) == [0x01, 0x02]
-        @test_throws ValidationError serialize(Magic(0x0102), 0x0201)
+    @testset "const" begin
+        @test estimatesize(Const(0x0102)) == sizeof(0x0102)
+        @test estimatesize(Const(b"BMP")) == sizeof(b"BMP")
+        @test estimatesize(Const(Int32, 0x0102)) == sizeof(Int32)
+        @test estimatesize(Const(BigEndian(Int32), 0x0102)) == sizeof(Int32)
+        @test deserialize(Const(BigEndian(UInt16), 0x0102), [0x01, 0x02]) == 0x0102
+        @test_throws ValidationError deserialize(Const(LittleEndian(UInt16), 0x0102), [0x01, 0x02])
+        @test serialize(Const(BigEndian(UInt16), 0x0102), 0x0102) == [0x01, 0x02]
+        @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "collections" begin
         @testset "Repeat" begin

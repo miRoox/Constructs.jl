@@ -51,22 +51,22 @@ decode(::IntEnum{T, TSubCon, E}, obj::T; contextkw...) where {T, TSubCon, EB, E<
 Construct(enum::Type{<:Base.Enum}) = IntEnum(enum)
 
 """
-    Magic{T, TSubCon<:Construct{T}} <: Validator{T}
+    Const{T, TSubCon<:Construct{T}} <: Validator{T}
 
 Field enforcing a constant.
 """
-struct Magic{T, TSubCon<:Construct{T}} <: Validator{T}
+struct Const{T, TSubCon<:Construct{T}} <: Validator{T}
     subcon::TSubCon
     value::T
 end
 
-Magic(value::T) where {T} = Magic(Construct(T), value)
-Magic(value::AbstractVector{V}) where {V} = Magic(Repeat(V, length(value)), value)
-Magic(::Type{T}, value::T) where {T} = Magic(Construct(T), value)
-Magic(::Type{T}, value::U) where {T, U} = Magic(Construct(T), convert(T, value))
-Magic(subcon::Construct{T}, value::U) where {T, U} = Magic(subcon, convert(T, value))
+Const(value::T) where {T} = Const(Construct(T), value)
+Const(value::AbstractVector{V}) where {V} = Const(Repeat(V, length(value)), value)
+Const(::Type{T}, value::T) where {T} = Const(Construct(T), value)
+Const(::Type{T}, value::U) where {T, U} = Const(Construct(T), convert(T, value))
+Const(subcon::Construct{T}, value::U) where {T, U} = Const(subcon, convert(T, value))
 
-subcon(wrapper::Magic) = wrapper.subcon
-function validate(magic::Magic{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
-    magic.value == obj ? ValidationOK : ValidationError("$obj mismatch the magic value $(magic.value).")
+subcon(wrapper::Const) = wrapper.subcon
+function validate(cons::Const{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
+    cons.value == obj ? ValidationOK : ValidationError("$obj mismatch the const value $(cons.value).")
 end
