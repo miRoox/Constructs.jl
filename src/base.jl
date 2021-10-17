@@ -35,6 +35,14 @@ Construct is used for serializing and deserializing objects.
 """
 abstract type Construct{T} end
 
+"""
+    Construct(type)
+
+Get default construct for type.
+"""
+Construct(::Type{T}) where {T} = Default{T}()
+Construct(cons::Construct) = cons
+
 constructtype(::Construct{T}) where {T} = T
 constructtype(type::Type) = type
 
@@ -44,13 +52,6 @@ constructtype(type::Type) = type
 Default construct for type `T`.
 """
 struct Default{T} <: Construct{T} end
-
-"""
-    defaultcons(type)
-
-Get default construct for type.
-"""
-defaultcons(::Type{T}) where {T} = Default{T}()
 
 """
     deserialize(cons::Construct, s::IO; contextkw...)
@@ -80,21 +81,21 @@ deserialize(cons::Construct, bytes::AbstractVector{UInt8}; contextkw...) = deser
 
 Deserialize a stream to an object.
 """
-deserialize(t::Type, s::IO; contextkw...) = deserialize(defaultcons(t), s; contextkw...)
+deserialize(t::Type, s::IO; contextkw...) = deserialize(Construct(t), s; contextkw...)
 
 """
     deserialize(T, filename::AbstractString; contextkw...)
 
 Deserialize a file to an object.
 """
-deserialize(t::Type, filename::AbstractString; contextkw...) = deserialize(defaultcons(t), filename; contextkw...)
+deserialize(t::Type, filename::AbstractString; contextkw...) = deserialize(Construct(t), filename; contextkw...)
 
 """
     deserialize(T, bytes::AbstractVector{UInt8}; contextkw...)
 
 Deserialize a byte array to an object.
 """
-deserialize(t::Type, bytes::AbstractVector{UInt8}; contextkw...) = deserialize(defaultcons(t), IOBuffer(bytes); contextkw...)
+deserialize(t::Type, bytes::AbstractVector{UInt8}; contextkw...) = deserialize(Construct(t), IOBuffer(bytes); contextkw...)
 
 """
     serialize(cons::Construct, s::IO, obj; contextkw...)
@@ -128,21 +129,21 @@ end
 
 Serialize an object into a stream.
 """
-serialize(s::IO, obj; contextkw...) = serialize(defaultcons(typeof(obj)), s, obj; contextkw...)
+serialize(s::IO, obj; contextkw...) = serialize(Construct(typeof(obj)), s, obj; contextkw...)
 
 """
     serialize(filename::AbstractString, obj; contextkw...)
 
 Serialize an object to the file.
 """
-serialize(filename::AbstractString, obj; contextkw...) = serialize(defaultcons(typeof(obj)), filename, obj; contextkw...)
+serialize(filename::AbstractString, obj; contextkw...) = serialize(Construct(typeof(obj)), filename, obj; contextkw...)
 
 """
     serialize(obj; contextkw...)
 
 Serialize an object in memory (a byte array).
 """
-serialize(obj; contextkw...) = serialize(defaultcons(typeof(obj)), obj; contextkw...)
+serialize(obj; contextkw...) = serialize(Construct(typeof(obj)), obj; contextkw...)
 
 """
     estimatesize(cons::Construct; contextkw...)
@@ -156,7 +157,7 @@ estimatesize(::Construct; contextkw...) = Interval(UInt(0), nothing)
 
 Estimate the size of the type.
 """
-estimatesize(t::Type; contextkw...) = estimatesize(defaultcons(t); contextkw...)
+estimatesize(t::Type; contextkw...) = estimatesize(Construct(t); contextkw...)
 
 """
     Wrapper{TSub, T} <: Construct{T}

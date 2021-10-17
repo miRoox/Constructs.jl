@@ -10,7 +10,7 @@ struct Repeat{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
 end
 
 Repeat(subcon::Construct, count::Integer) = Repeat(subcon, convert(UInt, count))
-Repeat(type::Type, count::Integer) = Repeat(defaultcons(type), convert(UInt, count))
+Repeat(type::Type, count::Integer) = Repeat(Construct(type), convert(UInt, count))
 
 subcon(wrapper::Repeat) = wrapper.subcon
 function deserialize(array::Repeat{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
@@ -43,7 +43,7 @@ struct RepeatGreedily{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
     subcon::TSubCon
 end
 
-RepeatGreedily(type::Type) = RepeatGreedily(defaultcons(type))
+RepeatGreedily(type::Type) = RepeatGreedily(Construct(type))
 
 subcon(wrapper::RepeatGreedily) = wrapper.subcon
 function deserialize(array::RepeatGreedily{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
@@ -69,4 +69,4 @@ function serialize(array::RepeatGreedily{T, TSubCon}, s::IO, obj::AbstractVector
 end
 estimatesize(::RepeatGreedily; contextkw...) = Interval(UInt(0), nothing)
 
-defaultcons(::Type{Vector{T}}) where {T} = RepeatGreedily(T)
+Construct(::Type{Vector{T}}) where {T} = RepeatGreedily(T)
