@@ -16,7 +16,7 @@ subcon(wrapper::Repeat) = wrapper.subcon
 function deserialize(array::Repeat{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
     count = array.count
     result = Vector{T}(undef, count)
-    for i in 1:count
+    for i in eachindex(result)
         result[i] = deserialize(array.subcon, s; contextkw...)
     end
     result
