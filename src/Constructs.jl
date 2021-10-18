@@ -33,8 +33,15 @@ export
 
 include("base.jl")
 include("macro.jl")
-include("primitive.jl")
-include("adapters.jl")
-include("collections.jl")
+
+include("PrimitiveIO.jl")
+include("Singleton.jl")
+include("JuliaSerializer.jl")
+include("Padding.jl")
+include("Endians.jl")
+include("IntEnum.jl")
+include("Const.jl")
+include("Array.jl")
+include("GreedyArray.jl")
 
 end
