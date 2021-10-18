@@ -1,12 +1,25 @@
-# Nothing
-deserialize(::Default{Nothing}, ::IO; contextkw...) = nothing
-serialize(::Default{Nothing}, ::IO, ::Nothing; contextkw...) = 0
-estimatesize(::Default{Nothing}; contextkw...) = 0
+"""
+    Singleton{T} <: Construct{T}
 
-# Missing
-deserialize(::Default{Missing}, ::IO; contextkw...) = missing
-serialize(::Default{Missing}, ::IO, ::Missing; contextkw...) = 0
-estimatesize(::Default{Missing}; contextkw...) = 0
+Singleton type empty construct.
+"""
+struct Singleton{T} <: Construct{T}
+    function Singleton{T}() where {T}
+        if !Base.issingletontype(T)
+            throw(ArgumentError("$T is not a singleton type!"))
+        end
+        new()
+    end
+end
+Singleton(::Type{T}) where {T} = Singleton{T}()
+Singleton(::T) where {T} = Singleton{T}()
+
+deserialize(::Singleton{T}, ::IO; contextkw...) where {T} = T.instance
+serialize(::Singleton{T}, ::IO, ::T; contextkw...) where {T} = 0
+estimatesize(::Singleton; contextkw...) = 0
+
+Construct(::Type{Nothing}) = Singleton(nothing)
+Construct(::Type{Missing}) = Singleton(missing)
 
 # primitive numbers
 for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)

@@ -8,7 +8,7 @@ using Test
         @test deserialize(type, zeros(UInt8, sizeof(type))) == zero(type)
         @test serialize(zero(type)) == zeros(UInt8, sizeof(type))
     end
-    @testset "empty type $type" for type in (Nothing, Missing)
+    @testset "singleton type $type" for type in (Nothing, Missing)
         @test estimatesize(type) == 0
         @test deserialize(type, UInt8[]) === type.instance
         @test serialize(type.instance) == UInt8[]
