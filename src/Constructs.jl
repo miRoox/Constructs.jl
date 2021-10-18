@@ -22,7 +22,6 @@ export
     encode,
     decode,
     validate,
-    @cons,
     PrimitiveIO,
     Singleton,
     JuliaSerializer,

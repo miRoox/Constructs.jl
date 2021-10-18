@@ -88,12 +88,10 @@ using Test
             @test serialize(GreedyArray(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
         end
     end
-    @testset "macro" begin
-        @testset "cons" begin
-            @test @cons(Int32) == Int32
-            @test @cons(JuliaSerializer()) == Any
-            @test @cons(Padding(4)) == Nothing
-            @test @cons(BigEndian(UInt)) == UInt
-        end
+    @testset "construct type" begin
+        @test Constructs.constructtype(Int32) == Int32
+        @test Constructs.constructtype(JuliaSerializer()) == Any
+        @test Constructs.constructtype(Padding(4)) == Nothing
+        @test Constructs.constructtype(BigEndian(UInt)) == UInt
     end
 end
