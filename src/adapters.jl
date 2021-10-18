@@ -61,7 +61,7 @@ struct Const{T, TSubCon<:Construct{T}} <: Validator{T}
 end
 
 Const(value::T) where {T} = Const(Construct(T), value)
-Const(value::AbstractVector{V}) where {V} = Const(Repeat(V, length(value)), value)
+Const(value::AbstractVector{V}) where {V} = Const(SizedArray(V, length(value)), value)
 Const(::Type{T}, value::T) where {T} = Const(Construct(T), value)
 Const(::Type{T}, value::U) where {T, U} = Const(Construct(T), convert(T, value))
 Const(subcon::Construct{T}, value::U) where {T, U} = Const(subcon, convert(T, value))

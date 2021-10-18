@@ -75,17 +75,17 @@ using Test
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "collections" begin
-        @testset "Repeat" begin
-            @test estimatesize(Repeat(Int64, 10)) == 10*sizeof(Int64)
-            @test deserialize(Repeat(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
-            @test serialize(Repeat(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+        @testset "SizedArray" begin
+            @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
+            @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
+            @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
         end
-        @testset "RepeatGreedily" begin
-            @test estimatesize(RepeatGreedily(Int8)) == Interval(UInt(0), nothing)
-            @test deserialize(RepeatGreedily(Int8), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
-            @test serialize(RepeatGreedily(Int8), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
-            @test deserialize(RepeatGreedily(BigEndian(UInt16)), [0x01, 0xff, 0x02, 0xab, 0xcc]) == [0x01ff, 0x02ab]
-            @test serialize(RepeatGreedily(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
+        @testset "GreedyArray" begin
+            @test estimatesize(GreedyArray(Int8)) == Interval(UInt(0), nothing)
+            @test deserialize(GreedyArray(Int8), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
+            @test serialize(GreedyArray(Int8), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+            @test deserialize(GreedyArray(BigEndian(UInt16)), [0x01, 0xff, 0x02, 0xab, 0xcc]) == [0x01ff, 0x02ab]
+            @test serialize(GreedyArray(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
         end
     end
     @testset "macro" begin

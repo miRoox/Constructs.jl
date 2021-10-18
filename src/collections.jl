@@ -1,19 +1,19 @@
 
 """
-    Repeat{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
+    SizedArray{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
 
 Homogenous array of elements.
 """
-struct Repeat{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
+struct SizedArray{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
     subcon::TSubCon
     count::UInt
 end
 
-Repeat(subcon::Construct, count::Integer) = Repeat(subcon, convert(UInt, count))
-Repeat(type::Type, count::Integer) = Repeat(Construct(type), convert(UInt, count))
+SizedArray(subcon::Construct, count::Integer) = SizedArray(subcon, convert(UInt, count))
+SizedArray(type::Type, count::Integer) = SizedArray(Construct(type), convert(UInt, count))
 
-subcon(wrapper::Repeat) = wrapper.subcon
-function deserialize(array::Repeat{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
+subcon(wrapper::SizedArray) = wrapper.subcon
+function deserialize(array::SizedArray{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
     count = array.count
     result = Vector{T}(undef, count)
     for i in eachindex(result)
@@ -21,7 +21,7 @@ function deserialize(array::Repeat{T, TSubCon}, s::IO; contextkw...) where {T, T
     end
     result
 end
-function serialize(array::Repeat{T, TSubCon}, s::IO, obj::AbstractVector{T}; contextkw...) where {T, TSubCon}
+function serialize(array::SizedArray{T, TSubCon}, s::IO, obj::AbstractVector{T}; contextkw...) where {T, TSubCon}
     actualcount = length(obj)
     if actualcount != array.count
         throw(ValidationError("expected $(array.count) elements, found $actualcount"))
@@ -32,21 +32,21 @@ function serialize(array::Repeat{T, TSubCon}, s::IO, obj::AbstractVector{T}; con
     end
     bytecount
 end
-estimatesize(array::Repeat; contextkw...) = array.count * estimatesize(array.subcon; contextkw...)
+estimatesize(array::SizedArray; contextkw...) = array.count * estimatesize(array.subcon; contextkw...)
 
 """
-    RepeatGreedily{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
+    GreedyArray{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
 
 Homogenous array of elements for unknown count of elements by parsing until end of stream.
 """
-struct RepeatGreedily{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
+struct GreedyArray{T, TSubCon<:Construct{T}} <: Wrapper{T, AbstractVector{T}}
     subcon::TSubCon
 end
 
-RepeatGreedily(type::Type) = RepeatGreedily(Construct(type))
+GreedyArray(type::Type) = GreedyArray(Construct(type))
 
-subcon(wrapper::RepeatGreedily) = wrapper.subcon
-function deserialize(array::RepeatGreedily{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
+subcon(wrapper::GreedyArray) = wrapper.subcon
+function deserialize(array::GreedyArray{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
     result = Vector{T}()
     fallback = 0
     try
@@ -60,13 +60,13 @@ function deserialize(array::RepeatGreedily{T, TSubCon}, s::IO; contextkw...) whe
     end
     result
 end
-function serialize(array::RepeatGreedily{T, TSubCon}, s::IO, obj::AbstractVector{T}; contextkw...) where {T, TSubCon}
+function serialize(array::GreedyArray{T, TSubCon}, s::IO, obj::AbstractVector{T}; contextkw...) where {T, TSubCon}
     bytecount = 0
     for v in obj
         bytecount += serialize(array.subcon, s, v; contextkw...)
     end
     bytecount
 end
-estimatesize(::RepeatGreedily; contextkw...) = Interval(UInt(0), nothing)
+estimatesize(::GreedyArray; contextkw...) = Interval(UInt(0), nothing)
 
-Construct(::Type{Vector{T}}) where {T} = RepeatGreedily(T)
+Construct(::Type{Vector{T}}) where {T} = GreedyArray(T)

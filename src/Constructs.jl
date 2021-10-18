@@ -28,8 +28,8 @@ export
     BigEndian,
     IntEnum,
     Const,
-    Repeat,
-    RepeatGreedily
+    SizedArray,
+    GreedyArray
 
 include("base.jl")
 include("macro.jl")
