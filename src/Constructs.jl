@@ -31,7 +31,7 @@ export
     IntEnum,
     Const,
     SizedArray,
-    GreedyArray
+    GreedyVector
 
 include("base.jl")
 include("macro.jl")
@@ -44,6 +44,6 @@ include("Endians.jl")
 include("IntEnum.jl")
 include("Const.jl")
 include("Array.jl")
-include("GreedyArray.jl")
+include("GreedyVector.jl")
 
 end

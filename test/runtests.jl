@@ -83,12 +83,12 @@ using Test
             @test deserialize(SizedArray(Int8, (2, 3)), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
             @test serialize(SizedArray(Int8, (2, 3)), Int8[1 2 3; 4 5 6]) == [0x01, 0x04, 0x02, 0x05, 0x03, 0x06]
         end
-        @testset "GreedyArray" begin
-            @test estimatesize(GreedyArray(Int8)) == Interval(UInt(0), nothing)
-            @test deserialize(GreedyArray(Int8), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
-            @test serialize(GreedyArray(Int8), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
-            @test deserialize(GreedyArray(BigEndian(UInt16)), [0x01, 0xff, 0x02, 0xab, 0xcc]) == [0x01ff, 0x02ab]
-            @test serialize(GreedyArray(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
+        @testset "GreedyVector" begin
+            @test estimatesize(GreedyVector(Int8)) == Interval(UInt(0), nothing)
+            @test deserialize(GreedyVector(Int8), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
+            @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+            @test deserialize(GreedyVector(BigEndian(UInt16)), [0x01, 0xff, 0x02, 0xab, 0xcc]) == [0x01ff, 0x02ab]
+            @test serialize(GreedyVector(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
         end
     end
     @testset "construct type" begin
