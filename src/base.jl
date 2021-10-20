@@ -40,18 +40,10 @@ abstract type Construct{T} end
 
 Get default construct for type.
 """
-Construct(::Type{T}) where {T} = Default{T}()
 Construct(cons::Construct) = cons
 
 constructtype(::Construct{T}) where {T} = T
 constructtype(type::Type) = type
-
-"""
-    Default{T} <: Construct{T}
-
-Default construct for type `T`.
-"""
-struct Default{T} <: Construct{T} end
 
 """
     deserialize(cons::Construct, s::IO; contextkw...)
