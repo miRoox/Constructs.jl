@@ -1,9 +1,9 @@
 """
-    SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, AbstractArray{T, N}}
+    SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
 
 Homogenous array of elements.
 """
-struct SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, AbstractArray{T, N}}
+struct SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
     subcon::TSubCon
     size::NTuple{N, UInt}
 end
@@ -21,7 +21,7 @@ function deserialize(array::SizedArray{T, TSubCon, N}, s::IO; contextkw...) wher
     end
     result
 end
-function serialize(array::SizedArray{T, TSubCon, N}, s::IO, obj::AbstractArray{T, N}; contextkw...) where {T, TSubCon, N}
+function serialize(array::SizedArray{T, TSubCon, N}, s::IO, obj::Array{T, N}; contextkw...) where {T, TSubCon, N}
     actualsize = size(obj)
     if actualsize != array.size
         throw(ValidationError("expected $(array.size) elements, found $actualsize."))
