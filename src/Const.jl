@@ -1,20 +1,18 @@
 """
-    Const{T, TSubCon<:Construct{T}} <: Validator{T}
+    Const{T, TSubCon<:Construct{T}, VT} <: Validator{T}
 
 Field enforcing a constant.
 """
-struct Const{T, TSubCon<:Construct{T}} <: Validator{T}
+struct Const{T, TSubCon<:Construct{T}, VT} <: Validator{T}
     subcon::TSubCon
-    value::T
+    value::VT
 end
 
+Const(::Type{T}, value::VT) where {T, VT} = Const(Construct(T), value)
 Const(value::T) where {T} = Const(Construct(T), value)
-Const(value::AbstractVector{V}) where {V} = Const(SizedArray(V, length(value)), value)
-Const(::Type{T}, value::T) where {T} = Const(Construct(T), value)
-Const(::Type{T}, value::U) where {T, U} = Const(Construct(T), convert(T, value))
-Const(subcon::Construct{T}, value::U) where {T, U} = Const(subcon, convert(T, value))
+Const(value::AbstractArray{V, N}) where {V, N} = Const(SizedArray(V, size(value)), value)
 
 subcon(wrapper::Const) = wrapper.subcon
-function validate(cons::Const{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
-    cons.value == obj ? ValidationOK : ValidationError("$obj mismatch the const value $(cons.value).")
+function validate(cons::Const{T, TSubCon, VT}, obj::T; contextkw...) where {T, TSubCon, VT}
+    (cons.value == obj) === true ? ValidationOK : ValidationError("$obj mismatch the const value $(cons.value).")
 end
