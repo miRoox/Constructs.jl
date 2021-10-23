@@ -8,6 +8,7 @@ using Intervals
 using MacroTools
 
 export
+    @construct,
     Construct,
     Wrapper,
     Adapter,
