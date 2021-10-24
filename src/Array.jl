@@ -1,3 +1,17 @@
+
+"""
+    @Array(sub, size)
+
+Homogenous array of elements.
+"""
+macro Array(sub, size...)
+    if all(iscontextfree, size)
+        Expr(:call, GlobalRef(Constructs, :SizedArray), sub, size...)
+    else
+        Expr(:call, GlobalRef(Constructs, :ContextualArray), sub, map(x -> iscontextfree(x) ? x : QuoteNode(x), size)...)
+    end
+end
+
 """
     SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
 

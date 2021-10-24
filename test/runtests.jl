@@ -75,13 +75,13 @@ using Test
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "collections" begin
-        @testset "SizedArray" begin
-            @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
-            @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
-            @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
-            @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
-            @test deserialize(SizedArray(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
-            @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == [0x01, 0x04, 0x02, 0x05, 0x03, 0x06]
+        @testset "Array" begin
+            @test estimatesize(@Array(Int64, 10)) == 10*sizeof(Int64)
+            @test estimatesize(@Array(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
+            @test deserialize(@Array(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
+            @test serialize(@Array(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+            @test deserialize(@Array(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
+            @test serialize(@Array(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == [0x01, 0x04, 0x02, 0x05, 0x03, 0x06]
         end
         @testset "GreedyVector" begin
             @test estimatesize(GreedyVector(Int8)) == Interval(UInt(0), nothing)
