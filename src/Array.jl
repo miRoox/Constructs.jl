@@ -8,10 +8,8 @@ struct SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
     size::NTuple{N, UInt}
 end
 
-SizedArray(subcon::Construct, size::NTuple{N, Integer}) where {N} = SizedArray(subcon, convert(NTuple{N, UInt}, size))
-SizedArray(type::Type, size::NTuple{N, Integer}) where {N} = SizedArray(Construct(type), size)
-SizedArray(subcon::Construct, count::Integer) = SizedArray(subcon, (convert(UInt, count),))
-SizedArray(type::Type, count::Integer) = SizedArray(Construct(type), count)
+SizedArray(subcon::Construct, size::Vararg{Integer, N}) where {N} = SizedArray(subcon, convert(NTuple{N, UInt}, size))
+SizedArray(type::Type, size::Vararg{Integer, N}) where {N} = SizedArray(Construct(type), size...)
 
 subcon(wrapper::SizedArray) = wrapper.subcon
 function deserialize(array::SizedArray{T, TSubCon, N}, s::IO; contextkw...) where {T, TSubCon, N}
