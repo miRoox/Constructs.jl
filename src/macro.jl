@@ -45,3 +45,12 @@ function collectconvertfields(mod::Module, structtype)
     end
     fieldpairs, Expr(:struct, structtype.args[1], structtype.args[2], Expr(:block, sstfields...))
 end
+
+hasthis(sym::Symbol) = sym == :this
+hasthis(sym::GlobalRef) = hasthis(sym.name)
+hasthis(ex::Expr) = any(hasthis, ex.args)
+hasthis(arr::AbstractArray) = any(hasthis, arr)
+hasthis(tuple::Tuple) = any(hasthis, tuple)
+hasthis(_) = false
+
+iscontextfree(ex) = !hasthis(ex)
