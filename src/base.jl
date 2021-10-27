@@ -169,8 +169,6 @@ Get sub-construct of `wrapper`.
 """
 function subcon end
 
-estimatesize(wrapper::Wrapper) = estimatesize(subcon(wrapper))
-
 """
     Adapter{TSub, T} <: Wrapper{TSub, T}
 
@@ -203,6 +201,8 @@ function deserialize(adapter::Adapter{TSub, T}, s::IO; contextkw...) where {TSub
     obj = deserialize(subcon(adapter), s; contextkw...)
     decode(adapter, obj; contextkw...)
 end
+
+estimatesize(wrapper::Adapter) = estimatesize(subcon(wrapper))
 
 """
     SymmetricAdapter{T} <: Adapter{T, T}
