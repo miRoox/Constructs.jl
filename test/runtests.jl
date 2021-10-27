@@ -3,21 +3,29 @@ using Intervals
 using Test
 
 @testset "Constructs.jl" begin
-    @testset "primitive type $type" for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)
-        @test estimatesize(type) == sizeof(type)
-        @test deserialize(type, zeros(UInt8, sizeof(type))) == zero(type)
-        @test serialize(zero(type)) == zeros(UInt8, sizeof(type))
+    @testset "primitive io" begin
+        @testset "primitive type $type" for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)
+            @test estimatesize(type) == sizeof(type)
+            @test deserialize(type, zeros(UInt8, sizeof(type))) == zero(type)
+            @test serialize(zero(type)) == zeros(UInt8, sizeof(type))
+        end
+        @testset "char $c" for c in ['\x00', 'A', 'α', '啊', '🆗']
+            codes = transcode(UInt8, [codepoint(c)])
+            @test length(codes) in estimatesize(Char)
+            @test deserialize(Char, codes) == c
+            @test serialize(c) == codes
+        end
     end
-    @testset "singleton type $type" for type in (Nothing, Missing)
-        @test estimatesize(type) == 0
-        @test deserialize(type, UInt8[]) === type.instance
-        @test serialize(type.instance) == UInt8[]
-    end
-    @testset "char $c" for c in ['\x00', 'A', 'α', '啊', '🆗']
-        codes = transcode(UInt8, [codepoint(c)])
-        @test length(codes) in estimatesize(Char)
-        @test deserialize(Char, codes) == c
-        @test serialize(c) == codes
+    @testset "singleton" begin
+        @testset "auto singleton for $instance" for instance in (nothing, missing)
+            type = typeof(instance)
+            @test estimatesize(type) == 0
+            @test deserialize(type, UInt8[]) === instance
+            @test serialize(instance) == UInt8[]
+        end
+        @testset "non-singleton type $type" for type in (Bool, Union{}, Char, DataType)
+            @test_throws ArgumentError Singleton(type)
+        end
     end
     @testset "byte order" begin
         be = (
@@ -76,8 +84,10 @@ using Test
     end
     @testset "collections" begin
         @testset "Array" begin
+            @test estimatesize(@Array(Int64)) == sizeof(Int64)
             @test estimatesize(@Array(Int64, 10)) == 10*sizeof(Int64)
             @test estimatesize(@Array(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
+            @test estimatesize(@Array(Int64, this.size)) == Interval(UInt(0), nothing)
             @test deserialize(@Array(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
             @test serialize(@Array(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
             @test deserialize(@Array(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
@@ -91,10 +101,19 @@ using Test
             @test serialize(GreedyVector(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
         end
     end
-    @testset "construct type" begin
-        @test Constructs.constructtype(Int32) == Int32
-        @test Constructs.constructtype(JuliaSerializer()) == Any
-        @test Constructs.constructtype(Padding(4)) == Nothing
-        @test Constructs.constructtype(BigEndian(UInt)) == UInt
+    @testset "internal" begin
+        @testset "construct type" begin
+            @test Constructs.constructtype(Int32) == Int32
+            @test Constructs.constructtype(JuliaSerializer()) == Any
+            @test Constructs.constructtype(Padding(4)) == Nothing
+            @test Constructs.constructtype(BigEndian(UInt)) == UInt
+            @test Constructs.constructtype(Const(0x0102)) == UInt16
+            @test Constructs.constructtype(Const(b"BMP")) == Vector{UInt8}
+            @test Constructs.constructtype(@Array(Int)) == Array{Int, 0}
+            @test Constructs.constructtype(@Array(Float64, 10)) == Array{Float64, 1}
+            @test Constructs.constructtype(@Array(BigEndian(UInt16), 5, 17)) == Array{UInt16, 2}
+            @test Constructs.constructtype(@Array(Char, this.size)) == Array{Char, 1}
+            @test Constructs.constructtype(@Array(LittleEndian(UInt128), this.width, this.height)) == Array{UInt128, 2}
+        end
     end
 end
