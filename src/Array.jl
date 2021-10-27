@@ -13,11 +13,18 @@ macro Array(sub, size...)
 end
 
 """
+    BaseArray{T, N} <: Wrapper{T, Array{T, N}}
+
+Abstract base type for Array wrapper.
+"""
+abstract type BaseArray{T, N} <: Wrapper{T, Array{T, N}} end
+
+"""
     SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
 
 Homogenous array of elements.
 """
-struct SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
+struct SizedArray{T, TSubCon<:Construct{T}, N} <: BaseArray{T, N}
     subcon::TSubCon
     size::NTuple{N, UInt}
 end
@@ -46,10 +53,12 @@ function serialize(array::SizedArray{T, TSubCon, N}, s::IO, obj::Array{T, N}; co
 end
 estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(array.subcon; contextkw...)
 
-struct ContextualArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
+struct ContextualArray{T, TSubCon<:Construct{T}, N} <: BaseArray{T, N}
     subcon::TSubCon
     size::NTuple{N, Any}
 end
 
 ContextualArray(subcon::Construct, size::Vararg{Any, N}) where {N} = ContextualArray(subcon, size)
 ContextualArray(type::Type, size::Vararg{Any, N}) where {N} = ContextualArray(Construct(type), size...)
+
+subcon(wrapper::ContextualArray) = wrapper.subcon
