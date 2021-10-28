@@ -5,10 +5,8 @@ version = "0.1.0"
 
 [deps]
 Intervals = "d8418881-c3e1-53bb-8760-2df7ec849ed5"
-MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
 [compat]
 Intervals = "1"
-MacroTools = "^0.5"
 julia = "1.6"

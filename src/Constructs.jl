@@ -5,7 +5,6 @@ Inspired by [Construct](https://construct.readthedocs.io/).
 module Constructs
 
 using Intervals
-using MacroTools
 
 export
     @construct,
