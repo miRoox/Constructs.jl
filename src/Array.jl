@@ -62,3 +62,5 @@ ContextualArray(subcon::Construct, size::Vararg{Any, N}) where {N} = ContextualA
 ContextualArray(type::Type, size::Vararg{Any, N}) where {N} = ContextualArray(Construct(type), size...)
 
 subcon(wrapper::ContextualArray) = wrapper.subcon
+
+Construct(::Type{Array{T, N}}, size::Vararg{Integer, N}) where {T, N} = SizedArray(T, size...)

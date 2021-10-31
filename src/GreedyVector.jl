@@ -32,5 +32,3 @@ function serialize(array::GreedyVector{T, TSubCon}, s::IO, obj::Vector{T}; conte
     bytecount
 end
 estimatesize(::GreedyVector; contextkw...) = Interval(UInt(0), nothing)
-
-Construct(::Type{Vector{T}}) where {T} = GreedyVector(T)
