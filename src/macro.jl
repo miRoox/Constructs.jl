@@ -1,49 +1,120 @@
 
-macro construct(structtype)
-    if structtype isa Expr && structtype.head == :struct
-        _, structdecl = collectconvertfields(__module__ , structtype)
-        structdecl
+
+macro construct(structdef::Expr)
+    construct_impl(__module__, __source__, gensym("CustomConstruct"), structdef)
+end
+
+macro construct(constructname::Symbol, structdef::Expr)
+    construct_impl(__module__, __source__, constructname, structdef)
+end
+
+struct FieldInfo
+    name::Union{Symbol, Nothing}
+    constype::Union{Construct, DataType}
+    line::Union{LineNumberNode, Missing}
+end
+
+struct OtherFieldInfo
+    expr::Any
+    line::Union{LineNumberNode, Missing}
+end
+
+function construct_impl(mod::Module, source::LineNumberNode, constructname::Symbol, structdef::Expr)
+    if structdef.head == :struct
+        fields = dumpfields(mod, structdef)
+        typedstructdef = replacestructdef(structdef, fields)
+        constructdef = generateconstructdef(constructname, getdefname(structdef))
+        Expr(:block,
+            source, typedstructdef,
+            source, constructdef)
     else
         error("invalid syntax: @construct must be used with a struct type definition.")
     end
 end
 
-# collect and convert struct fields.
-function collectconvertfields(mod::Module, structtype)
-    @assert structtype isa Expr && structtype.head == :struct
-    stfields = structtype.args[3].args
-    fieldpairs = Vector()
-    sstfields = Vector()
-    sizehint!(fieldpairs, length(stfields))
-    sizehint!(sstfields, length(stfields))
-    for field in stfields
+function dumpfields(mod::Module, structdef::Expr)
+    @assert structdef.head == :struct
+    stfields = structdef.args[3].args
+    fields = Vector{Union{FieldInfo, OtherFieldInfo}}()
+    sizehint!(fields, length(stfields))
+    for i in eachindex(stfields)
+        field = stfields[i]
         if field isa LineNumberNode
-            push!(sstfields, field)
             continue
-        elseif field isa Expr
-            if field.head == :(::)
-                constructortype = Core.eval(mod, field.args[end])
-                type=constructtype(constructortype)
+        else
+            line = stfields[i-1] isa LineNumberNode ? stfields[i-1] : missing
+            if field isa Symbol
+                push!(fields, FieldInfo(field, Any, line))
+            elseif field isa Expr && field.head == :(::)
+                constype = Core.eval(mod, field.args[end])
                 if length(field.args) == 2 # x::Int
-                    name = field.args[1]
-                    sstfield = Expr(:(::), name, type)
-                    push!(sstfields, sstfield)
-                    push!(fieldpairs, name => constructortype)
+                    push!(fields, FieldInfo(field.args[1], constype, line))
                 elseif length(field.args) == 1 # ::Padding(4)
-                    if sstfields[end] isa LineNumberNode
-                        pop!(sstfields)
-                    end
-                    push!(fieldpairs, nothing => constructortype)
+                    push!(fields, FieldInfo(nothing, constype, line))
+                else
+                    push!(fields, OtherFieldInfo(field, line))
                 end
             else
-                push!(sstfields, field)
+                push!(fields, OtherFieldInfo(field, line))
             end
-        elseif field isa Symbol
-            push!(sstfields, field)
-            push!(fieldpairs, field => Any)
+        end
+    end 
+    fields
+end
+
+function replacestructdef(structdef::Expr, fields::Vector{Union{FieldInfo, OtherFieldInfo}})
+    @assert structdef.head == :struct
+    stfields = Vector()
+    sizehint!(stfields, length(structdef.args[3].args))
+    for field in fields
+        if field isa FieldInfo
+            if isnothing(field.name) # omit field without name
+                continue
+            else
+                if !ismissing(field.line)
+                    push!(stfields, field.line)
+                end
+                push!(stfields, Expr(:(::), field.name, constructtype(field.constype)))
+            end
+        else
+            if !ismissing(field.line)
+                push!(stfields, field.line)
+            end
+            push!(stfields, field.expr)
         end
     end
-    fieldpairs, Expr(:struct, structtype.args[1], structtype.args[2], Expr(:block, sstfields...))
+    Expr(:struct, structdef.args[1], structdef.args[2], Expr(:block, stfields...))
+end
+
+function generateconstructdef(constructname::Symbol, structname)
+    Expr(:block,
+        Expr(:struct,
+            false,
+            Expr(:(<:), esc(constructname), Expr(:curly, GlobalRef(Constructs, :Construct), esc(structname))),
+            Expr(:block),
+        ),
+        Expr(:function,
+            Expr(:call,
+                GlobalRef(Constructs, :Construct),
+                Expr(:(::), Expr(:curly, GlobalRef(Core, :Type), esc(structname)))
+            ),
+            Expr(:block,
+                Expr(:call, esc(constructname))
+            ),
+        )
+    )
+end
+
+getdefname(name::Symbol) = name
+getdefname(sym::GlobalRef) = sym.name
+function getdefname(expr::Expr)
+    if expr.head == :struct
+        getdefname(expr.args[2])
+    elseif expr.head in [:abstract, :(<:), :curly, :call, :function, :(=), :where]
+        getdefname(expr.args[1])
+    else
+        error("syntax error: invalid definition $expr.")
+    end
 end
 
 hasthis(sym::Symbol) = sym == :this
