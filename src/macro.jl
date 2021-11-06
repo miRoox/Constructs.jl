@@ -1,4 +1,5 @@
 
+const this = :this
 
 macro construct(structdef::Expr)
     construct_impl(__module__, __source__, gensym("CustomConstruct"), structdef)
@@ -117,7 +118,7 @@ function getdefname(expr::Expr)
     end
 end
 
-hasthis(sym::Symbol) = sym == :this
+hasthis(sym::Symbol) = sym == this
 hasthis(sym::GlobalRef) = hasthis(sym.name)
 hasthis(ex::Expr) = any(hasthis, ex.args)
 hasthis(arr::AbstractArray) = any(hasthis, arr)
