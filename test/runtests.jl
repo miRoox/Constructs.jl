@@ -116,4 +116,27 @@ using Test
             @test Constructs.constructtype(@Array(LittleEndian(UInt128), this.width, this.height)) == Array{UInt128, 2}
         end
     end
+    @testset "macro expand" begin # just check if there is any error raised during macro expanding
+        structonly = quote
+            @construct struct Bitmap
+                signature::Const(b"BMP")
+                width::UInt32
+                height::UInt32
+                ::Padding(8)
+                pixel::@Array(UInt8, (this.width, this.height))
+            end
+        end
+        withname = quote
+            @construct BitmapConstruct struct Bitmap
+                signature::Const(b"BMP")
+                width::UInt32
+                height::UInt32
+                ::Padding(8)
+                pixel::@Array(UInt8, (this.width, this.height))
+            end
+        end
+        @testset "@construct" for ex in [structonly, withname]
+            @inferred Expr macroexpand(@__MODULE__, ex)
+        end
+    end
 end
