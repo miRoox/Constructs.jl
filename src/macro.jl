@@ -1,5 +1,78 @@
 
-const this = :this
+struct ThisPlaceholder end
+
+const this = ThisPlaceholder()
+
+Base.show(io::IO, ::ThisPlaceholder) = print(io, :this)
+Base.show(io::IO, ::MIME"text/plain", ::ThisPlaceholder) = print(io, :this)
+
+mutable struct FullFieldInfo
+    name::Union{Symbol, Nothing}
+    rawtype::Any
+    line::Union{LineNumberNode, Missing}
+    type::DataType
+    construct::Construct
+end
+
+struct ParameterInfo
+    name::Symbol
+    rawtype::Any
+    type::DataType
+end
+
+mutable struct ConstructContext
+    structname::Any
+    thisfields::Vector{FullFieldInfo}
+    parameters::Vector{ParameterInfo}
+end
+
+const _lck = ReentrantLock()
+const _context = ConstructContext(nothing, FullFieldInfo[], ParameterInfo[])
+
+function withcontext(action::Function, structname)
+    lock(_lck)
+    _context.structname = structname
+    _context.thisfields = FullFieldInfo[]
+    _context.parameters = ParameterInfo[]
+    try
+        action(_context)
+    finally
+        _context.structname = nothing
+        _context.thisfields = FullFieldInfo[]
+        _context.parameters = ParameterInfo[]
+        unlock(_lck)
+    end
+end
+abstract type ContextualExpr{T} end
+
+struct InstantValue{T} <: ContextualExpr{T}
+    value::T
+end
+
+struct ThisProperty{T} <: ContextualExpr{T}
+    prop::Symbol
+end
+ThisProperty(prop::Symbol) = let idx = findfirst(field => field.name == prop, _context.thisfields)
+    if idx isa Int
+        ThisProperty{_context.thisfields[idx].type}(prop)
+    else
+        error("type $(_context.structname) has no field $prop.")
+    end
+end
+
+Base.getproperty(::ThisPlaceholder, name::Symbol) = ThisProperty(name)
+
+struct Property{S, T} <: ContextualExpr{T}
+    obj::ContextualExpr{S}
+    prop::Symbol
+end
+Property(obj::ContextualExpr{S}, prop::Symbol) where {S} = Property{S, Base.fieldtype(S, prop)}(obj, prop)
+Base.getproperty(obj::ContextualExpr, name::Symbol) = Property(obj, name)
+
+struct FunctionCall{T} <: ContextualExpr{T}
+    func::Function
+    args::Vector{ContextualExpr}
+end
 
 macro construct(structdef::Expr)
     construct_impl(__module__, __source__, gensym("CustomConstruct"), structdef)
@@ -118,7 +191,7 @@ function getdefname(expr::Expr)
     end
 end
 
-hasthis(sym::Symbol) = sym == this
+hasthis(sym::Symbol) = sym == :this
 hasthis(sym::GlobalRef) = hasthis(sym.name)
 hasthis(ex::Expr) = any(hasthis, ex.args)
 hasthis(arr::AbstractArray) = any(hasthis, arr)
