@@ -84,14 +84,13 @@ using Test
     end
     @testset "collections" begin
         @testset "Array" begin
-            @test estimatesize(@Array(Int64)) == sizeof(Int64)
-            @test estimatesize(@Array(Int64, 10)) == 10*sizeof(Int64)
-            @test estimatesize(@Array(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
-            @test estimatesize(@Array(Int64, this.size)) == Interval(UInt(0), nothing)
-            @test deserialize(@Array(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
-            @test serialize(@Array(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
-            @test deserialize(@Array(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
-            @test serialize(@Array(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == [0x01, 0x04, 0x02, 0x05, 0x03, 0x06]
+            @test estimatesize(SizedArray(Int64)) == sizeof(Int64)
+            @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
+            @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
+            @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
+            @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+            @test deserialize(SizedArray(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
+            @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == [0x01, 0x04, 0x02, 0x05, 0x03, 0x06]
         end
         @testset "GreedyVector" begin
             @test estimatesize(GreedyVector(Int8)) == Interval(UInt(0), nothing)
@@ -109,11 +108,9 @@ using Test
             @test Constructs.constructtype(BigEndian(UInt)) == UInt
             @test Constructs.constructtype(Const(0x0102)) == UInt16
             @test Constructs.constructtype(Const(b"BMP")) == Vector{UInt8}
-            @test Constructs.constructtype(@Array(Int)) == Array{Int, 0}
-            @test Constructs.constructtype(@Array(Float64, 10)) == Array{Float64, 1}
-            @test Constructs.constructtype(@Array(BigEndian(UInt16), 5, 17)) == Array{UInt16, 2}
-            @test Constructs.constructtype(@Array(Char, this.size)) == Array{Char, 1}
-            @test Constructs.constructtype(@Array(LittleEndian(UInt128), this.width, this.height)) == Array{UInt128, 2}
+            @test Constructs.constructtype(SizedArray(Int)) == Array{Int, 0}
+            @test Constructs.constructtype(SizedArray(Float64, 10)) == Array{Float64, 1}
+            @test Constructs.constructtype(SizedArray(BigEndian(UInt16), 5, 17)) == Array{UInt16, 2}
         end
     end
     @testset "macro expand" begin # just check if there is any error raised during macro expanding
@@ -123,7 +120,7 @@ using Test
                 width::UInt32
                 height::UInt32
                 ::Padding(8)
-                pixel::@Array(UInt8, this.width, this.height)
+                pixel::SizedArray(UInt8, this.width, this.height)
             end
         end
         withname = quote
@@ -132,7 +129,7 @@ using Test
                 width::UInt32
                 height::UInt32
                 ::Padding(8)
-                pixel::@Array(UInt8, this.width, this.height)
+                pixel::SizedArray(UInt8, this.width, this.height)
             end
         end
         @testset "@construct" for ex in [structonly, withname]

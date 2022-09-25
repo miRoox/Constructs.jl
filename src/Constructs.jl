@@ -31,7 +31,7 @@ export
     BigEndian,
     IntEnum,
     Const,
-    @Array,
+    SizedArray,
     GreedyVector
 
 include("base.jl")

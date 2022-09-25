@@ -1,17 +1,3 @@
-
-"""
-    @Array(sub, size)
-
-Homogenous array of elements.
-"""
-macro Array(sub, size...)
-    if all(iscontextfree, size)
-        Expr(:call, GlobalRef(Constructs, :SizedArray), sub, size...)
-    else
-        Expr(:call, GlobalRef(Constructs, :ContextualArray), sub, map(x -> iscontextfree(x) ? x : Expr(:quote, x), size)...)
-    end
-end
-
 """
     BaseArray{T, N} <: Wrapper{T, Array{T, N}}
 
@@ -51,13 +37,3 @@ function serialize(array::SizedArray{T, TSubCon, N}, s::IO, obj::Array{T, N}; co
     bytecount
 end
 estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(array.subcon; contextkw...)
-
-struct ContextualArray{T, TSubCon<:Construct{T}, N} <: BaseArray{T, N}
-    subcon::TSubCon
-    size::NTuple{N, Any}
-end
-
-ContextualArray(subcon::Construct, size::Vararg{Any, N}) where {N} = ContextualArray(subcon, size)
-ContextualArray(type::Type, size::Vararg{Any, N}) where {N} = ContextualArray(Construct(type), size...)
-
-Construct(::Type{Array{T, N}}, size::Vararg{Integer, N}) where {T, N} = SizedArray(T, size...)
