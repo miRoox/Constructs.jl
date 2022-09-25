@@ -45,6 +45,5 @@ include("Endians.jl")
 include("IntEnum.jl")
 include("Const.jl")
 include("Array.jl")
-include("GreedyVector.jl")
 
 end
