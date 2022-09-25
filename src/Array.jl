@@ -32,7 +32,6 @@ end
 SizedArray(subcon::Construct, size::Vararg{Integer, N}) where {N} = SizedArray(subcon, convert(NTuple{N, UInt}, size))
 SizedArray(type::Type, size::Vararg{Integer, N}) where {N} = SizedArray(Construct(type), size...)
 
-subcon(wrapper::SizedArray) = wrapper.subcon
 function deserialize(array::SizedArray{T, TSubCon, N}, s::IO; contextkw...) where {T, TSubCon, N}
     result = Array{T}(undef, array.size)
     for i in eachindex(result)
@@ -60,7 +59,5 @@ end
 
 ContextualArray(subcon::Construct, size::Vararg{Any, N}) where {N} = ContextualArray(subcon, size)
 ContextualArray(type::Type, size::Vararg{Any, N}) where {N} = ContextualArray(Construct(type), size...)
-
-subcon(wrapper::ContextualArray) = wrapper.subcon
 
 Construct(::Type{Array{T, N}}, size::Vararg{Integer, N}) where {T, N} = SizedArray(T, size...)

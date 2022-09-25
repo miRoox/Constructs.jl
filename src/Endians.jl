@@ -12,7 +12,6 @@ end
 
 LittleEndian(::Type{T}) where {T<:mbntypes} = LittleEndian(Construct(T))
 
-subcon(wrapper::LittleEndian) = wrapper.subcon
 encode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = htol(obj)
 decode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = ltoh(obj)
 
@@ -27,6 +26,5 @@ end
 
 BigEndian(::Type{T}) where {T<:mbntypes} = BigEndian(Construct(T))
 
-subcon(wrapper::BigEndian) = wrapper.subcon
 encode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = hton(obj)
 decode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = ntoh(obj)

@@ -167,7 +167,7 @@ abstract type Wrapper{TSub, T} <: Construct{T} end
 
 Get sub-construct of `wrapper`.
 """
-function subcon end
+subcon(wrapper::Wrapper) = getproperty(wrapper, :subcon) # built-in sub-constructs always follow this convention
 
 """
     Adapter{TSub, T} <: Wrapper{TSub, T}

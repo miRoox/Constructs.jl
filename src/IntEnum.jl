@@ -11,7 +11,6 @@ IntEnum(subcon::Construct{T}, ::Type{E}) where {T<:Integer, E<:Base.Enum} = IntE
 IntEnum(::Type{T}, ::Type{E}) where {T<:Integer, E<:Base.Enum} = IntEnum(Construct(T), E)
 IntEnum(::Type{E}) where {T<:Integer, E<:Base.Enum{T}} = IntEnum(Construct(T), E)
 
-subcon(wrapper::IntEnum) = wrapper.subcon
 encode(::IntEnum{T, TSubCon, E}, obj::E; contextkw...) where {T, TSubCon, E} = convert(T, Integer(obj))
 decode(::IntEnum{T, TSubCon, E}, obj::T; contextkw...) where {T, TSubCon, EB, E<:Base.Enum{EB}} = E(convert(EB, obj))
 

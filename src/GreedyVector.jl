@@ -9,7 +9,6 @@ end
 
 GreedyVector(type::Type) = GreedyVector(Construct(type))
 
-subcon(wrapper::GreedyVector) = wrapper.subcon
 function deserialize(array::GreedyVector{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
     result = Vector{T}()
     fallback = 0
