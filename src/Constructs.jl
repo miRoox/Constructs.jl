@@ -8,6 +8,7 @@ using Intervals
 
 export
     @construct,
+    this,
     Construct,
     Wrapper,
     Adapter,

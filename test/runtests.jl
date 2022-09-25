@@ -123,8 +123,7 @@ using Test
                 width::UInt32
                 height::UInt32
                 ::Padding(8)
-                pixel::@Array(UInt8, (this.width, this.height))
-                rest
+                pixel::@Array(UInt8, this.width, this.height)
             end
         end
         withname = quote
@@ -133,8 +132,7 @@ using Test
                 width::UInt32
                 height::UInt32
                 ::Padding(8)
-                pixel::@Array(UInt8, (this.width, this.height))
-                rest
+                pixel::@Array(UInt8, this.width, this.height)
             end
         end
         @testset "@construct" for ex in [structonly, withname]

@@ -1,78 +1,9 @@
+"""
+    this
 
-struct ThisPlaceholder end
-
-const this = ThisPlaceholder()
-
-Base.show(io::IO, ::ThisPlaceholder) = print(io, :this)
-Base.show(io::IO, ::MIME"text/plain", ::ThisPlaceholder) = print(io, :this)
-
-mutable struct FullFieldInfo
-    name::Union{Symbol, Nothing}
-    rawtype::Any
-    line::Union{LineNumberNode, Missing}
-    type::DataType
-    construct::Construct
-end
-
-struct ParameterInfo
-    name::Symbol
-    rawtype::Any
-    type::DataType
-end
-
-mutable struct ConstructContext
-    structname::Any
-    thisfields::Vector{FullFieldInfo}
-    parameters::Vector{ParameterInfo}
-end
-
-const _lck = ReentrantLock()
-const _context = ConstructContext(nothing, FullFieldInfo[], ParameterInfo[])
-
-function withcontext(action::Function, structname)
-    lock(_lck)
-    _context.structname = structname
-    _context.thisfields = FullFieldInfo[]
-    _context.parameters = ParameterInfo[]
-    try
-        action(_context)
-    finally
-        _context.structname = nothing
-        _context.thisfields = FullFieldInfo[]
-        _context.parameters = ParameterInfo[]
-        unlock(_lck)
-    end
-end
-abstract type ContextualExpr{T} end
-
-struct InstantValue{T} <: ContextualExpr{T}
-    value::T
-end
-
-struct ThisProperty{T} <: ContextualExpr{T}
-    prop::Symbol
-end
-ThisProperty(prop::Symbol) = let idx = findfirst(field => field.name == prop, _context.thisfields)
-    if idx isa Int
-        ThisProperty{_context.thisfields[idx].type}(prop)
-    else
-        error("type $(_context.structname) has no field $prop.")
-    end
-end
-
-Base.getproperty(::ThisPlaceholder, name::Symbol) = ThisProperty(name)
-
-struct Property{S, T} <: ContextualExpr{T}
-    obj::ContextualExpr{S}
-    prop::Symbol
-end
-Property(obj::ContextualExpr{S}, prop::Symbol) where {S} = Property{S, Base.fieldtype(S, prop)}(obj, prop)
-Base.getproperty(obj::ContextualExpr, name::Symbol) = Property(obj, name)
-
-struct FunctionCall{T} <: ContextualExpr{T}
-    func::Function
-    args::Vector{ContextualExpr}
-end
+Placeholder to access properties of the current object in [`@construct`](@ref) context.
+"""
+const this = :this
 
 macro construct(structdef::Expr)
     construct_impl(__module__, __source__, gensym("CustomConstruct"), structdef)
@@ -82,21 +13,38 @@ macro construct(constructname::Symbol, structdef::Expr)
     construct_impl(__module__, __source__, constructname, structdef)
 end
 
-struct FieldInfo
+deducetype(f::Function, ts...) = Union{Base.return_types(f, Tuple{ts...})...}
+
+constructtype2(::Type{<:Construct{T}}) where {T} = T
+constructtype2(::Type{<:Type{T}}) where {T} = T
+
+mutable struct FieldInfo
     name::Union{Symbol, Nothing}
-    constype::Union{Construct, DataType}
+    rawtype::Any # raw expression for type
     line::Union{LineNumberNode, Missing}
+    tfunc::Function
+    constype::DataType
+    type::DataType
 end
 
-struct OtherFieldInfo
+gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eval(m, Expr(:(->),
+  this,
+  Expr(:block, skipmissing([line])..., rawtype)
+))
+
+FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, Any)
+
+struct OtherStructInfo
     expr::Any
     line::Union{LineNumberNode, Missing}
 end
 
-function construct_impl(mod::Module, source::LineNumberNode, constructname::Symbol, structdef::Expr)
+function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol, structdef::Expr)
     if structdef.head == :struct
-        fields = dumpfields(mod, structdef)
-        typedstructdef = replacestructdef(structdef, fields)
+        infos = dumpstructinfo(m, structdef)
+        fields = filter(info -> info isa FieldInfo, infos)
+        deducefieldtypes(fields)
+        typedstructdef = replacestructdef(structdef, infos)
         constructdef = generateconstructdef(constructname, getdefname(structdef))
         Expr(:block,
             source, typedstructdef,
@@ -106,58 +54,90 @@ function construct_impl(mod::Module, source::LineNumberNode, constructname::Symb
     end
 end
 
-function dumpfields(mod::Module, structdef::Expr)
+function dumpstructinfo(m::Module, structdef::Expr)
     @assert structdef.head == :struct
-    stfields = structdef.args[3].args
-    fields = Vector{Union{FieldInfo, OtherFieldInfo}}()
-    sizehint!(fields, length(stfields))
-    for i in eachindex(stfields)
-        field = stfields[i]
-        if field isa LineNumberNode
+    stnodes = structdef.args[3].args
+    infos = Vector{Union{FieldInfo, OtherStructInfo}}()
+    sizehint!(infos, length(stnodes))
+    for i in eachindex(stnodes)
+        node = stnodes[i]
+        if node isa LineNumberNode
             continue
         else
-            line = stfields[i-1] isa LineNumberNode ? stfields[i-1] : missing
-            if field isa Symbol
-                push!(fields, FieldInfo(field, Any, line))
-            elseif field isa Expr && field.head == :(::)
-                constype = Core.eval(mod, field.args[end])
-                if length(field.args) == 2 # x::Int
-                    push!(fields, FieldInfo(field.args[1], constype, line))
-                elseif length(field.args) == 1 # ::Padding(4)
-                    push!(fields, FieldInfo(nothing, constype, line))
+            line = stnodes[i-1] isa LineNumberNode ? stnodes[i-1] : missing
+            if node isa Symbol
+                error("invalid syntax: please specify a type/construct for $(node).")
+            elseif node isa Expr && node.head == :(::)
+                rawtype = node.args[end]
+                if length(node.args) == 2 # x::Int
+                    push!(infos, FieldInfo(m ,node.args[1], rawtype, line))
+                elseif length(node.args) == 1 # ::Padding(4)
+                    push!(infos, FieldInfo(m, nothing, rawtype, line))
                 else
-                    push!(fields, OtherFieldInfo(field, line))
+                    push!(infos, OtherStructInfo(node, line))
                 end
             else
-                push!(fields, OtherFieldInfo(field, line))
+                push!(infos, OtherStructInfo(node, line))
             end
         end
-    end 
+    end
+    infos
+end
+
+const max_deduction_iteration = 100
+
+function deducefieldtypes(fields::Vector{>:FieldInfo})
+    namedfields = filter(field -> field.name isa Symbol, fields)
+    lasttypes = map(field -> (field.constype, field.type), fields)
+    for i in 1:max_deduction_iteration
+        if i == max_deduction_iteration
+            error("Reach max iteration $max_deduction_iteration when trying to deduce field types.")
+        end
+        for field in fields
+            if !isabstracttype(field.type)
+                continue
+            end
+            thistype = NamedTuple{tuple(map(field -> field.name, namedfields)...), Tuple{map(field -> field.type, namedfields)...}}
+            fieldconstype = deducetype(field.tfunc, thistype)
+            if fieldconstype isa DataType
+                field.constype = fieldconstype
+                if hasmethod(constructtype2, Tuple{Type{field.constype}})
+                    field.type = constructtype2(field.constype)
+                end
+            end
+        end
+        currenttypes = map(field -> (field.constype, field.type), fields)
+        if currenttypes == lasttypes
+            break # fix point
+        else
+            lasttypes = currenttypes
+        end
+    end
     fields
 end
 
-function replacestructdef(structdef::Expr, fields::Vector{Union{FieldInfo, OtherFieldInfo}})
+function replacestructdef(structdef::Expr, infos::Vector{Union{FieldInfo, OtherStructInfo}})
     @assert structdef.head == :struct
-    stfields = Vector()
-    sizehint!(stfields, length(structdef.args[3].args))
-    for field in fields
-        if field isa FieldInfo
-            if isnothing(field.name) # omit field without name
+    stnodes = Vector()
+    sizehint!(stnodes, length(structdef.args[3].args))
+    for info in infos
+        if info isa FieldInfo
+            if isnothing(info.name) # omit field without name
                 continue
             else
-                if !ismissing(field.line)
-                    push!(stfields, field.line)
+                if !ismissing(info.line)
+                    push!(stnodes, info.line)
                 end
-                push!(stfields, Expr(:(::), field.name, constructtype(field.constype)))
+                push!(stnodes, Expr(:(::), info.name, info.type))
             end
         else
-            if !ismissing(field.line)
-                push!(stfields, field.line)
+            if !ismissing(info.line)
+                push!(stnodes, info.line)
             end
-            push!(stfields, field.expr)
+            push!(stnodes, info.expr)
         end
     end
-    Expr(:struct, structdef.args[1], structdef.args[2], Expr(:block, stfields...))
+    Expr(:struct, structdef.args[1], structdef.args[2], Expr(:block, stnodes...))
 end
 
 function generateconstructdef(constructname::Symbol, structname)
