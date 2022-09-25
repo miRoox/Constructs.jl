@@ -170,12 +170,3 @@ function getdefname(expr::Expr)
         error("syntax error: invalid definition $expr.")
     end
 end
-
-hasthis(sym::Symbol) = sym == :this
-hasthis(sym::GlobalRef) = hasthis(sym.name)
-hasthis(ex::Expr) = any(hasthis, ex.args)
-hasthis(arr::AbstractArray) = any(hasthis, arr)
-hasthis(tuple::Tuple) = any(hasthis, tuple)
-hasthis(_) = false
-
-iscontextfree(ex) = !hasthis(ex)

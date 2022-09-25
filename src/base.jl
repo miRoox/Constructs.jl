@@ -42,9 +42,6 @@ Get default construct for type.
 """
 Construct(cons::Construct) = cons
 
-constructtype(::Construct{T}) where {T} = T
-constructtype(type::Type) = type
-
 """
     deserialize(cons::Construct, s::IO; contextkw...)
 

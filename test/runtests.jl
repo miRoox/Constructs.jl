@@ -102,20 +102,22 @@ using Test
     end
     @testset "internal" begin
         @testset "construct type" begin
-            @test Constructs.constructtype(Int32) == Int32
-            @test Constructs.constructtype(JuliaSerializer()) == Any
-            @test Constructs.constructtype(Padding(4)) == Nothing
-            @test Constructs.constructtype(BigEndian(UInt)) == UInt
-            @test Constructs.constructtype(Const(0x0102)) == UInt16
-            @test Constructs.constructtype(Const(b"BMP")) == Vector{UInt8}
-            @test Constructs.constructtype(SizedArray(Int)) == Array{Int, 0}
-            @test Constructs.constructtype(SizedArray(Float64, 10)) == Array{Float64, 1}
-            @test Constructs.constructtype(SizedArray(BigEndian(UInt16), 5, 17)) == Array{UInt16, 2}
+            @test Constructs.constructtype2(Type{Int32}) == Int32
+            @test Constructs.constructtype2(JuliaSerializer) == Any
+            @test Constructs.constructtype2(Padding) == Nothing
+            @test Constructs.constructtype2(typeof(BigEndian(UInt))) == UInt
+            @test Constructs.constructtype2(typeof(Const(0x0102))) == UInt16
+            @test Constructs.constructtype2(typeof(Const(b"BMP"))) == Vector{UInt8}
+            @test Constructs.constructtype2(typeof(SizedArray(Int))) == Array{Int, 0}
+            @test Constructs.constructtype2(typeof(SizedArray(Float64, 10))) == Array{Float64, 1}
+            @test Constructs.constructtype2(typeof(SizedArray(BigEndian(UInt16), 5, 17))) == Array{UInt16, 2}
+            @test Constructs.constructtype2(typeof(GreedyVector(Int))) == Vector{Int}
         end
     end
     @testset "macro expand" begin # just check if there is any error raised during macro expanding
+        abstract type AbstractImage end
         structonly = quote
-            @construct struct Bitmap
+            @construct struct Bitmap <: AbstractImage
                 signature::Const(b"BMP")
                 width::UInt32
                 height::UInt32
@@ -124,7 +126,7 @@ using Test
             end
         end
         withname = quote
-            @construct BitmapConstruct struct Bitmap
+            @construct BitmapConstruct struct Bitmap <: AbstractImage
                 signature::Const(b"BMP")
                 width::UInt32
                 height::UInt32
