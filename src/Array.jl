@@ -51,15 +51,23 @@ GreedyVector(type::Type) = GreedyVector(Construct(type))
 
 function deserialize(array::GreedyVector{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}
     result = Vector{T}()
+    max_iter = convert(UInt, get(contextkw, :max_iter, default_max_iter))
     fallback = 0
+    i = zero(max_iter)
     try
         while !eof(s)
             fallback = position(s)
             push!(result, deserialize(array.subcon, s; contextkw...))
+            i += 1
+            if i > max_iter
+                throw(ExceedMaxIterations("Exceed max iterations $max_iter", max_iter))
+            end
         end
-    catch
+    catch e
         seek(s, fallback)
-        # rethrow()
+        if e isa ExceedMaxIterations
+            rethrow()
+        end
     end
     result
 end

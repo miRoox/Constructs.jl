@@ -98,6 +98,8 @@ using Test
             @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
             @test deserialize(GreedyVector(BigEndian(UInt16)), [0x01, 0xff, 0x02, 0xab, 0xcc]) == [0x01ff, 0x02ab]
             @test serialize(GreedyVector(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
+            @test_throws ExceedMaxIterations deserialize(GreedyVector(Nothing), [0x00])
+            @test_throws ExceedMaxIterations deserialize(GreedyVector(Int8), Vector{UInt8}(1:10); max_iter=9)
         end
     end
     @testset "internal" begin

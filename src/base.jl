@@ -23,6 +23,20 @@ struct ValidationError <: Exception
 end
 
 """
+ExceedMaxIterations(msg)
+
+Error thrown when exceed the max iterations.
+"""
+struct ExceedMaxIterations <: Exception
+    msg::String
+    max_iter::UInt
+end
+
+const default_max_iter = UInt(0xffff)
+
+ExceedMaxIterations(msg::String) = ExceedMaxIterations(msg, default_max_iter)
+
+"""
     Construct{T}
 
 Construct is used for serializing and deserializing objects.

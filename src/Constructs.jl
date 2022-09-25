@@ -16,6 +16,7 @@ export
     Validator,
     ValidationOK,
     ValidationError,
+    ExceedMaxIterations,
     deserialize,
     serialize,
     estimatesize,
