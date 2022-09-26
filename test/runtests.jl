@@ -83,10 +83,12 @@ using Test
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "collections" begin
-        @testset "Array" begin
+        @testset "SizedArray" begin
             @test estimatesize(SizedArray(Int64)) == sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
+            @test deserialize(SizedArray(Int8), [0x02])[] == 2
+            @test serialize(SizedArray(Int8), ones(Int8)) == [0x01]
             @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
             @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
             @test deserialize(SizedArray(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
