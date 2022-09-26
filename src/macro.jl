@@ -28,8 +28,8 @@ mutable struct FieldInfo
     rawtype::Any # raw expression for type
     line::Union{LineNumberNode, Missing}
     tfunc::Function
-    constype::DataType
-    type::DataType
+    constype::Type
+    type::Type
 end
 
 gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eval(m, Expr(:(->),
@@ -104,11 +104,13 @@ function deducefieldtypes(fields::Vector{>:FieldInfo})
             end
             thistype = NamedTuple{tuple(map(field -> field.name, namedfields)...), Tuple{map(field -> field.type, namedfields)...}}
             fieldconstype = deducetype(field.tfunc, thistype)
-            if fieldconstype isa DataType
+            if fieldconstype !== Union{}
                 field.constype = fieldconstype
                 if hasmethod(constructtype2, Tuple{Type{field.constype}})
                     field.type = constructtype2(field.constype)
                 end
+            else
+                error("Cannot deduce type for $(field.rawtype).")
             end
         end
         currenttypes = map(field -> (field.constype, field.type), fields)
