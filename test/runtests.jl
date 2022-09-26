@@ -116,7 +116,7 @@ using Test
             @test Constructs.constructtype2(typeof(GreedyVector(Int))) == Vector{Int}
         end
     end
-    @testset "macro expand" begin # just check if there is any error raised during macro expanding
+    @testset "@construct macro expand" begin # just check macro expanding
         abstract type AbstractImage end
         structonly = quote
             @construct struct Bitmap <: AbstractImage
@@ -136,8 +136,31 @@ using Test
                 pixel::SizedArray(UInt8, this.width, this.height)
             end
         end
-        @testset "@construct" for ex in [structonly, withname]
+        @testset "expand pass" for ex in [structonly, withname]
             @inferred Expr macroexpand(@__MODULE__, ex)
+        end
+        notstruct = quote
+            @construct abstract type Bitmap <: AbstractImage end
+        end
+        missingtype = quote
+            @construct struct Bitmap <: AbstractImage
+                signature::Const(b"BMP")
+                width::UInt32
+                height::UInt32
+                rest
+            end
+        end
+        deducefailed = quote
+            @construct struct Bitmap <: AbstractImage
+                signature::Const(b"BMP")
+                width::UInt32
+                height::UInt32
+                ::Padding(8)
+                pixel::SizedArray(UInt8, (this.width, this.height))
+            end
+        end
+        @testset "expand error" for ex in [notstruct, missingtype, deducefailed]
+            @test_throws LoadError macroexpand(@__MODULE__, ex)
         end
     end
 end
