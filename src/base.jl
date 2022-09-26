@@ -23,7 +23,7 @@ struct ValidationError <: Exception
 end
 
 """
-ExceedMaxIterations(msg)
+    ExceedMaxIterations(msg)
 
 Error thrown when exceed the max iterations.
 """
