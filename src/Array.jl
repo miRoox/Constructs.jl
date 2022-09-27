@@ -1,31 +1,39 @@
 """
-    BaseArray{T, N} <: Wrapper{T, Array{T, N}}
+    BaseArray{T, N, TA<:AbstractArray{T,N}} <: Wrapper{T, TA}
 
 Abstract base type for Array wrapper.
 """
-abstract type BaseArray{T, N} <: Wrapper{T, Array{T, N}} end
+abstract type BaseArray{T, N, TA<:AbstractArray{T,N}} <: Wrapper{T, TA} end
+
+deduceArrayType(::Type{TA}, ::Type{T}, N::Integer) where {T, TA<:AbstractArray} = deducetype(Base.similar, TA, Type{T}, Dims{N})
 
 """
-    SizedArray{T, TSubCon<:Construct{T}, N} <: Wrapper{T, Array{T, N}}
+    SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: BaseArray{T, N, TA}
 
 Homogenous array of elements.
 """
-struct SizedArray{T, TSubCon<:Construct{T}, N} <: BaseArray{T, N}
+struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: BaseArray{T, N, TA}
     subcon::TSubCon
     size::NTuple{N, UInt}
 end
 
-SizedArray(subcon::Construct, size::Vararg{Integer, N}) where {N} = SizedArray(subcon, convert(NTuple{N, UInt}, size))
-SizedArray(type::Type, size::Vararg{Integer, N}) where {N} = SizedArray(Construct(type), size...)
+function SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
+    CTA = deduceArrayType(TA, T, N)
+    SizedArray{T, N, CTA::Type{<:TA}, TSubCon}(subcon, convert(NTuple{N, UInt}, size))
+end
+SizedArray(::Type{TA}, ::Type{T}, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray} = SizedArray(TA, Construct(T), size...)
 
-function deserialize(array::SizedArray{T, TSubCon, N}, s::IO; contextkw...) where {T, TSubCon, N}
-    result = Array{T}(undef, array.size)
+SizedArray(subcon::Construct{T}, size::Vararg{Integer, N}) where {T, N} = SizedArray(Array{T, N}, subcon, size...)
+SizedArray(::Type{T}, size::Vararg{Integer, N}) where {T, N} = SizedArray(Array{T, N}, Construct(T), size...)
+
+function deserialize(array::SizedArray{T, N, TA, TSubCon}, s::IO; contextkw...) where {T, N, TA, TSubCon}
+    result = similar(TA, array.size)
     for i in eachindex(result)
         result[i] = deserialize(array.subcon, s; contextkw...)
     end
     result
 end
-function serialize(array::SizedArray{T, TSubCon, N}, s::IO, obj::Array{T, N}; contextkw...) where {T, TSubCon, N}
+function serialize(array::SizedArray{T, N, TA, TSubCon}, s::IO, obj::TA; contextkw...) where {T, N, TA, TSubCon}
     actualsize = size(obj)
     if actualsize != array.size
         throw(ValidationError("expected $(array.size) elements, found $actualsize."))
@@ -39,11 +47,11 @@ end
 estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(array.subcon; contextkw...)
 
 """
-    GreedyVector{T, TSubCon<:Construct{T}} <: BaseArray{T, 1}
+    GreedyVector{T, TSubCon<:Construct{T}} <: BaseArray{T, 1, Vector{T}}
 
 Homogenous array of elements for unknown count of elements by parsing until end of stream.
 """
-struct GreedyVector{T, TSubCon<:Construct{T}} <: BaseArray{T, 1}
+struct GreedyVector{T, TSubCon<:Construct{T}} <: BaseArray{T, 1, Vector{T}}
     subcon::TSubCon
 end
 

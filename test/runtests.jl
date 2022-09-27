@@ -84,9 +84,13 @@ using Test
     end
     @testset "collections" begin
         @testset "SizedArray" begin
+            @test_throws TypeError SizedArray(BitArray, Int, 2, 3, 5) # element type mismatch
+            @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized
+            @test_throws TypeError SizedArray(typeof(view([1],1)), Int, 1) # indirect array cannot be deserialized
             @test estimatesize(SizedArray(Int64)) == sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
+            @test estimatesize(SizedArray(BitArray, Bool, 2, 3, 5)) == 2*3*5*sizeof(Bool)
             @test deserialize(SizedArray(Int8), [0x02])[] == 2
             @test serialize(SizedArray(Int8), ones(Int8)) == [0x01]
             @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
