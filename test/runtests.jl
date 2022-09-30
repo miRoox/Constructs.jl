@@ -109,17 +109,21 @@ using Test
         end
     end
     @testset "internal" begin
-        @testset "construct type" begin
-            @test Constructs.constructtype2(Type{Int32}) == Int32
-            @test Constructs.constructtype2(JuliaSerializer) == Any
-            @test Constructs.constructtype2(Padding) == Nothing
-            @test Constructs.constructtype2(typeof(BigEndian(UInt))) == UInt
-            @test Constructs.constructtype2(typeof(Const(0x0102))) == UInt16
-            @test Constructs.constructtype2(typeof(Const(b"BMP"))) == Vector{UInt8}
-            @test Constructs.constructtype2(typeof(SizedArray(Int))) == Array{Int, 0}
-            @test Constructs.constructtype2(typeof(SizedArray(Float64, 10))) == Array{Float64, 1}
-            @test Constructs.constructtype2(typeof(SizedArray(BigEndian(UInt16), 5, 17))) == Array{UInt16, 2}
-            @test Constructs.constructtype2(typeof(GreedyVector(Int))) == Vector{Int}
+        constructypecases = Tuple{Union{Type, Construct}, Type}[
+            (Int32, Int32),
+            (JuliaSerializer(), Any),
+            (Padding(), Nothing),
+            (BigEndian(UInt), UInt),
+            (Const(0x0102), UInt16),
+            (Const(b"BMP"), Vector{UInt8}),
+            (SizedArray(Int), Array{Int, 0}),
+            (SizedArray(Float64, 10), Array{Float64, 1}),
+            (SizedArray(BigEndian(UInt16), 5, 17), Array{UInt16, 2}),
+            (GreedyVector(Int), Vector{Int})
+        ]
+        @testset "construct type" for (cons, type) in constructypecases
+            @test Constructs.constructtype(cons) == type
+            @test Constructs.constructtype2(cons isa Type ? Type{cons} : typeof(cons)) == type
         end
     end
     @testset "@construct macro expand" begin # just check macro expanding
