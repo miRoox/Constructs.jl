@@ -3,6 +3,12 @@ using Intervals
 using Test
 
 @testset "Constructs.jl" begin
+    @testset "container" begin
+        @test_throws ArgumentError Container(1)
+        @test Container(im).im
+        @test_throws ErrorException Container(im).im = false
+        @test propertynames(Container(1//2)) == propertynames(1//2)
+    end
     @testset "primitive io" begin
         @testset "primitive type $type" for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)
             @test estimatesize(type) == sizeof(type)

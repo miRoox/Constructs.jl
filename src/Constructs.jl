@@ -17,6 +17,7 @@ export
     ValidationOK,
     ValidationError,
     ExceedMaxIterations,
+    Container,
     deserialize,
     serialize,
     estimatesize,
@@ -36,6 +37,7 @@ export
     GreedyVector
 
 include("base.jl")
+include("container.jl")
 include("macro.jl")
 
 include("PrimitiveIO.jl")
