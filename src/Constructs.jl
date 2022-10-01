@@ -18,6 +18,7 @@ export
     ValidationOK,
     ValidationError,
     ExceedMaxIterations,
+    PaddedError,
     Container,
     deserialize,
     serialize,
@@ -29,7 +30,7 @@ export
     PrimitiveIO,
     Singleton,
     JuliaSerializer,
-    Padding,
+    Padded,
     LittleEndian,
     BigEndian,
     IntEnum,
@@ -45,7 +46,7 @@ include("macro.jl")
 include("PrimitiveIO.jl")
 include("Singleton.jl")
 include("JuliaSerializer.jl")
-include("Padding.jl")
+include("Padded.jl")
 include("Endians.jl")
 include("IntEnum.jl")
 include("Const.jl")

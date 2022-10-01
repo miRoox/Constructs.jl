@@ -115,6 +115,16 @@ using Test
             @test_throws ExceedMaxIterations deserialize(GreedyVector(Int8), Vector{UInt8}(1:10); max_iter=9)
         end
     end
+    @testset "padded" begin
+        @test estimatesize(Padded(5)) == 5
+        @test estimatesize(Padded(Int16, 5)) == 5
+        @test deserialize(Padded(Int8, 2), [0x01, 0xff]) == Int8(1)
+        @test serialize(Padded(Int8, 2), Int8(1)) == [0x01, 0x00]
+        @test_throws PaddedError deserialize(Padded(Int32, 3), [0x01, 0x02, 0x03, 0x04])
+        @test_throws PaddedError serialize(Padded(Int32, 3), Int32(1))
+        @test deserialize(Padded(2), [0x01, 0xff]) === nothing
+        @test serialize(Padded(2), nothing) == [0x00, 0x00]
+    end
     @testset "internal" begin
         @testset "deduce type" begin
             @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
@@ -125,7 +135,7 @@ using Test
         constructypecases = Tuple{Union{Type, Construct}, Type}[
             (Int32, Int32),
             (JuliaSerializer(), Any),
-            (Padding(), Nothing),
+            (Padded(4), Nothing),
             (BigEndian(UInt), UInt),
             (Const(0x0102), UInt16),
             (Const(b"BMP"), Vector{UInt8}),
@@ -146,7 +156,7 @@ using Test
                 signature::Const(b"BMP")
                 width::UInt32
                 height::UInt32
-                ::Padding(8)
+                ::Padded(8)
                 pixel::SizedArray(UInt8, this.width, this.height)
             end
         end
@@ -155,7 +165,7 @@ using Test
                 signature::Const(b"BMP")
                 width::UInt32
                 height::UInt32
-                ::Padding(8)
+                ::Padded(8)
                 pixel::SizedArray(UInt8, this.width, this.height)
             end
         end
@@ -178,7 +188,7 @@ using Test
                 signature::Const(b"BMP")
                 width::UInt32
                 height::UInt32
-                ::Padding(8)
+                ::Padded(8)
                 pixel::SizedArray(UInt8, (this.width, this.height))
             end
         end

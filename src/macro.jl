@@ -76,7 +76,7 @@ function dumpstructinfo(m::Module, structdef::Expr)
                 rawtype = node.args[end]
                 if length(node.args) == 2 # x::Int
                     push!(infos, FieldInfo(m ,node.args[1], rawtype, line))
-                elseif length(node.args) == 1 # ::Padding(4)
+                elseif length(node.args) == 1 # ::Padded(4)
                     push!(infos, FieldInfo(m, nothing, rawtype, line))
                 else
                     push!(infos, OtherStructInfo(node, line))

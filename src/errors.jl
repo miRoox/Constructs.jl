@@ -42,3 +42,12 @@ struct ExceedMaxIterations <: ConstructError
 
     ExceedMaxIterations(msg::String, max_iter::UInt = default_max_iter) = new(msg, max_iter)
 end
+
+"""
+    PaddedError(msg)
+
+Error thrown when the encoded string or bytes takes more bytes than padding allows, or the pad value is improper.
+"""
+struct PaddedError <: ConstructError
+    msg::String
+end
