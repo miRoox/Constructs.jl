@@ -15,11 +15,21 @@ Homogenous array of elements.
 struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: BaseArray{T, N, TA}
     subcon::TSubCon
     size::NTuple{N, UInt}
+
+    function SizedArray{T, N, TA, TSubCon}(subcon::TSubCon, size::NTuple{N, UInt}) where {T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}}
+        CTA = deduceArrayType(TA, T, N)
+        CTA::Type{TA}
+        new{T, N, TA, TSubCon}(subcon, size)
+    end
 end
 
+# pass deduced array type is not friendly to type deduction
+# function createSizedArray(TA::UnionAll, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TSubCon<:Construct{T}}
+#     CTA = deduceArrayType(TA::Type{<:AbstractArray}, T, N)
+#     SizedArray(CTA::Type{<:TA}, subcon, convert(NTuple{N, UInt}, size))
+# end
 function SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
-    CTA = deduceArrayType(TA, T, N)
-    SizedArray{T, N, CTA::Type{<:TA}, TSubCon}(subcon, convert(NTuple{N, UInt}, size))
+    SizedArray{T, N, TA, TSubCon}(subcon, convert(NTuple{N, UInt}, size))
 end
 SizedArray(::Type{TA}, ::Type{T}, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray} = SizedArray(TA, Construct(T), size...)
 

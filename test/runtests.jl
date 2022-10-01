@@ -84,13 +84,13 @@ using Test
     end
     @testset "collections" begin
         @testset "SizedArray" begin
-            @test_throws TypeError SizedArray(BitArray, Int, 2, 3, 5) # element type mismatch
+            @test_throws TypeError SizedArray(BitArray{3}, Int, 2, 3, 5) # element type mismatch
             @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized
             @test_throws TypeError SizedArray(typeof(view([1],1)), Int, 1) # indirect array cannot be deserialized
             @test estimatesize(SizedArray(Int64)) == sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
-            @test estimatesize(SizedArray(BitArray, Bool, 2, 3, 5)) == 2*3*5*sizeof(Bool)
+            @test estimatesize(SizedArray(BitArray{3}, Bool, 2, 3, 5)) == 2*3*5*sizeof(Bool)
             @test deserialize(SizedArray(Int8), [0x02])[] == 2
             @test serialize(SizedArray(Int8), ones(Int8)) == [0x01]
             @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
@@ -109,6 +109,12 @@ using Test
         end
     end
     @testset "internal" begin
+        @testset "deduce type" begin
+            @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
+            @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
+            @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
+            @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
+        end
         constructypecases = Tuple{Union{Type, Construct}, Type}[
             (Int32, Int32),
             (JuliaSerializer(), Any),
