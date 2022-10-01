@@ -46,7 +46,7 @@ end
 function serialize(array::SizedArray{T, N, TA, TSubCon}, s::IO, obj::TA; contextkw...) where {T, N, TA, TSubCon}
     actualsize = size(obj)
     if actualsize != array.size
-        throw(ValidationError("expected $(array.size) elements, found $actualsize."))
+        throw(DimensionMismatch("expected $(array.size) elements, found $actualsize."))
     end
     bytecount = 0
     for i in eachindex(obj)

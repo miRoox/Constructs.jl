@@ -101,6 +101,7 @@ using Test
             @test serialize(SizedArray(Int8), ones(Int8)) == [0x01]
             @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
             @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+            @test_throws DimensionMismatch serialize(SizedArray(Int8, 3), Int8[1, -1])
             @test deserialize(SizedArray(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
             @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == [0x01, 0x04, 0x02, 0x05, 0x03, 0x06]
         end
