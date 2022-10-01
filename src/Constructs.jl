@@ -14,6 +14,7 @@ export
     Adapter,
     SymmetricAdapter,
     Validator,
+    ConstructError,
     ValidationOK,
     ValidationError,
     ExceedMaxIterations,
@@ -36,6 +37,7 @@ export
     SizedArray,
     GreedyVector
 
+include("errors.jl")
 include("base.jl")
 include("container.jl")
 include("macro.jl")

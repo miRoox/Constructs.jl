@@ -1,42 +1,5 @@
 
 """
-    ValidationOk
-
-Placeholder type if there is no validatiion error.
-"""
-struct ValidationOk end
-
-"""
-    ValidationOK
-
-Placeholder if there is no validatiion error.
-"""
-const ValidationOK = ValidationOk()
-
-"""
-    ValidationError(msg)
-
-Error thrown when the validatiion failed.
-"""
-struct ValidationError <: Exception
-    msg::String
-end
-
-"""
-    ExceedMaxIterations(msg)
-
-Error thrown when exceed the max iterations.
-"""
-struct ExceedMaxIterations <: Exception
-    msg::String
-    max_iter::UInt
-end
-
-const default_max_iter = UInt(0xffff)
-
-ExceedMaxIterations(msg::String) = ExceedMaxIterations(msg, default_max_iter)
-
-"""
     Construct{T}
 
 Construct is used for serializing and deserializing objects.
