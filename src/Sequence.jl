@@ -38,31 +38,39 @@ estimatesize(::Sequence_0; contextkw...) = 0
 # estimatesize(seq::Sequence_1; contextkw...) = estimatesize(seq.subcon1; contextkw...)
 
 for n in 1:sequence_max_subcons
+    ## temporary expressions/symbols should be excluded from the code coverage.
+    # COV_EXCL_START
     seqname = Symbol("Sequence_$n")
     ts = map(i -> gensym("T$i"), 1:n)
     tsubs = map(i -> gensym("TSubCon$i"), 1:n)
     ttsubs = map((t, tsub)-> Expr(:(<:), tsub, Expr(:curly, Construct, t)), ts, tsubs) # TSubCon$i <: Construct{T$i}
     subs = map(i -> Symbol("subcon$i"), 1:n)
     subts = map((sub, tsub) -> Expr(:(::), sub, tsub), subs, tsubs) # subcon$i::TSubCon$i
-    @eval struct $seqname{$(ts...), $(ttsubs...)} <: Sequence{Tuple{$(ts...)}}
-        $(subts...)
-    end
     cts = map(i -> Symbol("t$i"), 1:n)
     pcts = map(ct -> Expr(:(::), ct, :(Union{Type, Construct})), cts) # t$i::Union{Type, Construct}
     ccts = map(ct -> Expr(:call, :Construct, ct), cts) # Construct(t$i)
-    @eval $seqname($(pcts...)) = $seqname($(ccts...))
-    @eval Sequence($(pcts...)) = $seqname($(cts...))
-    @eval Construct(::Type{Tuple{$(ts...)}}) where {$(ts...)} = $seqname($(ts...))
     desers = map((sub) -> :(deserialize(seq.$sub, s; contextkw...)), subs)
-    @eval function deserialize(seq::$seqname, s::IO; contextkw...)
-        tuple($(desers...))
-    end
     sers = map((sub, i) -> :(serialize(seq.$sub, s, val[$i]; contextkw...)), subs, 1:n)
-    @eval function serialize(seq::$seqname{$(ts...)}, s::IO, val::Tuple{$(ts...)}; contextkw...) where {$(ts...)}
-        +($(sers...))
-    end
     szs = map((sub) -> :(estimatesize(seq.$sub; contextkw...)), subs)
-    @eval estimatesize(seq::$seqname; contextkw...) = +($(szs...))
+    # COV_EXCL_STOP
+
+    @eval begin
+        struct $seqname{$(ts...), $(ttsubs...)} <: Sequence{Tuple{$(ts...)}}
+            $(subts...)
+        end
+
+        $seqname($(pcts...)) = $seqname($(ccts...))
+        Sequence($(pcts...)) = $seqname($(cts...))
+        Construct(::Type{Tuple{$(ts...)}}) where {$(ts...)} = $seqname($(ts...))
+
+        function deserialize(seq::$seqname, s::IO; contextkw...)
+            tuple($(desers...))
+        end
+        function serialize(seq::$seqname{$(ts...)}, s::IO, val::Tuple{$(ts...)}; contextkw...) where {$(ts...)}
+            +($(sers...))
+        end
+        estimatesize(seq::$seqname; contextkw...) = +($(szs...))
+    end
 end
 
 ## Following implementation is simple but not friendly for type deducing
