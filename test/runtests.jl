@@ -89,6 +89,21 @@ using Test
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "collections" begin
+        @testset "Sequence" begin
+            @test Construct(Tuple{}) == Sequence()
+            @test Construct(Tuple{Int}) == Sequence(Int)
+            @test Construct(Tuple{Int, Float16}) == Sequence(Int, Float16)
+            @test Sequence(Int)[] == Construct(Int)
+            @test Sequence(Int, Float16)[2] == Construct(Float16)
+            @test Sequence(Int, Padded(Float16, 6))[2] == Padded(Float16, 6)
+            @test estimatesize(Sequence()) == 0
+            @test deserialize(Sequence(), UInt8[]) === ()
+            @test serialize(()) == UInt8[]
+            @test estimatesize(Sequence(Int, Float16)) == estimatesize(Int) + estimatesize(Float16)
+            @test estimatesize(Sequence(Int, Padded(Float16, 6))) == estimatesize(Int) + estimatesize(Padded(Float16, 6))
+            @test deserialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), [0x01, 0xff, 0x01, 0x02]) == (Int8(1), 0x0102)
+            @test serialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), (Int8(1), 0x0102)) == [0x01, 0x00, 0x01, 0x02]
+        end
         @testset "SizedArray" begin
             @test_throws TypeError SizedArray(BitArray{3}, Int, 2, 3, 5) # element type mismatch
             @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized
@@ -127,6 +142,9 @@ using Test
     end
     @testset "internal" begin
         @testset "deduce type" begin
+            @test Constructs.deducetype(() -> Sequence()) <: Sequence{Tuple{}}
+            @test Constructs.deducetype(t -> Sequence(t), Type{Int}) <: Sequence{Tuple{Int}}
+            @test Constructs.deducetype((t1, t2) -> Sequence(t1, t2), Type{Int}, PrimitiveIO{Float64}) <: Sequence{Tuple{Int, Float64}}
             @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
             @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
             @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
@@ -139,6 +157,9 @@ using Test
             (BigEndian(UInt), UInt),
             (Const(0x0102), UInt16),
             (Const(b"BMP"), Vector{UInt8}),
+            (Sequence(), Tuple{}),
+            (Sequence(Float64), Tuple{Float64}),
+            (Sequence(Float64, BigEndian(UInt)), Tuple{Float64, UInt}),
             (SizedArray(Int), Array{Int, 0}),
             (SizedArray(Float64, 10), Array{Float64, 1}),
             (SizedArray(BigEndian(UInt16), 5, 17), Array{UInt16, 2}),
