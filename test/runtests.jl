@@ -35,12 +35,12 @@ using Test
     end
     @testset "byte order" begin
         be = (
-            (0x0102, [0x01, 0x02]),
-            (0x01020304, [0x01, 0x02, 0x03, 0x04]),
-            (0x0102030405060708, [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]),
-            (Int32(-2140118960), [0x80, 0x70, 0x60, 0x50]),
-            (Inf16, [0x7c, 0x00]),
-            (Float32(-1.1), [0xbf, 0x8c, 0xcc, 0xcd]),
+            (0x0102, b"\x01\x02"),
+            (0x01020304, b"\x01\x02\x03\x04"),
+            (0x0102030405060708, b"\x01\x02\x03\x04\x05\x06\x07\x08"),
+            (Int32(-2140118960), b"\x80\x70\x60\x50"),
+            (Inf16, b"\x7c\x00"),
+            (Float32(-1.1), b"\xbf\x8c\xcc\xcd"),
             )
         @testset "little endian for $n" for (n, bs) in be
             type = typeof(n)
@@ -64,18 +64,18 @@ using Test
         end
         @testset "auto type" begin
             @test estimatesize(Fruit) == sizeof(Int8)
-            @test deserialize(Fruit, [0x01]) == banna
-            @test serialize(orange) == [0x02]
+            @test deserialize(Fruit, b"\x01") == banna
+            @test serialize(orange) == b"\x02"
         end
         @testset "override base type" begin
             @test estimatesize(IntEnum(UInt8, Fruit)) == sizeof(UInt8)
-            @test deserialize(IntEnum(UInt8, Fruit), [0x01]) == banna
-            @test serialize(IntEnum(UInt8, Fruit), orange) == [0x02]
+            @test deserialize(IntEnum(UInt8, Fruit), b"\x01") == banna
+            @test serialize(IntEnum(UInt8, Fruit), orange) == b"\x02"
         end
         @testset "override base type construct" begin
             @test estimatesize(IntEnum(BigEndian(UInt16), Fruit)) == sizeof(UInt16)
-            @test deserialize(IntEnum(BigEndian(UInt16), Fruit), [0x00, 0x01]) == banna
-            @test serialize(IntEnum(BigEndian(UInt16), Fruit), orange) == [0x00, 0x02]
+            @test deserialize(IntEnum(BigEndian(UInt16), Fruit), b"\x00\x01") == banna
+            @test serialize(IntEnum(BigEndian(UInt16), Fruit), orange) == b"\x00\x02"
         end
     end
     @testset "const" begin
@@ -83,9 +83,9 @@ using Test
         @test estimatesize(Const(b"BMP")) == sizeof(b"BMP")
         @test estimatesize(Const(Int32, 0x0102)) == sizeof(Int32)
         @test estimatesize(Const(BigEndian(Int32), 0x0102)) == sizeof(Int32)
-        @test deserialize(Const(BigEndian(UInt16), 0x0102), [0x01, 0x02]) == 0x0102
-        @test_throws ValidationError deserialize(Const(LittleEndian(UInt16), 0x0102), [0x01, 0x02])
-        @test serialize(Const(BigEndian(UInt16), 0x0102), 0x0102) == [0x01, 0x02]
+        @test deserialize(Const(BigEndian(UInt16), 0x0102), b"\x01\x02") == 0x0102
+        @test_throws ValidationError deserialize(Const(LittleEndian(UInt16), 0x0102), b"\x01\x02")
+        @test serialize(Const(BigEndian(UInt16), 0x0102), 0x0102) == b"\x01\x02"
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "collections" begin
@@ -101,8 +101,8 @@ using Test
             @test serialize(()) == UInt8[]
             @test estimatesize(Sequence(Int, Float16)) == estimatesize(Int) + estimatesize(Float16)
             @test estimatesize(Sequence(Int, Padded(Float16, 6))) == estimatesize(Int) + estimatesize(Padded(Float16, 6))
-            @test deserialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), [0x01, 0xff, 0x01, 0x02]) == (Int8(1), 0x0102)
-            @test serialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), (Int8(1), 0x0102)) == [0x01, 0x00, 0x01, 0x02]
+            @test deserialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), b"\x01\xfe\x01\x02") == (Int8(1), 0x0102)
+            @test serialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), (Int8(1), 0x0102)) == b"\x01\x00\x01\x02"
         end
         @testset "SizedArray" begin
             @test_throws TypeError SizedArray(BitArray{3}, Int, 2, 3, 5) # element type mismatch
@@ -112,33 +112,33 @@ using Test
             @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
             @test estimatesize(SizedArray(BitArray{3}, Bool, 2, 3, 5)) == 2*3*5*sizeof(Bool)
-            @test deserialize(SizedArray(Int8), [0x02])[] == 2
-            @test serialize(SizedArray(Int8), ones(Int8)) == [0x01]
-            @test deserialize(SizedArray(Int8, 3), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
-            @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
+            @test deserialize(SizedArray(Int8), b"\x02")[] == 2
+            @test serialize(SizedArray(Int8), ones(Int8)) == b"\x01"
+            @test deserialize(SizedArray(Int8, 3), b"\x01\xff\x00") == Int8[1, -1, 0]
+            @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == b"\x01\xff\x00"
             @test_throws DimensionMismatch serialize(SizedArray(Int8, 3), Int8[1, -1])
             @test deserialize(SizedArray(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
-            @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == [0x01, 0x04, 0x02, 0x05, 0x03, 0x06]
+            @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == b"\x01\x04\x02\x05\x03\x06"
         end
         @testset "GreedyVector" begin
             @test estimatesize(GreedyVector(Int8)) == Interval(UInt(0), nothing)
-            @test deserialize(GreedyVector(Int8), [0x01, 0xff, 0x00]) == Int8[1, -1, 0]
-            @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == [0x01, 0xff, 0x00]
-            @test deserialize(GreedyVector(BigEndian(UInt16)), [0x01, 0xff, 0x02, 0xab, 0xcc]) == [0x01ff, 0x02ab]
-            @test serialize(GreedyVector(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == [0x01, 0xff, 0xcc, 0x0a]
-            @test_throws ExceedMaxIterations deserialize(GreedyVector(Nothing), [0x00])
+            @test deserialize(GreedyVector(Int8), b"\x01\xff\x00") == Int8[1, -1, 0]
+            @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == b"\x01\xff\x00"
+            @test deserialize(GreedyVector(BigEndian(UInt16)), b"\x01\xff\x02\xab\xcc") == [0x01ff, 0x02ab]
+            @test serialize(GreedyVector(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == b"\x01\xff\xcc\x0a"
+            @test_throws ExceedMaxIterations deserialize(GreedyVector(Nothing), b"\x00")
             @test_throws ExceedMaxIterations deserialize(GreedyVector(Int8), Vector{UInt8}(1:10); max_iter=9)
         end
     end
     @testset "padded" begin
         @test estimatesize(Padded(5)) == 5
         @test estimatesize(Padded(Int16, 5)) == 5
-        @test deserialize(Padded(Int8, 2), [0x01, 0xff]) == Int8(1)
-        @test serialize(Padded(Int8, 2), Int8(1)) == [0x01, 0x00]
-        @test_throws PaddedError deserialize(Padded(Int32, 3), [0x01, 0x02, 0x03, 0x04])
+        @test deserialize(Padded(Int8, 2), b"\x01\xfc") == Int8(1)
+        @test serialize(Padded(Int8, 2), Int8(1)) == b"\x01\x00"
+        @test_throws PaddedError deserialize(Padded(Int32, 3), b"\x01\x02\x03\x04")
         @test_throws PaddedError serialize(Padded(Int32, 3), Int32(1))
-        @test deserialize(Padded(2), [0x01, 0xff]) === nothing
-        @test serialize(Padded(2), nothing) == [0x00, 0x00]
+        @test deserialize(Padded(2), b"\x01\xff") === nothing
+        @test serialize(Padded(2), nothing) == b"\x00\x00"
     end
     @testset "internal" begin
         @testset "deduce type" begin
