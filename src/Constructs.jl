@@ -4,6 +4,8 @@ Inspired by [Construct](https://construct.readthedocs.io/).
 """
 module Constructs
 
+import Serialization
+
 export
     @construct,
     this,

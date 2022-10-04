@@ -83,6 +83,9 @@ using Test
             @test_throws ArgumentError Singleton(type)
         end
     end
+    @testset "JuliaSerializer" for v in (nothing, 1, 22//7, π, 3//5+7im, [1 2.5 4im; 1+5.2im 1/3 Inf], "Lorem Ipsum")
+        @test deserialize(JuliaSerializer(), serialize(JuliaSerializer(), v)) == v
+    end
     @testset "byte order" begin
         be = (
             (0x0102, b"\x01\x02"),
