@@ -8,14 +8,14 @@ struct UnboundedUpper <: Unsigned end
 
 const unboundedupper = UnboundedUpper()
 
-Base.:+(::UnboundedUpper, ::Integer) = unboundedupper
-Base.:+(x::Integer, y::UnboundedUpper) = y + x
-Base.:*(::UnboundedUpper, x::Unsigned) = x > 0 ? unboundedupper : 0
-Base.:*(x::Unsigned, y::UnboundedUpper) = y * x
-Base.max(::UnboundedUpper, ::Integer) = unboundedupper
-Base.max(x::Integer, y::UnboundedUpper) = max(y, x)
-Base.min(::UnboundedUpper, x::Unsigned) = x
-Base.min(x::Unsigned, y::UnboundedUpper) = min(y, x)
+Base.:+(::Integer, ::UnboundedUpper) = unboundedupper
+Base.:+(x::UnboundedUpper, y::Integer) = y + x
+Base.:*(x::Unsigned, ::UnboundedUpper) = x > 0 ? unboundedupper : 0
+Base.:*(x::UnboundedUpper, y::Unsigned) = y * x
+Base.max(::Integer, ::UnboundedUpper) = unboundedupper
+Base.max(x::UnboundedUpper, y::Integer) = max(y, x)
+Base.min(x::Integer, ::UnboundedUpper) = x
+Base.min(x::UnboundedUpper, y::Integer) = min(y, x)
 
 """
     ConstructSize
@@ -23,9 +23,6 @@ Base.min(x::Unsigned, y::UnboundedUpper) = min(y, x)
 Abstract super type of construct size.
 """
 abstract type ConstructSize end
-
-lower(::ConstructSize) = zero(UInt64)
-upper(::ConstructSize) = unboundedupper
 
 ConstructSize(sz::ConstructSize) = sz
 ConstructSize(x::Integer) = ExactSize(x)
@@ -60,8 +57,8 @@ ExactSize(x::Integer) = ExactSize(convert(UInt64, x))
 Base.convert(::Type{T}, x::ExactSize) where {T<:Number} = convert(T, x.value)
 Base.convert(::Type{ExactSize}, x::Integer) = ExactSize(x)
 
-Base.:(==)(x::ExactSize, y::Integer) = x.value == y
 Base.:(==)(x::Integer, y::ExactSize) = x == y.value
+Base.:(==)(x::ExactSize, y::Integer) = y == x
 
 lower(sz::ExactSize) = sz.value
 upper(sz::ExactSize) = sz.value

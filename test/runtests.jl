@@ -4,40 +4,55 @@ using Test
 
 @testset "Constructs.jl" begin
     @testset "size" begin
-        @test ConstructSize(1, 1) == ExactSize(1)
-        @test convert(Int, ExactSize(2)) == 2
-        @test ConstructSize(1, 2) == RangedSize(1, 2)
-        @test_throws ArgumentError ConstructSize(2, 1)
-        @test_throws ArgumentError RangedSize(1, 1)
-        @test ConstructSize(3, UnboundedUpper()) == UnboundedSize(3)
-        @test ConstructSize(1) + ConstructSize(2) == ConstructSize(3)
-        @test 1 + ConstructSize(2) + 3 == 6
-        @test 3 + ConstructSize(1, 2) == ConstructSize(4, 5)
-        @test UnboundedSize(1) + 2 == UnboundedSize(3)
-        @test ConstructSize(2) * ConstructSize(3) == ConstructSize(6)
-        @test 2 * ConstructSize(3) * 5 == 30
-        @test 3 * ConstructSize(2, 4) == ConstructSize(6, 12)
-        @test 0 * ConstructSize(2, 4) == 0
-        @test UnboundedSize(2) * 3 == UnboundedSize(6)
-        @test UnboundedSize(2) * 0 == 0
-        @test union(ConstructSize(2), 3) == ConstructSize(2, 3)
-        @test union(2, ConstructSize(3), 5) == ConstructSize(2, 5)
-        @test union(3, ConstructSize(2, 4)) == ConstructSize(2, 4)
-        @test union(6, ConstructSize(2, 4)) == ConstructSize(2, 6)
-        @test union(ConstructSize(1, 3), ConstructSize(2, 4)) == ConstructSize(1, 4)
-        @test union(UnboundedSize(3), 6) == UnboundedSize(3)
-        @test union(UnboundedSize(3), 1) == UnboundedSize(1)
-        @test !(0 in RangedSize(1, 3))
-        @test 1 in RangedSize(1, 3)
-        @test 2 in RangedSize(1, 3)
-        @test 3 in RangedSize(1, 3)
-        @test !(4 in RangedSize(1, 3))
-        @test !(0 in ExactSize(1))
-        @test 1 in ExactSize(1)
-        @test !(2 in ExactSize(1))
-        @test 1 in UnboundedSize(1)
-        @test !(0 in UnboundedSize(1))
-        @test typemax(UInt64) in UnboundedSize(1)
+        @testset "UnboundedUpper" begin
+            @test 1 + UnboundedUpper() == UnboundedUpper()
+            @test UnboundedUpper() + typemax(UInt64) == UnboundedUpper()
+            @test 0x10 * UnboundedUpper() == UnboundedUpper()
+            @test UnboundedUpper() * typemax(UInt64) == UnboundedUpper()
+            @test 0x0 * UnboundedUpper() == 0x0
+            @test max(1, UnboundedUpper()) == UnboundedUpper()
+            @test max(UnboundedUpper(), typemax(UInt64)) == UnboundedUpper()
+            @test min(1, UnboundedUpper()) == 1
+            @test min(UnboundedUpper(), typemax(UInt64)) == typemax(UInt64)
+        end
+        @testset "ConstructSize" begin
+            @test ConstructSize(1, 1) == ExactSize(1)
+            @test convert(Int, ExactSize(2)) == 2
+            @test ConstructSize(1, 2) == RangedSize(1, 2)
+            @test_throws ArgumentError ConstructSize(2, 1)
+            @test_throws ArgumentError RangedSize(1, 1)
+            @test RangedSize(1, 2) != 1
+            @test UnboundedSize(typemax(UInt64)) != typemax(UInt64)
+            @test ConstructSize(3, UnboundedUpper()) == UnboundedSize(3)
+            @test ConstructSize(1) + ConstructSize(2) == ConstructSize(3)
+            @test 1 + ConstructSize(2) + 3 == 6
+            @test 3 + ConstructSize(1, 2) == ConstructSize(4, 5)
+            @test UnboundedSize(1) + 2 == UnboundedSize(3)
+            @test ConstructSize(2) * ConstructSize(3) == ConstructSize(6)
+            @test 2 * ConstructSize(3) * 5 == 30
+            @test 3 * ConstructSize(2, 4) == ConstructSize(6, 12)
+            @test 0 * ConstructSize(2, 4) == 0
+            @test UnboundedSize(2) * 3 == UnboundedSize(6)
+            @test UnboundedSize(2) * 0 == 0
+            @test union(ConstructSize(2), 3) == ConstructSize(2, 3)
+            @test union(2, ConstructSize(3), 5) == ConstructSize(2, 5)
+            @test union(3, ConstructSize(2, 4)) == ConstructSize(2, 4)
+            @test union(6, ConstructSize(2, 4)) == ConstructSize(2, 6)
+            @test union(ConstructSize(1, 3), ConstructSize(2, 4)) == ConstructSize(1, 4)
+            @test union(UnboundedSize(3), 6) == UnboundedSize(3)
+            @test union(UnboundedSize(3), 1) == UnboundedSize(1)
+            @test !(0 in RangedSize(1, 3))
+            @test 1 in RangedSize(1, 3)
+            @test 2 in RangedSize(1, 3)
+            @test 3 in RangedSize(1, 3)
+            @test !(4 in RangedSize(1, 3))
+            @test !(0 in ExactSize(1))
+            @test 1 in ExactSize(1)
+            @test !(2 in ExactSize(1))
+            @test 1 in UnboundedSize(1)
+            @test !(0 in UnboundedSize(1))
+            @test typemax(UInt64) in UnboundedSize(1)
+        end
     end
     @testset "container" begin
         @test_throws ArgumentError Container(1)
