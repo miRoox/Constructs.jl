@@ -143,6 +143,11 @@ using Test
     end
     @testset "collections" begin
         @testset "Sequence" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(() -> Sequence()) <: Sequence{Tuple{}}
+                @test Constructs.deducetype(t -> Sequence(t), Type{Int}) <: Sequence{Tuple{Int}}
+                @test Constructs.deducetype((t1, t2) -> Sequence(t1, t2), Type{Int}, PrimitiveIO{Float64}) <: Sequence{Tuple{Int, Float64}}
+            end
             @test Construct(Tuple{}) == Sequence()
             @test Construct(Tuple{Int}) == Sequence(Int)
             @test Construct(Tuple{Int, Float16}) == Sequence(Int, Float16)
@@ -158,6 +163,12 @@ using Test
             @test serialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), (Int8(1), 0x0102)) == b"\x01\x00\x01\x02"
         end
         @testset "SizedArray" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
+                @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
+                @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
+                @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
+            end
             @test_throws TypeError SizedArray(BitArray{3}, Int, 2, 3, 5) # element type mismatch
             @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized
             @test_throws TypeError SizedArray(typeof(view([1],1)), Int, 1) # indirect array cannot be deserialized
@@ -194,15 +205,6 @@ using Test
         @test serialize(Padded(2), nothing) == b"\x00\x00"
     end
     @testset "internal" begin
-        @testset "deduce type" begin
-            @test Constructs.deducetype(() -> Sequence()) <: Sequence{Tuple{}}
-            @test Constructs.deducetype(t -> Sequence(t), Type{Int}) <: Sequence{Tuple{Int}}
-            @test Constructs.deducetype((t1, t2) -> Sequence(t1, t2), Type{Int}, PrimitiveIO{Float64}) <: Sequence{Tuple{Int, Float64}}
-            @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
-            @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
-            @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
-            @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
-        end
         constructypecases = Tuple{Union{Type, Construct}, Type}[
             (Int32, Int32),
             (JuliaSerializer(), Any),
