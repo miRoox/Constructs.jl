@@ -1,6 +1,12 @@
 using Constructs
 using Test
 
+@enum Fruit::Int8 begin
+    apple
+    banna
+    orange
+end
+
 @testset "Constructs.jl" begin
     @testset "size" begin
         @testset "UnboundedUpper" begin
@@ -110,11 +116,6 @@ using Test
         end
     end
     @testset "enum" begin
-        @enum Fruit::Int8 begin
-            apple
-            banna
-            orange
-        end
         @testset "auto type" begin
             @test estimatesize(Fruit) == sizeof(Int8)
             @test deserialize(Fruit, b"\x01") == banna
