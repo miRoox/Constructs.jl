@@ -326,7 +326,11 @@ end
             end
         end
         @testset "expand error" for ex in [notstruct, missingtype, deducefailed]
-            @test_throws LoadError macroexpand(@__MODULE__, ex)
+            @static if Base.VERSION >= v"1.7-"
+                @test_throws ErrorException macroexpand(@__MODULE__, ex)
+            else
+                @test_throws LoadError macroexpand(@__MODULE__, ex)
+            end
         end
     end
 end
