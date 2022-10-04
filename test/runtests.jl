@@ -89,6 +89,15 @@ end
             @test_throws ArgumentError Singleton(type)
         end
     end
+    @testset "RaiseError" begin
+        @test estimatesize(RaiseError("Invalid data.")) == 0
+        @test_throws ErrorException deserialize(RaiseError("Invalid data."), b"")
+        @test_throws ValidationError deserialize(RaiseError(ValidationError("Invalid data.")), b"")
+        @test_throws MethodError serialize(RaiseError("Invalid data."), nothing)
+        @test_throws MethodError serialize(RaiseError(ValidationError("Invalid data.")), nothing)
+        @test_throws ErrorException serialize(RaiseError("Invalid data."), IOBuffer(), nothing)
+        @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), IOBuffer(), nothing)
+    end
     @testset "JuliaSerializer" for v in (nothing, 1, 22//7, π, 3//5+7im, [1 2.5 4im; 1+5.2im 1/3 Inf], "Lorem Ipsum")
         @test deserialize(JuliaSerializer(), serialize(JuliaSerializer(), v)) == v
     end

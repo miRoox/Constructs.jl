@@ -34,6 +34,7 @@ export
     validate,
     PrimitiveIO,
     Singleton,
+    RaiseError,
     JuliaSerializer,
     Padded,
     LittleEndian,
@@ -53,6 +54,7 @@ include("macro.jl")
 
 include("PrimitiveIO.jl")
 include("Singleton.jl")
+include("Error.jl")
 include("JuliaSerializer.jl")
 include("Padded.jl")
 include("Endians.jl")
