@@ -6,7 +6,7 @@ const sequence_max_subcons = 64
 
 A sequence of construct data.
 """
-abstract type Sequence{TT} <: Construct{TT} end
+abstract type Sequence{TT<:Tuple} <: Construct{TT} end
 
 Base.getindex(seq::Sequence, i::Integer) = getfield(seq, convert(Int, i))
 Base.getindex(seq::Sequence{Tuple{T1}}) where {T1} = getfield(seq, 1)
