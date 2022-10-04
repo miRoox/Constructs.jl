@@ -142,6 +142,34 @@ end
         @test serialize(Const(BigEndian(UInt16), 0x0102), 0x0102) == b"\x01\x02"
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
+    @testset "conditional" begin
+        @testset "Try" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype((t1, t2) -> Try(t1, t2), Type{Int}, PrimitiveIO{UInt}) <: Try{Union{Int, UInt}}
+                @test Constructs.deducetype((t1, t2) -> Try{Integer}(t1, t2), Type{Int}, PrimitiveIO{UInt}) <: Try{Integer}
+                @test Constructs.deducetype((t1, t2, t3) -> Try(t1, t2, t3), Type{Int}, PrimitiveIO{UInt}, Type{Float64}) <: Try{Union{Int, UInt, Float64}}
+                @test Constructs.deducetype((t1, t2, t3) -> Try(t1, t2, t3), Padded{UInt, PrimitiveIO{UInt}}, Type{UInt}, Type{Float64}) <: Try{Union{UInt, Float64}}
+                @test Constructs.deducetype((t1, t2, t3) -> Try{Real}(t1, t2), Type{Int}, PrimitiveIO{UInt}, Type{Float64}) <: Try{Real}
+                @test Constructs.deducetype((t1, t2, t3) -> Try{Number}(t1, t2), Padded{UInt, PrimitiveIO{UInt}}, Type{UInt}, Type{Float64}) <: Try{Number}
+            end
+            @test_throws MethodError Try{AbstractArray}(Int, UInt)
+            @test estimatesize(Try(Padded(UInt, 12), UInt, Missing)) == RangedSize(0, 12)
+            @test estimatesize(Try(Padded(UInt, 12), UInt)) == RangedSize(sizeof(UInt), 12)
+            @test deserialize(Try(BigEndian(UInt16), Int8), b"\xfe") == Int8(-2)
+            @test deserialize(Try(BigEndian(UInt16), Int8), b"\xfe\xcc") == 0xfecc
+            @test_throws EOFError deserialize(Try(BigEndian(UInt32), BigEndian(UInt16)), b"\xfe")
+            @test_throws ArgumentError deserialize(Try(BigEndian(UInt32), BigEndian(UInt16), Fruit), b"\xfe")
+            @test serialize(Try(BigEndian(UInt16), Int8), Int8(-2)) == b"\xfe"
+            @test serialize(Try(BigEndian(UInt16), Int8), 0xfecc) == b"\xfe\xcc"
+            @test deserialize(Try{Integer}(BigEndian(UInt16), Int8), b"\xfe") == Int8(-2)
+            @test deserialize(Try{Integer}(BigEndian(UInt16), Int8), b"\xfe\xcc") == 0xfecc
+            @test_throws EOFError deserialize(Try{Integer}(BigEndian(UInt32), BigEndian(UInt16)), b"\xfe")
+            @test_throws ArgumentError deserialize(Try{Union{Integer, Base.Enum}}(BigEndian(UInt32), BigEndian(UInt16), Fruit), b"\xfe")
+            @test serialize(Try{Integer}(BigEndian(UInt16), Int8), Int8(-2)) == b"\xfe"
+            @test serialize(Try{Integer}(BigEndian(UInt16), Int8), 0xfecc) == b"\xfe\xcc"
+            @test_throws MethodError serialize(Try{Integer}(BigEndian(UInt16), Int8, Fruit), -2)
+        end
+    end
     @testset "collections" begin
         @testset "Sequence" begin
             @testset "deduce type" begin
@@ -213,6 +241,9 @@ end
             (BigEndian(UInt), UInt),
             (Const(0x0102), UInt16),
             (Const(b"BMP"), Vector{UInt8}),
+            (Try(Int, UInt), Union{Int, UInt}),
+            (Try{Integer}(Int, UInt), Integer),
+            (Try(Padded(UInt, 12), UInt, Missing), Union{Missing, UInt}),
             (Sequence(), Tuple{}),
             (Sequence(Float64), Tuple{Float64}),
             (Sequence(Float64, BigEndian(UInt)), Tuple{Float64, UInt}),

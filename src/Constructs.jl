@@ -40,6 +40,7 @@ export
     BigEndian,
     IntEnum,
     Const,
+    Try,
     Sequence,
     SizedArray,
     GreedyVector
@@ -57,6 +58,7 @@ include("Padded.jl")
 include("Endians.jl")
 include("IntEnum.jl")
 include("Const.jl")
+include("Try.jl")
 include("Sequence.jl")
 include("Array.jl")
 
