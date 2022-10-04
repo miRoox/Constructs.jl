@@ -203,7 +203,7 @@ Abstract validator type. Validates a condition on the encoded/decoded object..
 ## Methods
 
 * `subcon(validator::Validator{T})::Construct{T}`
-* `validate(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOK, ValidationError}`
+* `validate(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOk, ValidationError}`
 """
 abstract type Validator{T} <: SymmetricAdapter{T} end
 
