@@ -14,6 +14,11 @@ export
     Adapter,
     SymmetricAdapter,
     Validator,
+    UnboundedUpper,
+    ConstructSize,
+    ExactSize,
+    RangedSize,
+    UnboundedSize,
     ConstructError,
     ValidationOK,
     ValidationError,
@@ -40,6 +45,7 @@ export
     GreedyVector
 
 include("errors.jl")
+include("size.jl")
 include("base.jl")
 include("container.jl")
 include("macro.jl")
