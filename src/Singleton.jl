@@ -17,7 +17,7 @@ Singleton(::T) where {T} = Singleton{T}()
 
 deserialize(::Singleton{T}, ::IO; contextkw...) where {T} = T.instance
 serialize(::Singleton{T}, ::IO, ::T; contextkw...) where {T} = 0
-estimatesize(::Singleton; contextkw...) = 0
+estimatesize(::Singleton; contextkw...) = ExactSize(0)
 
 Construct(::Type{Nothing}) = Singleton(nothing)
 Construct(::Type{Missing}) = Singleton(missing)

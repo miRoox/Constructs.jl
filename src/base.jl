@@ -119,7 +119,7 @@ serialize(obj; contextkw...) = serialize(Construct(typeof(obj)), obj; contextkw.
 
 Estimate the size of the type.
 """
-estimatesize(::Construct; contextkw...) = Interval(UInt(0), nothing)
+estimatesize(::Construct; contextkw...) = UnboundedSize(0)
 
 """
     estimatesize(T; contextkw...)

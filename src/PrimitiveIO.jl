@@ -12,5 +12,5 @@ end
 
 deserialize(::PrimitiveIO{T}, s::IO; contextkw...) where {T} = read(s, T)
 serialize(::PrimitiveIO{T}, s::IO, c::T; contextkw...) where {T} = write(s ,c)
-estimatesize(::PrimitiveIO{T}; contextkw...) where {T} = sizeof(T)
-estimatesize(::PrimitiveIO{Char}; contextkw...) = Interval{UInt}(1, 4)
+estimatesize(::PrimitiveIO{T}; contextkw...) where {T} = ExactSize(sizeof(T))
+estimatesize(::PrimitiveIO{Char}; contextkw...) = RangedSize(1, 4)

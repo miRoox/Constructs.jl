@@ -4,8 +4,6 @@ Inspired by [Construct](https://construct.readthedocs.io/).
 """
 module Constructs
 
-using Intervals
-
 export
     @construct,
     this,

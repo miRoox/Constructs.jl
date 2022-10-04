@@ -1,5 +1,4 @@
 using Constructs
-using Intervals
 using Test
 
 @testset "Constructs.jl" begin
@@ -172,7 +171,7 @@ using Test
             @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == b"\x01\x04\x02\x05\x03\x06"
         end
         @testset "GreedyVector" begin
-            @test estimatesize(GreedyVector(Int8)) == Interval(UInt(0), nothing)
+            @test estimatesize(GreedyVector(Int8)) == UnboundedSize(0)
             @test deserialize(GreedyVector(Int8), b"\x01\xff\x00") == Int8[1, -1, 0]
             @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == b"\x01\xff\x00"
             @test deserialize(GreedyVector(BigEndian(UInt16)), b"\x01\xff\x02\xab\xcc") == [0x01ff, 0x02ab]

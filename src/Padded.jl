@@ -33,4 +33,4 @@ function serialize(cons::Padded{T}, s::IO, val::T; contextkw...) where {T}
     write(s, zeros(UInt8, cons.size - (stop - start)))
     cons.size
 end
-estimatesize(cons::Padded; contextkw...) = cons.size
+estimatesize(cons::Padded; contextkw...) = ExactSize(cons.size)
