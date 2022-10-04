@@ -18,7 +18,7 @@ Construct(::Type{Tuple{}}) = Sequence_0()
 
 deserialize(::Sequence_0, ::IO; contextkw...) = ()
 serialize(::Sequence_0, ::IO, ::Tuple{}; contextkw...) = 0
-estimatesize(::Sequence_0; contextkw...) = 0
+estimatesize(::Sequence_0; contextkw...) = ExactSize(0)
 
 ## sample:
 # struct Sequence_1{T1, TSubCon1<:Construct{T1}} <: Sequence{Tuple{T1}}
