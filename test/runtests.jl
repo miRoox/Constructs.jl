@@ -128,17 +128,33 @@ end
         @testset "auto type" begin
             @test estimatesize(Fruit) == sizeof(Int8)
             @test deserialize(Fruit, b"\x01") == banna
+            @test_throws ArgumentError deserialize(Fruit, b"\x1f")
             @test serialize(orange) == b"\x02"
+            @test serialize(reinterpret(Fruit, 0x1f)) == b"\x1f"
         end
         @testset "override base type" begin
             @test estimatesize(IntEnum(UInt8, Fruit)) == sizeof(UInt8)
             @test deserialize(IntEnum(UInt8, Fruit), b"\x01") == banna
+            @test_throws ArgumentError deserialize(IntEnum(UInt8, Fruit), b"\x1f")
             @test serialize(IntEnum(UInt8, Fruit), orange) == b"\x02"
+            @test serialize(IntEnum(UInt8, Fruit), reinterpret(Fruit, 0x1f)) == b"\x1f"
         end
         @testset "override base type construct" begin
             @test estimatesize(IntEnum(BigEndian(UInt16), Fruit)) == sizeof(UInt16)
             @test deserialize(IntEnum(BigEndian(UInt16), Fruit), b"\x00\x01") == banna
+            @test_throws ArgumentError deserialize(IntEnum(BigEndian(UInt16), Fruit), b"\x00\x1f")
+            @test_throws InexactError deserialize(IntEnum(BigEndian(UInt16), Fruit), b"\x01\x00")
             @test serialize(IntEnum(BigEndian(UInt16), Fruit), orange) == b"\x00\x02"
+            @test serialize(IntEnum(BigEndian(UInt16), Fruit), reinterpret(Fruit, 0x1f)) == b"\x00\x1f"
+        end
+        @testset "non-exhaustive" begin
+            @test_throws TypeError IntEnum{BigEndian}(Fruit)
+            @test estimatesize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit)) == sizeof(UInt16)
+            @test deserialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), b"\x00\x01") == banna
+            @test deserialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), b"\x00\x1f") == reinterpret(Fruit, 0x1f)
+            @test_throws InexactError deserialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), b"\x01\x00")
+            @test serialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), orange) == b"\x00\x02"
+            @test serialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), reinterpret(Fruit, 0x1f)) == b"\x00\x1f"
         end
     end
     @testset "const" begin

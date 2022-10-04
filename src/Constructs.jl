@@ -39,6 +39,8 @@ export
     Padded,
     LittleEndian,
     BigEndian,
+    EnumExhaustive,
+    EnumNonExhaustive,
     IntEnum,
     Const,
     Try,
