@@ -144,7 +144,7 @@ function replacestructdef(structdef::Expr, infos::Vector{Union{FieldInfo, OtherS
             push!(stnodes, info.expr)
         end
     end
-    Expr(:struct, structdef.args[1], structdef.args[2], Expr(:block, stnodes...))
+    Expr(:struct, structdef.args[1], esc(structdef.args[2]), Expr(:block, stnodes...))
 end
 
 function generateconstructdef(constructname::Symbol, structname)
