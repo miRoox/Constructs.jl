@@ -263,6 +263,16 @@ end
         @test serialize(Padded(2), nothing) == b"\x00\x00"
     end
     @testset "internal" begin
+        @testset "sym macro" begin
+            @test let x
+                Constructs.@sym x
+                x == :x
+            end
+            @test let x, symbol
+                Constructs.@sym x symbol
+                x == :x && symbol == :symbol
+            end
+        end
         constructypecases = Tuple{Union{Type, Construct}, Type}[
             (Int32, Int32),
             (JuliaSerializer(), Any),

@@ -1,3 +1,10 @@
+macro sym(names...)
+    Expr(:block,
+        map(name -> Expr(:(=), esc(name), Expr(:call, GlobalRef(Core, :Symbol), QuoteNode(name))), names)...,
+        :nothing
+    )
+end
+
 """
     this
 
