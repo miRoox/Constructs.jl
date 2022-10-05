@@ -24,6 +24,7 @@ export
     ValidationError,
     ExceedMaxIterations,
     PaddedError,
+    UndefProperty,
     Container,
     deserialize,
     serialize,

@@ -1,5 +1,14 @@
 
 """
+    UndefProperty
+
+Placeholder for undefined properties in [`Container{T}`](@ref).
+"""
+struct UndefProperty end
+
+Base.show(io::IO, ::UndefProperty) = print(io, "#undef")
+
+"""
     Container{T}
 
 Intermediate container for a `struct` object when serializing/deserializing it.
@@ -15,7 +24,13 @@ struct Container{T}
     end
 end
 
-Base.getproperty(obj::Container, name::Symbol) = getfield(obj, 1)[name]
+Base.getproperty(obj::Container{T}, name::Symbol) where {T} = get(getfield(obj, 1), name) do
+    if name in fieldnames(T)
+        UndefProperty()
+    else
+        error("type $T has no field $name")
+    end
+end
 Base.setproperty!(::Container, name::Symbol, ::Any) = error("Container property $name cannot be set.")
 Base.propertynames(obj::Container, private::Bool = false) = ((private ? fieldnames(Container) : ())..., keys(getfield(obj, 1))...)
 setcontainerproperty!(obj::Container, name::Symbol, value::Any) = getfield(obj, 1)[name] = value

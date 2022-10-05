@@ -60,8 +60,11 @@ end
         end
     end
     @testset "container" begin
+        @test repr(UndefProperty()) == "#undef"
         @test_throws ArgumentError Container(1)
         @test Container(im).im
+        @test Container{Complex{Bool}}().im == UndefProperty()
+        @test_throws ErrorException Container{Complex{Bool}}().i
         @test_throws ErrorException Container(im).im = false
         @test propertynames(Container(1//2)) == propertynames(1//2)
     end
