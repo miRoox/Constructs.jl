@@ -329,37 +329,49 @@ end
                 end
             end
         end
-        notstruct = quote
-            @construct abstract type Bitmap <: AbstractImage end
-        end
-        missingtype = quote
-            @construct struct Bitmap <: AbstractImage
-                signature::Const(b"BMP")
-                width::UInt32
-                height::UInt32
-                rest
+        notstruct = (
+            ErrorException,
+            quote
+                @construct abstract type Bitmap <: AbstractImage end
             end
-        end
-        deducefailed = quote
-            @construct struct Bitmap <: AbstractImage
-                signature::Const(b"BMP")
-                width::UInt32
-                height::UInt32
-                ::Padded(8)
-                pixel::SizedArray(UInt8, (this.width, this.height))
+        )
+        missingtype = (
+            ErrorException,
+            quote
+                @construct struct Bitmap <: AbstractImage
+                    signature::Const(b"BMP")
+                    width::UInt32
+                    height::UInt32
+                    rest
+                end
             end
-        end
-        nodefaultconstruct = quote
-            @construct struct Bitmap <: AbstractImage
-                signature::Const(b"BMP")
-                width::UInt32
-                height::UInt32
-                rest::Any
+        )
+        deducefailed = (
+            ErrorException,
+            quote
+                @construct struct Bitmap <: AbstractImage
+                    signature::Const(b"BMP")
+                    width::UInt32
+                    height::UInt32
+                    ::Padded(8)
+                    pixel::SizedArray(UInt8, (this.width, this.height))
+                end
             end
-        end
-        @testset "expand error" for ex in [notstruct, missingtype, deducefailed, nodefaultconstruct]
+        )
+        nodefaultconstruct = (
+            MethodError,
+            quote
+                @construct struct Bitmap <: AbstractImage
+                    signature::Const(b"BMP")
+                    width::UInt32
+                    height::UInt32
+                    rest::Any
+                end
+            end
+        )
+        @testset "expand error" for (err, ex) in [notstruct, missingtype, deducefailed, nodefaultconstruct]
             @static if Base.VERSION >= v"1.7-"
-                @test_throws ErrorException macroexpand(@__MODULE__, ex)
+                @test_throws err macroexpand(@__MODULE__, ex)
             else
                 @test_throws LoadError macroexpand(@__MODULE__, ex)
             end
