@@ -52,7 +52,7 @@ export
 include("errors.jl")
 include("size.jl")
 include("container.jl")
-include("base.jl")
+include("interface.jl")
 include("macro.jl")
 
 include("PrimitiveIO.jl")
