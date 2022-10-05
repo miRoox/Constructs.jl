@@ -74,11 +74,30 @@ Serialize an object into a stream.
 function serialize end
 
 """
+    serialize(cons::Construct, s::IO, ::UndefProperty; contextkw...)
+
+Serialize an insufficient object into a stream.
+
+# Note
+
+This method is usually called for anonymous fields in [`@construct`](@ref).
+
+By default, only singleton types support this because they don't need to write anything.
+"""
+function serialize(cons::Construct{T}, s::IO, ::UndefProperty; contextkw...) where {T}
+    if Base.issingletontype(T)
+        serialize(cons, s, T.instance; contextkw...)
+    else
+        throw(MethodError(serialize, (NamedTuple(contextkw), cons, s, UndefProperty())))
+    end
+end
+
+"""
     serialize(cons::Construct, filename::AbstractString, obj; contextkw...)
 
 Serialize an object to the file.
 """
-serialize(cons::Construct{T}, filename::AbstractString, obj::T; contextkw...) where {T} = open(filename, "w") do fs
+serialize(cons::Construct{T}, filename::AbstractString, obj; contextkw...) where {T} = open(filename, "w") do fs
     serialize(cons, fs, obj; contextkw...)
 end
 
@@ -87,14 +106,35 @@ end
 
 Serialize an object in memory (a byte array).
 """
-function serialize(cons::Construct{T}, obj::T; contextkw...) where {T}
+function serialize(cons::Construct{T}, obj; contextkw...) where {T}
     io = IOBuffer()
     serialize(cons, io, obj; contextkw...)
     return take!(io)
 end
 
 """
-    serialize(obj, s::IO; contextkw...)
+    serialize(T, s::IO, obj; contextkw...)
+
+Serialize an object into a stream.
+"""
+serialize(type::Type, s::IO, obj; contextkw...) = serialize(Construct(type), s, obj; contextkw...)
+
+"""
+    serialize(T, filename::AbstractString, obj; contextkw...)
+
+Serialize an object to the file.
+"""
+serialize(type::Type, filename::AbstractString, obj; contextkw...) = serialize(Construct(type), filename, obj; contextkw...)
+
+"""
+    serialize(T, obj; contextkw...)
+
+Serialize an object in memory (a byte array).
+"""
+serialize(type::Type, obj; contextkw...) = serialize(Construct(type), obj; contextkw...)
+
+"""
+    serialize(s::IO, obj; contextkw...)
 
 Serialize an object into a stream.
 """

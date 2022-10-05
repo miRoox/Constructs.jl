@@ -88,6 +88,7 @@ end
             @test estimatesize(type) == 0
             @test deserialize(type, UInt8[]) === instance
             @test serialize(instance) == UInt8[]
+            @test serialize(type, UndefProperty()) == UInt8[]
         end
         @testset "non-singleton type $type" for type in (Bool, Union{}, Char, DataType)
             @test_throws ArgumentError Singleton(type)
@@ -252,7 +253,7 @@ end
             @test_throws ExceedMaxIterations deserialize(GreedyVector(Int8), Vector{UInt8}(1:10); max_iter=9)
         end
     end
-    @testset "padded" begin
+    @testset "Padded" begin
         @test estimatesize(Padded(5)) == 5
         @test estimatesize(Padded(Int16, 5)) == 5
         @test deserialize(Padded(Int8, 2), b"\x01\xfc") == Int8(1)
@@ -261,6 +262,7 @@ end
         @test_throws PaddedError serialize(Padded(Int32, 3), Int32(1))
         @test deserialize(Padded(2), b"\x01\xff") === nothing
         @test serialize(Padded(2), nothing) == b"\x00\x00"
+        @test serialize(Padded(2), UndefProperty()) == b"\x00\x00"
     end
     @testset "internal" begin
         @testset "sym macro" begin

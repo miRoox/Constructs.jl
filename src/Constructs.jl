@@ -51,8 +51,8 @@ export
 
 include("errors.jl")
 include("size.jl")
-include("base.jl")
 include("container.jl")
+include("base.jl")
 include("macro.jl")
 
 include("PrimitiveIO.jl")
