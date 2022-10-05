@@ -52,7 +52,7 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         typedstructdef = replacestructdef(structdef, infos)
         constructdef = generateconstructdef(constructname, getdefname(structdef))
         Expr(:block,
-            source, typedstructdef,
+            Expr(:meta, :doc), typedstructdef,
             source, constructdef)
     else
         error("invalid syntax: @construct must be used with a struct type definition.")
