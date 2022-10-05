@@ -24,6 +24,7 @@ constructtype(type::Type) = type
 
 """
     deserialize(cons::Construct, s::IO; contextkw...)
+    deserialize(T, s::IO; contextkw...)
 
 Deserialize a stream to an object.
 """
@@ -31,6 +32,7 @@ function deserialize end
 
 """
     deserialize(cons::Construct, filename::AbstractString; contextkw...)
+    deserialize(T, filename::AbstractString; contextkw...)
 
 Deserialize a file to an object.
 """
@@ -40,34 +42,20 @@ end
 
 """
     deserialize(cons::Construct, bytes::AbstractVector{UInt8}; contextkw...)
+    deserialize(T, bytes::AbstractVector{UInt8}; contextkw...)
 
 Deserialize a byte array to an object.
 """
 deserialize(cons::Construct, bytes::AbstractVector{UInt8}; contextkw...) = deserialize(cons, IOBuffer(bytes); contextkw...)
 
-"""
-    deserialize(T, s::IO; contextkw...)
-
-Deserialize a stream to an object.
-"""
 deserialize(t::Type, s::IO; contextkw...) = deserialize(Construct(t), s; contextkw...)
-
-"""
-    deserialize(T, filename::AbstractString; contextkw...)
-
-Deserialize a file to an object.
-"""
 deserialize(t::Type, filename::AbstractString; contextkw...) = deserialize(Construct(t), filename; contextkw...)
-
-"""
-    deserialize(T, bytes::AbstractVector{UInt8}; contextkw...)
-
-Deserialize a byte array to an object.
-"""
 deserialize(t::Type, bytes::AbstractVector{UInt8}; contextkw...) = deserialize(Construct(t), IOBuffer(bytes); contextkw...)
 
 """
     serialize(cons::Construct, s::IO, obj; contextkw...)
+    serialize(T, s::IO, obj; contextkw...)
+    serialize(s::IO, obj; contextkw...)
 
 Serialize an object into a stream.
 """
@@ -94,6 +82,8 @@ end
 
 """
     serialize(cons::Construct, filename::AbstractString, obj; contextkw...)
+    serialize(T, filename::AbstractString, obj; contextkw...)
+    serialize(filename::AbstractString, obj; contextkw...)
 
 Serialize an object to the file.
 """
@@ -103,6 +93,8 @@ end
 
 """
     serialize(cons::Construct, obj; contextkw...)
+    serialize(T, obj; contextkw...)
+    serialize(obj; contextkw...)
 
 Serialize an object in memory (a byte array).
 """
@@ -112,60 +104,21 @@ function serialize(cons::Construct{T}, obj; contextkw...) where {T}
     return take!(io)
 end
 
-"""
-    serialize(T, s::IO, obj; contextkw...)
-
-Serialize an object into a stream.
-"""
 serialize(type::Type, s::IO, obj; contextkw...) = serialize(Construct(type), s, obj; contextkw...)
-
-"""
-    serialize(T, filename::AbstractString, obj; contextkw...)
-
-Serialize an object to the file.
-"""
 serialize(type::Type, filename::AbstractString, obj; contextkw...) = serialize(Construct(type), filename, obj; contextkw...)
-
-"""
-    serialize(T, obj; contextkw...)
-
-Serialize an object in memory (a byte array).
-"""
 serialize(type::Type, obj; contextkw...) = serialize(Construct(type), obj; contextkw...)
 
-"""
-    serialize(s::IO, obj; contextkw...)
-
-Serialize an object into a stream.
-"""
 serialize(s::IO, obj; contextkw...) = serialize(Construct(typeof(obj)), s, obj; contextkw...)
-
-"""
-    serialize(filename::AbstractString, obj; contextkw...)
-
-Serialize an object to the file.
-"""
 serialize(filename::AbstractString, obj; contextkw...) = serialize(Construct(typeof(obj)), filename, obj; contextkw...)
-
-"""
-    serialize(obj; contextkw...)
-
-Serialize an object in memory (a byte array).
-"""
 serialize(obj; contextkw...) = serialize(Construct(typeof(obj)), obj; contextkw...)
 
 """
     estimatesize(cons::Construct; contextkw...)
-
-Estimate the size of the type.
-"""
-estimatesize(::Construct; contextkw...) = UnboundedSize(0)
-
-"""
     estimatesize(T; contextkw...)
 
 Estimate the size of the type.
 """
+estimatesize(::Construct; contextkw...) = UnboundedSize(0)
 estimatesize(t::Type; contextkw...) = estimatesize(Construct(t); contextkw...)
 
 """
