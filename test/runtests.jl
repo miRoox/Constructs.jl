@@ -311,7 +311,7 @@ end
                 doc_
                 struct ST_ stfields__ end
                 struct CT_ <: Construct_{STT_} end
-                function Construct_(::typeST_)
+                function Construct_(::Type_{STT_})
                     CCT_()
                 end
             end

@@ -157,7 +157,7 @@ function generateconstructdef(constructname::Symbol, structname::Symbol)
         Expr(:function,
             Expr(:call,
                 GlobalRef(Constructs, :Construct),
-                Expr(:(::), Expr(:curly, GlobalRef(Core, :Type), esc(structname)))
+                Expr(:(::), Expr(:curly, Type, esc(structname)))
             ),
             Expr(:block,
                 Expr(:call, esc(constructname))
