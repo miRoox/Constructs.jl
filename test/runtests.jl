@@ -322,7 +322,10 @@ end
                 struct ST_ stfields__ end
                 struct CT_ <: Construct_{STT_} end
                 function Construct_(::Type_{STT_})
-                    CCT_()
+                    CTT_()
+                end
+                function serialize_(::CTT_, s_::IO_, val_::STT_; contextkw_...)
+                    serializebody__
                 end
             end
         end

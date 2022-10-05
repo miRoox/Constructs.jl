@@ -58,10 +58,13 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         fields = filter(info -> info isa FieldInfo, infos)
         deducefieldtypes(fields)
         typedstructdef = replacestructdef(structdef, infos)
-        constructdef = generateconstructdef(constructname, getdefname(structdef))
+        structname = getdefname(structdef)
+        constructdef = generateconstructdef(constructname, structname)
+        serializedef = generateserializemethod(constructname, structname, fields)
         Expr(:block,
             Expr(:meta, :doc), typedstructdef,
-            source, constructdef...)
+            source, constructdef...,
+            source, serializedef)
     else
         error("invalid syntax: @construct must be used with a struct type definition.")
     end
@@ -174,6 +177,62 @@ function generateconstructdef(constructname::Symbol, structname::Symbol)
                 Expr(:call, esc(constructname))
             ),
         )
+    )
+end
+
+function generateserializemethod(constructname::Symbol, structname::Symbol, fields::Vector{>:FieldInfo})
+    @sym s val contextkw result
+    sercalls = Vector{Any}()
+    sizehint!(sercalls, 2 * length(fields))
+    for field in fields
+        if !ismissing(field.line)
+            push!(sercalls, field.line)
+        end
+        if isnothing(field.name)
+            fielddata = UndefProperty()
+        else
+            fielddata = Expr(:(.),
+                this,
+                QuoteNode(field.name)
+            )
+        end
+        sercall = Expr(:(+=),
+            result,
+            Expr(:call, 
+                GlobalRef(Constructs, :serialize),
+                Expr(:parameters,
+                    Expr(:(...), contextkw)
+                ),
+                field.cons isa Construct ? field.cons : esc(field.cons),
+                s,
+                fielddata
+            )
+        )
+        push!(sercalls, sercall)
+    end
+
+    Expr(:function,
+        Expr(:call,
+            GlobalRef(Constructs, :serialize),
+            Expr(:parameters,
+                Expr(:(...), contextkw)
+            ),
+            Expr(:(::), esc(constructname)),
+            Expr(:(::), s, IO),
+            Expr(:(::), val, esc(structname)),
+        ),
+        Expr(:block,
+            Expr(:(=),
+                this,
+                Expr(:call,
+                    GlobalRef(Constructs, :Container),
+                    val
+                )
+            ),
+            Expr(:(=), result, 0),
+            sercalls...,
+            result
+        ),
     )
 end
 
