@@ -53,7 +53,7 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         constructdef = generateconstructdef(constructname, getdefname(structdef))
         Expr(:block,
             Expr(:meta, :doc), typedstructdef,
-            source, constructdef)
+            source, constructdef...)
     else
         error("invalid syntax: @construct must be used with a struct type definition.")
     end
@@ -147,8 +147,8 @@ function replacestructdef(structdef::Expr, infos::Vector{Union{FieldInfo, OtherS
     Expr(:struct, structdef.args[1], esc(structdef.args[2]), Expr(:block, stnodes...))
 end
 
-function generateconstructdef(constructname::Symbol, structname)
-    Expr(:block,
+function generateconstructdef(constructname::Symbol, structname::Symbol)
+    tuple(
         Expr(:struct,
             false,
             Expr(:(<:), esc(constructname), Expr(:curly, GlobalRef(Constructs, :Construct), esc(structname))),

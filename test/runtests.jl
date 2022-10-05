@@ -310,11 +310,9 @@ end
             @test @capture macroexpand(@__MODULE__, ex) begin
                 doc_
                 struct ST_ stfields__ end
-                begin
-                    struct CT_ <: Construct_{STT_} end
-                    function Construct_(::typeST_)
-                        CCT_()
-                    end
+                struct CT_ <: Construct_{STT_} end
+                function Construct_(::typeST_)
+                    CCT_()
                 end
             end
         end
