@@ -30,6 +30,7 @@ mutable struct FieldInfo
     tfunc::Function
     constype::Type
     type::Type
+    cons::Any # Expr/Construct
 end
 
 gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eval(m, Expr(:(->),
@@ -37,7 +38,7 @@ gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eva
   Expr(:block, skipmissing([line])..., rawtype)
 ))
 
-FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, Any)
+FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, Any, rawtype)
 
 struct OtherStructInfo
     expr::Any
@@ -108,6 +109,9 @@ function deducefieldtypes(fields::Vector{>:FieldInfo})
                 field.constype = fieldconstype
                 if hasmethod(constructtype2, Tuple{Type{field.constype}})
                     field.type = constructtype2(field.constype)
+                    if field.type isa field.constype
+                        field.cons = Construct(field.type)
+                    end
                 end
             else
                 error("Cannot deduce type for $(field.rawtype).")
