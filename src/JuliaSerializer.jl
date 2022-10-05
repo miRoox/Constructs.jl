@@ -2,6 +2,8 @@
     JuliaSerializer <: Construct{Any}
 
 Standard Julia serialization.
+
+See also: [`Serialization`](@ref)
 """
 struct JuliaSerializer <: Construct{Any} end
 

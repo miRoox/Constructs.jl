@@ -15,7 +15,7 @@ const this = :this
 """
     @construct [ConstructName] structdefinition
 
-Generate a [`Construct{T}`](@ref) subtype with `ConstructName` for the given struct.
+Generate a [`Construct`](@ref) subtype with `ConstructName` for the given struct.
 """
 macro construct(structdef::Expr)
     construct_impl(__module__, __source__, gensym("CustomConstruct"), structdef)

@@ -2,7 +2,7 @@
 """
     UndefProperty
 
-Placeholder for undefined properties in [`Container{T}`](@ref).
+Placeholder for undefined properties in [`Container`](@ref).
 """
 struct UndefProperty end
 

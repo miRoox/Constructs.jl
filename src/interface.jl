@@ -6,16 +6,16 @@ Construct is used for serializing and deserializing objects.
 
 ## Methods
 
-* `deserialize(cons::Construct{T}, s::IO; contextkw...)::T`
-* `serialize(cons::Construct{T}, s::IO, obj::T; contextkw...)`
-* `estimatesize(cons::Construct{T}; contextkw...)` - optional
+* [`deserialize`](@ref)`(cons::Construct{T}, s::IO; contextkw...)::T`
+* [`serialize`](@ref)`(cons::Construct{T}, s::IO, obj::T; contextkw...)`
+* [`estimatesize`](@ref)`(cons::Construct{T}; contextkw...)` - optional
 """
 abstract type Construct{T} end
 
 """
     Construct(type)
 
-Get default construct for type.
+Get default construct for `type`.
 """
 Construct(cons::Construct) = cons
 
@@ -128,7 +128,7 @@ Base type of wrapper of `TSub`.
 
 ## Methods
 
-* `subcon(wrapper::Wrapper{TSub, T})::Construct{TSub}`
+* [`subcon`](@ref)`(wrapper::Wrapper{TSub, T})::Construct{TSub}`
 """
 abstract type Wrapper{TSub, T} <: Construct{T} end
 
@@ -146,9 +146,9 @@ Abstract adapter type.
 
 ## Methods
 
-* `subcon(adapter::Adapter{TSub, T})::Construct{TSub}`
-* `encode(adapter::Adapter{TSub, T}, obj::T; contextkw...)`
-* `decode(adapter::Adapter{TSub, T}, obj::TSub; contextkw...)`
+* [`subcon`](@ref)`(adapter::Adapter{TSub, T})::Construct{TSub}`
+* [`encode`](@ref)`(adapter::Adapter{TSub, T}, obj::T; contextkw...)`
+* [`decode`](@ref)`(adapter::Adapter{TSub, T}, obj::TSub; contextkw...)`
 """
 abstract type Adapter{TSub, T} <: Wrapper{TSub, T} end
 
@@ -181,8 +181,8 @@ Abstract adapter type. `encode` both for serializing and deserializing.
 
 ## Methods
 
-* `subcon(adapter::SymmetricAdapter{T})::Construct{T}`
-* `encode(adapter::SymmetricAdapter{T}, obj::T; contextkw...)`
+* [`subcon`](@ref)`(adapter::SymmetricAdapter{T})::Construct{T}`
+* [`encode`](@ref)`(adapter::SymmetricAdapter{T}, obj::T; contextkw...)`
 """
 abstract type SymmetricAdapter{T} <: Adapter{T, T} end
 
@@ -195,8 +195,8 @@ Abstract validator type. Validates a condition on the encoded/decoded object..
 
 ## Methods
 
-* `subcon(validator::Validator{T})::Construct{T}`
-* `validate(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOk, ValidationError}`
+* [`subcon`](@ref)`(validator::Validator{T})::Construct{T}`
+* [`validate`](@ref)`(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOk, ValidationError}`
 """
 abstract type Validator{T} <: SymmetricAdapter{T} end
 

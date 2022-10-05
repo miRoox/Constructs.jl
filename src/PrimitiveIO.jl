@@ -1,7 +1,7 @@
 """
     PrimitiveIO{T} <: Construct{T}
 
-Construct based on primitive read/write.
+Construct based on primitive [`read`](@ref)/[`write`](@ref).
 """
 struct PrimitiveIO{T} <: Construct{T} end
 
