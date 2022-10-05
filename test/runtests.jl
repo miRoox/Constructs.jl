@@ -1,4 +1,5 @@
 using Constructs
+using MacroTools
 using Test
 
 @enum Fruit::Int8 begin
@@ -306,7 +307,16 @@ end
             end
         end
         @testset "expand pass" for ex in [structonly, withname]
-            @inferred Expr macroexpand(@__MODULE__, ex)
+            @test @capture macroexpand(@__MODULE__, ex) begin
+                doc_
+                struct ST_ stfields__ end
+                begin
+                    struct CT_ <: Construct_{STT_} end
+                    function Construct_(::typeST_)
+                        CCT_()
+                    end
+                end
+            end
         end
         notstruct = quote
             @construct abstract type Bitmap <: AbstractImage end
