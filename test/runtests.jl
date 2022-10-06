@@ -397,5 +397,28 @@ end
                 @test_throws LoadError macroexpand(@__MODULE__, ex)
             end
         end
+        @testset "Bitmap1" begin
+            @construct struct Bitmap1 <: AbstractImage
+                signature::Const(b"BMP")
+                ::Padded(1)
+                width::UInt16le
+                height::UInt16le
+                pixel::SizedArray(UInt8, this.width, this.height)
+            end
+            @test Bitmap1 <: AbstractImage
+            @test fieldnames(Bitmap1) == (:signature, :width, :height, :pixel)
+            @test fieldtype(Bitmap1, :signature) == Vector{UInt8}
+            @test fieldtype(Bitmap1, :width) == UInt16
+            @test fieldtype(Bitmap1, :pixel) == Matrix{UInt8}
+            @test estimatesize(Bitmap1) == UnboundedSize(sizeof(b"BMP") + 1 + 2 * sizeof(UInt16))
+            @test serialize(Bitmap1(b"BMP", 2, 3, UInt8[1 2 3; 7 8 9])) == b"BMP\x00\x02\x00\x03\x00\x01\x07\x02\x08\x03\x09"
+            @test let res = deserialize(Bitmap1, b"BMP\xfe\x02\x00\x03\x00\x01\x07\x02\x08\x03\x09")
+                res.signature == b"BMP" && res.width == 2 && res.height == 3 && res.pixel == UInt8[1 2 3; 7 8 9]
+            end
+            @test_throws DimensionMismatch serialize(Bitmap1(b"BMP", 2, 3, UInt8[1 2; 7 8]))
+            @test_throws ValidationError serialize(Bitmap1(b"PMB", 2, 3, UInt8[1 2 3; 7 8 9]))
+            @test_throws EOFError deserialize(Bitmap1, b"BMP\xfe\x02\x00\x03\x00\x01\x07\x02\x08\x03")
+            @test_throws ValidationError deserialize(Bitmap1, b"PMB\xfe\x02\x00\x03\x00\x01\x07\x02\x08\x03\x09")
+        end
     end
 end
