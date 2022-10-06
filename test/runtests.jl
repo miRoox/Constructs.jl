@@ -72,6 +72,18 @@ end
         @test_throws ErrorException Container(im).im = false
         @test propertynames(Container(1//2)) == propertynames(1//2)
         @test propertynames(Container{Rational{Int}}()) == fieldnames(Rational{Int})
+        @test repr(Container(3+4im)) == "Container{Complex{Int64}}(re=3, im=4)"
+        @test repr(Container{Complex{Int64}}()) == "Container{Complex{Int64}}(re=#undef, im=#undef)"
+        @test repr("text/plain", Container(3+4im)) == """
+        Container{Complex{Int64}}:
+          re: Int64 = 3
+          im: Int64 = 4
+        """
+        @test repr("text/plain", Container{Complex{Int64}}()) == """
+        Container{Complex{Int64}}:
+          re: #undef
+          im: #undef
+        """
     end
     @testset "primitive io" begin
         @testset "primitive type $type" for type in (Bool, UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128, Float16, Float32, Float64)

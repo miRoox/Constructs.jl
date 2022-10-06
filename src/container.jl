@@ -37,6 +37,40 @@ function Base.propertynames(obj::Container{T}, private::Bool = false) where {T}
 end
 setcontainerproperty!(obj::Container, name::Symbol, value::Any) = getfield(obj, 1)[name] = value
 
+function Base.show(io::IO, obj::Container)
+    show(io, typeof(obj))
+    print(io, "(")
+    for (i, prop) in enumerate(propertynames(obj))
+        val = getproperty(obj, prop)
+        if i > 1
+            print(io, ", ")
+        end
+        print(io, prop)
+        print(io, "=")
+        show(io, val)
+    end
+    print(io, ")")
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", obj::Container)
+    show(io, typeof(obj))
+    print(io, ":\n")
+    for prop in propertynames(obj)
+        val = getproperty(obj, prop)
+        print(io, "  ")
+        print(io, prop)
+        print(io, ": ")
+        if val isa UndefProperty
+            show(io, val)
+        else
+            show(io, typeof(val))
+            print(io, " = ")
+            show(io, mime, val)
+        end
+        print(io, "\n")
+    end
+end
+
 function Container(obj::T) where {T}
     res = Container{T}()
     for prop in propertynames(obj)
