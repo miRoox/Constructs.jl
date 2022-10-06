@@ -31,16 +31,16 @@ encode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = hton(
 decode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = ntoh(obj)
 
 for ntype in mbntypes
-    let le = Symbol("$(ntype)le"), be = Symbol("$(ntype)be")
+    let le = "$(ntype)le", be = "$(ntype)be"
         @eval begin
             @doc """
                 $($le) = LittleEndian($($ntype))
-            """ const $le = LittleEndian($ntype)
+            """ const $(Symbol(le)) = LittleEndian($ntype)
         end
         @eval begin
             @doc """
                 $($be) = BigEndian($($ntype))
-            """ const $be = BigEndian($ntype)
+            """ const $(Symbol(be)) = BigEndian($ntype)
         end
     end
 end
