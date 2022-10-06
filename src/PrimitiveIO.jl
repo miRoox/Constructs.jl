@@ -1,7 +1,7 @@
 """
     PrimitiveIO{T} <: Construct{T}
 
-Construct based on primitive [`read`](@ref)/[`write`](@ref).
+Construct based on primitive [`read`](https://docs.julialang.org/en/v1.6/base/io-network/#Base.read)/[`write`](https://docs.julialang.org/en/v1.6/base/io-network/#Base.write).
 """
 struct PrimitiveIO{T} <: Construct{T} end
 

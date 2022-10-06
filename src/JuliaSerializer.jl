@@ -3,7 +3,7 @@
 
 Standard Julia serialization.
 
-See also: [`Serialization`](@ref)
+See also: [`Serialization`](https://docs.julialang.org/en/v1.6/stdlib/Serialization/)
 """
 struct JuliaSerializer <: Construct{Any} end
 
