@@ -179,6 +179,7 @@ end
         @test deserialize(Const(UInt16be, 0x0102), b"\x01\x02") == 0x0102
         @test_throws ValidationError deserialize(Const(UInt16le, 0x0102), b"\x01\x02")
         @test serialize(Const(UInt16be, 0x0102), 0x0102) == b"\x01\x02"
+        @test serialize(Const(UInt16be, 0x0102), UndefProperty()) == b"\x01\x02"
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "conditional" begin
