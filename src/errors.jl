@@ -6,6 +6,14 @@ Abstract error type for constructs.
 """
 abstract type ConstructError <: Exception end
 
+function Base.showerror(io::IO, err::ConstructError)
+    print(io, "ConstructError: ")
+    print(io, typeof(err), ": ")
+    print(io, message(err))
+end
+
+message(err::ConstructError) = getproperty(err, :msg)
+
 """
     ValidationOk
 

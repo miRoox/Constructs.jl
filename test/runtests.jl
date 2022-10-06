@@ -9,6 +9,9 @@ using Test
 end
 
 @testset "Constructs.jl" begin
+    @testset "errors" begin
+        @test sprint(showerror, ValidationError("Invalid data")) == "ConstructError: ValidationError: Invalid data"
+    end
     @testset "size" begin
         @testset "UnboundedUpper" begin
             @test 1 + UnboundedUpper() == UnboundedUpper()
