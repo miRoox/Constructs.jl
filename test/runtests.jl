@@ -331,8 +331,10 @@ end
         end
         @testset "expand pass" for ex in [structonly, withname]
             @test @capture macroexpand(@__MODULE__, ex) begin
-                doc_
-                struct ST_ stfields__ end
+                begin
+                    doc_
+                    struct ST_ stfields__ end
+                end
                 struct CT_ <: Construct_{STT_} end
                 function Construct_(::Type_{STT_})
                     CTT_()

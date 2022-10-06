@@ -64,7 +64,11 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         constructdef = generateconstructdef(constructname, structname)
         serializedef = generateserializemethod(constructname, structname, fields)
         Expr(:block,
-            Expr(:meta, :doc), typedstructdef,
+            Expr(:macrocall,
+                GlobalRef(Core, Symbol("@__doc__")),
+                source,
+                typedstructdef
+            ),
             source, constructdef...,
             source, serializedef)
     else
