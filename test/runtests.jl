@@ -257,6 +257,7 @@ end
             @test estimatesize(GreedyVector(Int8)) == UnboundedSize(0)
             @test deserialize(GreedyVector(Int8), b"\x01\xff\x00") == Int8[1, -1, 0]
             @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == b"\x01\xff\x00"
+            @test serialize(GreedyVector(Int8), UndefProperty()) == b""
             @test deserialize(GreedyVector(UInt16be), b"\x01\xff\x02\xab\xcc") == [0x01ff, 0x02ab]
             @test serialize(GreedyVector(UInt16be), [0x01ff, 0xcc0a]) == b"\x01\xff\xcc\x0a"
             @test_throws ExceedMaxIterations deserialize(GreedyVector(Nothing), b"\x00")

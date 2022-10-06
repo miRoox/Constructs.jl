@@ -96,4 +96,10 @@ function serialize(array::GreedyVector{T, TSubCon}, s::IO, obj::Vector{T}; conte
     end
     bytecount
 end
+
+# only when the data can be discarded.
+function serialize(array::GreedyVector{T, TSubCon}, s::IO, ::UndefProperty; contextkw...) where {T, TSubCon}
+    serialize(array, s, Vector{T}(); contextkw...)
+end
+
 estimatesize(::GreedyVector; contextkw...) = UnboundedSize(0)
