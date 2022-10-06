@@ -47,6 +47,8 @@ gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eva
 
 FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, Any, rawtype)
 
+getconstruct(field::FieldInfo) = field.cons isa Construct ? field.cons : esc(field.cons)
+
 struct OtherStructInfo
     expr::Any
     line::Union{LineNumberNode, Missing}
@@ -56,7 +58,7 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
     if structdef.head == :struct
         infos = dumpstructinfo(m, structdef)
         fields = filter(info -> info isa FieldInfo, infos)
-        deducefieldtypes(fields)
+        deducefieldtypes!(fields)
         typedstructdef = replacestructdef(structdef, infos)
         structname = getdefname(structdef)
         constructdef = generateconstructdef(constructname, structname)
@@ -102,7 +104,7 @@ end
 
 const max_deduction_iteration = 100
 
-function deducefieldtypes(fields::Vector{>:FieldInfo})
+function deducefieldtypes!(fields::Vector{>:FieldInfo})
     namedfields = filter(field -> field.name isa Symbol, fields)
     lasttypes = map(field -> (field.constype, field.type), fields)
     for i in 1:max_deduction_iteration
@@ -203,7 +205,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
                 Expr(:parameters,
                     Expr(:(...), contextkw)
                 ),
-                field.cons isa Construct ? field.cons : esc(field.cons),
+                getconstruct(field),
                 s,
                 fielddata
             )
@@ -219,7 +221,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
             ),
             Expr(:(::), esc(constructname)),
             Expr(:(::), s, IO),
-            Expr(:(::), val, esc(structname)),
+            Expr(:(::), val, esc(structname))
         ),
         Expr(:block,
             Expr(:(=),
@@ -232,7 +234,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
             Expr(:(=), result, 0),
             sercalls...,
             result
-        ),
+        )
     )
 end
 
