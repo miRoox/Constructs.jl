@@ -64,6 +64,7 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         constructdef = generateconstructdef(constructname, structname)
         serializedef = generateserializemethod(constructname, structname, fields)
         deserializedef = generatedeserializemethod(constructname, structname, fields)
+        estimatesizedef = generateestimatesizemethod(constructname, structname, fields)
         Expr(:block,
             Expr(:macrocall,
                 GlobalRef(Core, Symbol("@__doc__")),
@@ -73,6 +74,7 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
             source, constructdef...,
             source, serializedef,
             source, deserializedef,
+            source, estimatesizedef,
         )
     else
         error("invalid syntax: @construct must be used with a struct type definition.")
@@ -304,6 +306,66 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
                 esc(structname),
                 thisfields...
             )
+        )
+    )
+end
+
+function generateestimatesizemethod(constructname::Symbol, structname::Symbol, fields::Vector{>:FieldInfo})
+    @sym contextkw result ex
+    szcalls = Vector{Any}()
+    sizehint!(szcalls, 2 * length(fields))
+    for field in fields
+        if !ismissing(field.line)
+            push!(szcalls, field.line)
+        end
+        szcall = Expr(:call, 
+            GlobalRef(Constructs, :estimatesize),
+            Expr(:parameters,
+                Expr(:(...), contextkw)
+            ),
+            getconstruct(field)
+        )
+        # if the construct can't accept UndefProperty() while the code has it,
+        # the size is just UnboundedSize(0) (like any other unknown sized construct)
+        szcall = Expr(:try,
+            Expr(:block, szcall),
+            ex,
+            Expr(:block,
+                Expr(:if,
+                    Expr(:call, GlobalRef(Core, :isa), ex, GlobalRef(Core, :MethodError)),
+                    UnboundedSize(0),
+                    Expr(:call, GlobalRef(Base, :rethrow))
+                )
+            )
+        )
+        szcall = Expr(:(+=),
+            result,
+            szcall
+        )
+        push!(szcalls, szcall)
+    end
+
+    Expr(:function,
+        Expr(:call,
+            GlobalRef(Constructs, :estimatesize),
+            Expr(:parameters,
+                Expr(:(...), contextkw)
+            ),
+            Expr(:(::), esc(constructname))
+        ),
+        Expr(:block,
+            Expr(:(=),
+                this,
+                Expr(:call,
+                    Expr(:curly,
+                        GlobalRef(Constructs, :Container),
+                        esc(structname)
+                    ),
+                )
+            ),
+            Expr(:(=), result, ConstructSize(0)),
+            szcalls...,
+            result
         )
     )
 end

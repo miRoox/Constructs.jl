@@ -345,6 +345,9 @@ end
                 function deserialize_(::CTT_, ds_::IO_; dcontextkw_...)
                     deserializebody__
                 end
+                function estimatesize_(::CTT_; econtextkw_...)
+                    estimatesizebody__
+                end
             end
         end
         notstruct = (
