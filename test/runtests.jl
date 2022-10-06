@@ -339,8 +339,11 @@ end
                 function Construct_(::Type_{STT_})
                     CTT_()
                 end
-                function serialize_(::CTT_, s_::IO_, val_::STT_; contextkw_...)
+                function serialize_(::CTT_, ss_::IO_, val_::STT_; scontextkw_...)
                     serializebody__
+                end
+                function deserialize_(::CTT_, ds_::IO_; dcontextkw_...)
+                    deserializebody__
                 end
             end
         end

@@ -63,6 +63,7 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         structname = getdefname(structdef)
         constructdef = generateconstructdef(constructname, structname)
         serializedef = generateserializemethod(constructname, structname, fields)
+        deserializedef = generatedeserializemethod(constructname, structname, fields)
         Expr(:block,
             Expr(:macrocall,
                 GlobalRef(Core, Symbol("@__doc__")),
@@ -70,7 +71,9 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
                 typedstructdef
             ),
             source, constructdef...,
-            source, serializedef)
+            source, serializedef,
+            source, deserializedef,
+        )
     else
         error("invalid syntax: @construct must be used with a struct type definition.")
     end
@@ -238,6 +241,69 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
             Expr(:(=), result, 0),
             sercalls...,
             result
+        )
+    )
+end
+
+function generatedeserializemethod(constructname::Symbol, structname::Symbol, fields::Vector{>:FieldInfo})
+    @sym s contextkw
+    desercalls = Vector{Any}()
+    sizehint!(desercalls, 2 * length(fields))
+    for field in fields
+        if !ismissing(field.line)
+            push!(desercalls, field.line)
+        end
+        if isnothing(field.name)
+            fieldname = gensym("anonymous")
+        else
+            fieldname = field.name
+        end
+        desercall = Expr(:call,
+            GlobalRef(Constructs, :setcontainerproperty!),
+            this,
+            QuoteNode(fieldname),
+            Expr(:call,
+                GlobalRef(Constructs, :deserialize),
+                Expr(:parameters,
+                    Expr(:(...), contextkw)
+                ),
+                getconstruct(field),
+                s,
+            )
+        )
+        push!(desercalls, desercall)
+    end
+    thisfields = map(filter(field -> !isnothing(field.name), fields)) do field
+        Expr(:(.),
+            this,
+            QuoteNode(field.name)
+        )
+    end
+
+    Expr(:function,
+        Expr(:call,
+            GlobalRef(Constructs, :deserialize),
+            Expr(:parameters,
+                Expr(:(...), contextkw)
+            ),
+            Expr(:(::), esc(constructname)),
+            Expr(:(::), s, IO)
+        ),
+        Expr(:block,
+            Expr(:(=),
+                this,
+                Expr(:call,
+                    Expr(:curly,
+                        GlobalRef(Constructs, :Container),
+                        esc(structname)
+                    ),
+                )
+            ),
+            desercalls...,
+            Expr(:call,
+                esc(structname),
+                thisfields...
+            )
         )
     )
 end
