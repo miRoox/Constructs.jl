@@ -330,7 +330,7 @@ end
             end
         end
         @testset "expand pass" for ex in [structonly, withname]
-            @test @capture macroexpand(@__MODULE__, ex) begin
+            @test @capture @show(macroexpand(@__MODULE__, ex)) begin
                 begin
                     doc_
                     struct ST_ stfields__ end
