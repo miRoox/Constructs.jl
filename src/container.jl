@@ -32,7 +32,9 @@ Base.getproperty(obj::Container{T}, name::Symbol) where {T} = get(getfield(obj, 
     end
 end
 Base.setproperty!(::Container, name::Symbol, ::Any) = error("Container property $name cannot be set.")
-Base.propertynames(obj::Container, private::Bool = false) = ((private ? fieldnames(Container) : ())..., keys(getfield(obj, 1))...)
+function Base.propertynames(obj::Container{T}, private::Bool = false) where {T}
+    tuple(union(private ? fieldnames(Container) : (), fieldnames(T), keys(getfield(obj, 1)))...)
+end
 setcontainerproperty!(obj::Container, name::Symbol, value::Any) = getfield(obj, 1)[name] = value
 
 function Container(obj::T) where {T}
