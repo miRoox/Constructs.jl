@@ -47,7 +47,7 @@ gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eva
 
 FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, Any, rawtype)
 
-getconstruct(field::FieldInfo) = field.cons isa Construct ? field.cons : esc(field.cons)
+getconstruct(field::FieldInfo) = field.cons isa Construct ? field.cons : field.cons
 
 struct OtherStructInfo
     expr::Any
@@ -214,7 +214,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
                 Expr(:parameters,
                     Expr(:(...), contextkw)
                 ),
-                getconstruct(field),
+                escape_excludes(getconstruct(field), [this]),
                 s,
                 fielddata
             )
@@ -269,7 +269,7 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
                 Expr(:parameters,
                     Expr(:(...), contextkw)
                 ),
-                getconstruct(field),
+                escape_excludes(getconstruct(field), [this]),
                 s,
             )
         )
@@ -323,7 +323,7 @@ function generateestimatesizemethod(constructname::Symbol, structname::Symbol, f
             Expr(:parameters,
                 Expr(:(...), contextkw)
             ),
-            getconstruct(field)
+            escape_excludes(getconstruct(field), [this])
         )
         # if the construct can't accept UndefProperty() while the code has it,
         # the size is just UnboundedSize(0) (like any other unknown sized construct)
@@ -369,6 +369,22 @@ function generateestimatesizemethod(constructname::Symbol, structname::Symbol, f
         )
     )
 end
+
+function escape_excludes(expr::Expr, excludes::Vector{Symbol})
+    if expr.head in [:meta, :quote, :macrocall]
+        expr
+    else
+        Expr(expr.head, map(arg -> escape_excludes(arg, excludes), expr.args)...)
+    end
+end
+function escape_excludes(sym::Symbol, excludes::Vector{Symbol})
+    if sym in excludes
+        sym
+    else
+        esc(sym)
+    end
+end
+escape_excludes(other, ::Vector{Symbol}) = other
 
 getdefname(name::Symbol) = name
 getdefname(sym::GlobalRef) = sym.name
