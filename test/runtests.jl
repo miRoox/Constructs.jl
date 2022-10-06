@@ -145,31 +145,31 @@ end
             @test serialize(IntEnum(UInt8, Fruit), reinterpret(Fruit, 0x1f)) == b"\x1f"
         end
         @testset "override base type construct" begin
-            @test estimatesize(IntEnum(BigEndian(UInt16), Fruit)) == sizeof(UInt16)
-            @test deserialize(IntEnum(BigEndian(UInt16), Fruit), b"\x00\x01") == banna
-            @test_throws ArgumentError deserialize(IntEnum(BigEndian(UInt16), Fruit), b"\x00\x1f")
-            @test_throws InexactError deserialize(IntEnum(BigEndian(UInt16), Fruit), b"\x01\x00")
-            @test serialize(IntEnum(BigEndian(UInt16), Fruit), orange) == b"\x00\x02"
-            @test serialize(IntEnum(BigEndian(UInt16), Fruit), reinterpret(Fruit, 0x1f)) == b"\x00\x1f"
+            @test estimatesize(IntEnum(UInt16be, Fruit)) == sizeof(UInt16)
+            @test deserialize(IntEnum(UInt16be, Fruit), b"\x00\x01") == banna
+            @test_throws ArgumentError deserialize(IntEnum(UInt16be, Fruit), b"\x00\x1f")
+            @test_throws InexactError deserialize(IntEnum(UInt16be, Fruit), b"\x01\x00")
+            @test serialize(IntEnum(UInt16be, Fruit), orange) == b"\x00\x02"
+            @test serialize(IntEnum(UInt16be, Fruit), reinterpret(Fruit, 0x1f)) == b"\x00\x1f"
         end
         @testset "non-exhaustive" begin
             @test_throws TypeError IntEnum{BigEndian}(Fruit)
-            @test estimatesize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit)) == sizeof(UInt16)
-            @test deserialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), b"\x00\x01") == banna
-            @test deserialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), b"\x00\x1f") == reinterpret(Fruit, 0x1f)
-            @test_throws InexactError deserialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), b"\x01\x00")
-            @test serialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), orange) == b"\x00\x02"
-            @test serialize(IntEnum{EnumNonExhaustive}(BigEndian(UInt16), Fruit), reinterpret(Fruit, 0x1f)) == b"\x00\x1f"
+            @test estimatesize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit)) == sizeof(UInt16)
+            @test deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x00\x01") == banna
+            @test deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x00\x1f") == reinterpret(Fruit, 0x1f)
+            @test_throws InexactError deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x01\x00")
+            @test serialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), orange) == b"\x00\x02"
+            @test serialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), reinterpret(Fruit, 0x1f)) == b"\x00\x1f"
         end
     end
     @testset "const" begin
         @test estimatesize(Const(0x0102)) == sizeof(0x0102)
         @test estimatesize(Const(b"BMP")) == sizeof(b"BMP")
         @test estimatesize(Const(Int32, 0x0102)) == sizeof(Int32)
-        @test estimatesize(Const(BigEndian(Int32), 0x0102)) == sizeof(Int32)
-        @test deserialize(Const(BigEndian(UInt16), 0x0102), b"\x01\x02") == 0x0102
-        @test_throws ValidationError deserialize(Const(LittleEndian(UInt16), 0x0102), b"\x01\x02")
-        @test serialize(Const(BigEndian(UInt16), 0x0102), 0x0102) == b"\x01\x02"
+        @test estimatesize(Const(Int32be, 0x0102)) == sizeof(Int32)
+        @test deserialize(Const(UInt16be, 0x0102), b"\x01\x02") == 0x0102
+        @test_throws ValidationError deserialize(Const(UInt16le, 0x0102), b"\x01\x02")
+        @test serialize(Const(UInt16be, 0x0102), 0x0102) == b"\x01\x02"
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "conditional" begin
@@ -185,19 +185,19 @@ end
             @test_throws MethodError Try{AbstractArray}(Int, UInt)
             @test estimatesize(Try(Padded(UInt, 12), UInt, Missing)) == RangedSize(0, 12)
             @test estimatesize(Try(Padded(UInt, 12), UInt)) == RangedSize(sizeof(UInt), 12)
-            @test deserialize(Try(BigEndian(UInt16), Int8), b"\xfe") == Int8(-2)
-            @test deserialize(Try(BigEndian(UInt16), Int8), b"\xfe\xcc") == 0xfecc
-            @test_throws EOFError deserialize(Try(BigEndian(UInt32), BigEndian(UInt16)), b"\xfe")
-            @test_throws ArgumentError deserialize(Try(BigEndian(UInt32), BigEndian(UInt16), Fruit), b"\xfe")
-            @test serialize(Try(BigEndian(UInt16), Int8), Int8(-2)) == b"\xfe"
-            @test serialize(Try(BigEndian(UInt16), Int8), 0xfecc) == b"\xfe\xcc"
-            @test deserialize(Try{Integer}(BigEndian(UInt16), Int8), b"\xfe") == Int8(-2)
-            @test deserialize(Try{Integer}(BigEndian(UInt16), Int8), b"\xfe\xcc") == 0xfecc
-            @test_throws EOFError deserialize(Try{Integer}(BigEndian(UInt32), BigEndian(UInt16)), b"\xfe")
-            @test_throws ArgumentError deserialize(Try{Union{Integer, Base.Enum}}(BigEndian(UInt32), BigEndian(UInt16), Fruit), b"\xfe")
-            @test serialize(Try{Integer}(BigEndian(UInt16), Int8), Int8(-2)) == b"\xfe"
-            @test serialize(Try{Integer}(BigEndian(UInt16), Int8), 0xfecc) == b"\xfe\xcc"
-            @test_throws MethodError serialize(Try{Integer}(BigEndian(UInt16), Int8, Fruit), -2)
+            @test deserialize(Try(UInt16be, Int8), b"\xfe") == Int8(-2)
+            @test deserialize(Try(UInt16be, Int8), b"\xfe\xcc") == 0xfecc
+            @test_throws EOFError deserialize(Try(UInt32be, UInt16be), b"\xfe")
+            @test_throws ArgumentError deserialize(Try(UInt32be, UInt16be, Fruit), b"\xfe")
+            @test serialize(Try(UInt16be, Int8), Int8(-2)) == b"\xfe"
+            @test serialize(Try(UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
+            @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe") == Int8(-2)
+            @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe\xcc") == 0xfecc
+            @test_throws EOFError deserialize(Try{Integer}(UInt32be, UInt16be), b"\xfe")
+            @test_throws ArgumentError deserialize(Try{Union{Integer, Base.Enum}}(UInt32be, UInt16be, Fruit), b"\xfe")
+            @test serialize(Try{Integer}(UInt16be, Int8), Int8(-2)) == b"\xfe"
+            @test serialize(Try{Integer}(UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
+            @test_throws MethodError serialize(Try{Integer}(UInt16be, Int8, Fruit), -2)
         end
     end
     @testset "collections" begin
@@ -218,8 +218,8 @@ end
             @test serialize(()) == UInt8[]
             @test estimatesize(Sequence(Int, Float16)) == estimatesize(Int) + estimatesize(Float16)
             @test estimatesize(Sequence(Int, Padded(Float16, 6))) == estimatesize(Int) + estimatesize(Padded(Float16, 6))
-            @test deserialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), b"\x01\xfe\x01\x02") == (Int8(1), 0x0102)
-            @test serialize(Sequence(Padded(Int8, 2), BigEndian(UInt16)), (Int8(1), 0x0102)) == b"\x01\x00\x01\x02"
+            @test deserialize(Sequence(Padded(Int8, 2), UInt16be), b"\x01\xfe\x01\x02") == (Int8(1), 0x0102)
+            @test serialize(Sequence(Padded(Int8, 2), UInt16be), (Int8(1), 0x0102)) == b"\x01\x00\x01\x02"
         end
         @testset "SizedArray" begin
             @testset "deduce type" begin
@@ -247,8 +247,8 @@ end
             @test estimatesize(GreedyVector(Int8)) == UnboundedSize(0)
             @test deserialize(GreedyVector(Int8), b"\x01\xff\x00") == Int8[1, -1, 0]
             @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == b"\x01\xff\x00"
-            @test deserialize(GreedyVector(BigEndian(UInt16)), b"\x01\xff\x02\xab\xcc") == [0x01ff, 0x02ab]
-            @test serialize(GreedyVector(BigEndian(UInt16)), [0x01ff, 0xcc0a]) == b"\x01\xff\xcc\x0a"
+            @test deserialize(GreedyVector(UInt16be), b"\x01\xff\x02\xab\xcc") == [0x01ff, 0x02ab]
+            @test serialize(GreedyVector(UInt16be), [0x01ff, 0xcc0a]) == b"\x01\xff\xcc\x0a"
             @test_throws ExceedMaxIterations deserialize(GreedyVector(Nothing), b"\x00")
             @test_throws ExceedMaxIterations deserialize(GreedyVector(Int8), Vector{UInt8}(1:10); max_iter=9)
         end
@@ -279,18 +279,18 @@ end
             (Int32, Int32),
             (JuliaSerializer(), Any),
             (Padded(4), Nothing),
-            (BigEndian(UInt), UInt),
+            (UInt64be, UInt),
             (Const(0x0102), UInt16),
             (Const(b"BMP"), Vector{UInt8}),
             (Try(Int, UInt), Union{Int, UInt}),
             (Try{Integer}(Int, UInt), Integer),
             (Try(Padded(UInt, 12), UInt, Missing), Union{Missing, UInt}),
             (Sequence(), Tuple{}),
-            (Sequence(Float64), Tuple{Float64}),
-            (Sequence(Float64, BigEndian(UInt)), Tuple{Float64, UInt}),
+            (Sequence(Float64le), Tuple{Float64}),
+            (Sequence(Float64be, UInt64be), Tuple{Float64, UInt}),
             (SizedArray(Int), Array{Int, 0}),
             (SizedArray(Float64, 10), Array{Float64, 1}),
-            (SizedArray(BigEndian(UInt16), 5, 17), Array{UInt16, 2}),
+            (SizedArray(UInt16be, 5, 17), Array{UInt16, 2}),
             (GreedyVector(Int), Vector{Int})
         ]
         @testset "construct type" for (cons, type) in constructypecases
