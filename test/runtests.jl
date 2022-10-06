@@ -206,7 +206,7 @@ end
             @test_throws ArgumentError deserialize(Try{Union{Integer, Base.Enum}}(UInt32be, UInt16be, Fruit), b"\xfe")
             @test serialize(Try{Integer}(UInt16be, Int8), Int8(-2)) == b"\xfe"
             @test serialize(Try{Integer}(UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
-            @test_throws MethodError serialize(Try{Integer}(UInt16be, Int8, Fruit), -2)
+            @test_throws MethodError serialize(Try{Integer}(UInt16be, Int8), -2)
         end
     end
     @testset "collections" begin
