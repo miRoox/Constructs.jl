@@ -166,6 +166,12 @@ end
         end
     end
     @testset "const" begin
+        @testset "deduce type" begin
+            @test Constructs.deducetype(() -> Const(0x0102)) == Const{UInt16, PrimitiveIO{UInt16}, UInt16}
+            @test Constructs.deducetype(() -> Const(b"BMP")) == Const{Vector{UInt8}, SizedArray{UInt8, 1, Vector{UInt8}, PrimitiveIO{UInt8}}, typeof(b"")}
+            @test Constructs.deducetype(() -> Const(Int32, 0x0102)) == Const{Int32, PrimitiveIO{Int32}, UInt16}
+            @test Constructs.deducetype(() -> Const(Int32be, 0x0102)) == Const{Int32, typeof(Int32be), UInt16}
+        end
         @test estimatesize(Const(0x0102)) == sizeof(0x0102)
         @test estimatesize(Const(b"BMP")) == sizeof(b"BMP")
         @test estimatesize(Const(Int32, 0x0102)) == sizeof(Int32)
