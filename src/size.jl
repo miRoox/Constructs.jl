@@ -44,7 +44,7 @@ Base.:(==)(::ConstructSize, ::Integer) = false
 Base.:(==)(::Integer, ::ConstructSize) = false
 
 """
-    ExactSize
+    ExactSize(value)
 
 Exact construct size (upper bound and lower bound are same).
 """
@@ -66,7 +66,7 @@ upper(sz::ExactSize) = sz.value
 Base.in(v::Integer, sz::ConstructSize) = v == sz.value
 
 """
-    RangedSize
+    RangedSize(lower, upper)
 
 Ranged construct size.
 """
@@ -90,7 +90,7 @@ upper(sz::RangedSize) = sz.upper
 Base.in(v::Integer, sz::RangedSize) = lower(sz) <= v <= upper(sz)
 
 """
-    UnboundedSize
+    UnboundedSize(lower)
 
 Unbounded ranged size.
 """

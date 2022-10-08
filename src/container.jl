@@ -12,6 +12,19 @@ Base.show(io::IO, ::UndefProperty) = print(io, "#undef")
     Container{T}
 
 Intermediate container for a `struct` object when serializing/deserializing it.
+
+    Container{T}()
+
+Create an uninitialized container for `T`.
+
+# Examples
+
+```jldoctest
+julia> Container{Complex{Int64}}()
+Container{Complex{Int64}}:
+  re: #undef
+  im: #undef
+```
 """
 struct Container{T}
     _props::Dict{Symbol, Any}
@@ -71,6 +84,20 @@ function Base.show(io::IO, mime::MIME"text/plain", obj::Container)
     end
 end
 
+"""
+    Container(object)
+
+Create a container from `object`.
+
+# Examples
+
+```jldoctest
+julia> Container(3+4im)
+Container{Complex{Int64}}:
+  re: Int64 = 3
+  im: Int64 = 4
+```
+"""
 function Container(obj::T) where {T}
     res = Container{T}()
     for prop in propertynames(obj)

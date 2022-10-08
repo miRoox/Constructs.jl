@@ -28,6 +28,17 @@ end
 #     CTA = deduceArrayType(TA::Type{<:AbstractArray}, T, N)
 #     SizedArray(CTA::Type{<:TA}, subcon, convert(NTuple{N, UInt}, size))
 # end
+"""
+    SizedArray([arraytype,] element, size...)
+
+Defines an array with specific size and element.
+
+# Arguments
+
+- `arraytype::Type`: the target array type, the default is `Array{T, N}`.
+- `element::Union{Type, Construct}`: the type/construct of elements.
+- `size`: the size of the array.
+"""
 function SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
     SizedArray{T, N, TA, TSubCon}(subcon, convert(NTuple{N, UInt}, size))
 end
@@ -59,12 +70,22 @@ estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(
 """
     GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, 1, Vector{T}}
 
-Homogenous array of elements for unknown count of elements by parsing until end of stream.
+Homogenous array of elements for unknown count of elements by deserializing until end of stream.
 """
 struct GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, 1, Vector{T}}
     subcon::TSubCon
 end
 
+"""
+    GreedyVector(element)
+
+Defines an unknown-sized vector, which will deserialize elements as much as possible.
+
+# Arguments
+
+- `element::Union{Type, Construct}`: the type/construct of elements.
+
+"""
 GreedyVector(type::Type) = GreedyVector(Construct(type))
 
 function deserialize(array::GreedyVector{T, TSubCon}, s::IO; contextkw...) where {T, TSubCon}

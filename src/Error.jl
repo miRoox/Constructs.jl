@@ -8,6 +8,12 @@ struct RaiseError{E<:Exception} <: Construct{Union{}}
     err::E
 end
 
+"""
+    RaiseError(error::Exception)
+    RaiseError(message::String)
+
+Raise specific `error` or `ErrorException(message)` when serializing or deserializing any data.
+"""
 RaiseError(msg::AbstractString) = RaiseError(ErrorException(msg))
 
 # this method is not consistent with the Construct interface,

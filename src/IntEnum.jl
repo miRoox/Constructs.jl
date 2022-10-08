@@ -24,9 +24,57 @@ struct IntEnum{Ex<:EnumExhaustibility, T<:Integer, TSubCon<:Construct{T}, E<:Bas
     subcon::TSubCon
 end
 
+"""
+    IntEnum{EnumNonExhaustive}([base,] enum)
+
+Defines the non-exhaustive `enum`.
+
+# Arguments
+
+- `base::Union{Type, Construct}`: the base integer type/construct.
+- `enum::Type`: the enum type.
+
+# Examples
+
+```jldoctest
+julia> @enum Fruit::UInt8 apple=1 banana=2 orange=3
+
+julia> deserialize(IntEnum{EnumNonExhaustive}(Fruit), b"\\x04")
+<invalid #4>::Fruit = 0x04
+```
+"""
 IntEnum{Ex}(subcon::TSubCon, ::Type{E}) where {Ex, T<:Integer, TSubCon<:Construct{T}, E<:Base.Enum} = IntEnum{Ex, T, TSubCon, E}(subcon)
 IntEnum{Ex}(::Type{T}, ::Type{E}) where {Ex, T<:Integer, E<:Base.Enum} = IntEnum{Ex}(Construct(T), E)
 IntEnum{Ex}(::Type{E}) where {Ex, T<:Integer, E<:Base.Enum{T}} = IntEnum{Ex}(Construct(T), E)
+
+"""
+    IntEnum([base,] enum)
+
+Defines the (exhaustive) `enum`.
+
+# Arguments
+
+- `base::Union{Type, Construct}`: the base integer type/construct.
+- `enum::Type`: the enum type.
+
+# Examples
+
+```jldoctest
+julia> @enum Fruit::UInt8 apple=1 banana=2 orange=3
+
+julia> deserialize(IntEnum(Fruit), b"\\x02")
+banana::Fruit = 0x02
+
+julia> deserialize(IntEnum(Fruit), b"\\x04")
+ERROR: ArgumentError: invalid value for Enum Fruit: 4
+[...]
+
+julia> serialize(IntEnum(UInt16le, Fruit), orange)
+2-element Vector{UInt8}:
+ 0x03
+ 0x00
+```
+"""
 IntEnum(subcon::Union{Type, Construct}, ::Type{E}) where {E<:Base.Enum} = IntEnum{EnumExhaustive}(subcon, E)
 IntEnum(::Type{E}) where {T<:Integer, E<:Base.Enum{T}} = IntEnum(Construct(T), E)
 

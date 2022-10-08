@@ -11,6 +11,18 @@ struct LittleEndian{T<:mbnunion, TSubCon<:Construct{T}} <: Adapter{T, T}
     subcon::TSubCon
 end
 
+"""
+    LittleEndian(type)
+
+Defines the little endian format `type`.
+
+# Examples
+
+```jldoctest
+julia> deserialize(LittleEndian(UInt16), b"\\x12\\x34")
+0x3412
+```
+"""
 LittleEndian(::Type{T}) where {T<:mbnunion} = LittleEndian(Construct(T))
 
 encode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = htol(obj)
@@ -25,6 +37,18 @@ struct BigEndian{T<:mbnunion, TSubCon<:Construct{T}} <: Adapter{T, T}
     subcon::TSubCon
 end
 
+"""
+    BigEndian(type)
+
+Defines the big endian format `type`.
+
+# Examples
+
+```jldoctest
+julia> deserialize(BigEndian(UInt16), b"\\x12\\x34")
+0x1234
+```
+"""
 BigEndian(::Type{T}) where {T<:mbnunion} = BigEndian(Construct(T))
 
 encode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = hton(obj)
