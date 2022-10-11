@@ -19,6 +19,8 @@ struct EnumNonExhaustive <: EnumExhaustibility end
     IntEnum{Ex<:EnumExhaustibility, T, TSubCon<:Construct{T}, E<:Base.Enum} <: Adapter{T, E}
 
 Integer-based enum adapter for serializing and deserializing.
+
+This is the default constructor for `Base.Enum{T}`.
 """
 struct IntEnum{Ex<:EnumExhaustibility, T<:Integer, TSubCon<:Construct{T}, E<:Base.Enum} <: Adapter{T, E}
     subcon::TSubCon

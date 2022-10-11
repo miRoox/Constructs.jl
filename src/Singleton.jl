@@ -2,6 +2,8 @@
     Singleton{T} <: Construct{T}
 
 Singleton type empty construct.
+
+This is the default constructor for `Nothing` and `Missing`.
 """
 struct Singleton{T} <: Construct{T}
     function Singleton{T}() where {T}

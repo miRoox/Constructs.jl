@@ -5,6 +5,8 @@ const sequence_max_subcons = 64
     Sequence{Tuple{Ts...}} <: Construct{Tuple{Ts...}}
 
 A sequence of construct data.
+
+This is the default constructor for `Tuple{Ts...}`.
 """
 abstract type Sequence{TT<:Tuple} <: Construct{TT} end
 
