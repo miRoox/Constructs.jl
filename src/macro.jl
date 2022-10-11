@@ -78,7 +78,7 @@ gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eva
   Expr(:block, skipmissing([line])..., rawtype)
 ))
 
-FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, Any, rawtype)
+FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, UndefProperty, rawtype)
 
 getconstruct(field::FieldInfo) = field.cons isa Construct ? field.cons : field.cons
 
@@ -154,7 +154,7 @@ function deducefieldtypes!(fields::Vector{>:FieldInfo})
             error("Reach max iteration $max_deduction_iteration when trying to deduce field types.")
         end
         for field in fields
-            if !isabstracttype(field.type)
+            if field.type != UndefProperty
                 continue
             end
             thistype = NamedTuple{tuple(map(field -> field.name, namedfields)...), Tuple{map(field -> field.type, namedfields)...}}
