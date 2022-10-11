@@ -144,38 +144,26 @@ function dumpstructinfo(m::Module, structdef::Expr)
     infos
 end
 
-const max_deduction_iteration = 100
-
 function deducefieldtypes!(fields::Vector{>:FieldInfo})
     namedfields = filter(field -> field.name isa Symbol, fields)
-    lasttypes = map(field -> (field.constype, field.type), fields)
-    for i in 1:max_deduction_iteration
-        if i == max_deduction_iteration
-            error("Reach max iteration $max_deduction_iteration when trying to deduce field types.")
+    for field in fields
+        if field.type != UndefProperty
+            continue
         end
-        for field in fields
-            if field.type != UndefProperty
-                continue
-            end
-            thistype = NamedTuple{tuple(map(field -> field.name, namedfields)...), Tuple{map(field -> field.type, namedfields)...}}
-            fieldconstype = deducetype(field.tfunc, thistype)
-            if fieldconstype !== Union{}
-                field.constype = fieldconstype
-                if hasmethod(constructtype2, Tuple{Type{field.constype}})
-                    field.type = constructtype2(field.constype)
-                    if field.type isa field.constype
-                        field.cons = Construct(field.type)
-                    end
+        thistype = NamedTuple{tuple(map(field -> field.name, namedfields)...), Tuple{map(field -> field.type, namedfields)...}}
+        fieldconstype = deducetype(field.tfunc, thistype)
+        if fieldconstype !== Union{}
+            field.constype = fieldconstype
+            if hasmethod(constructtype2, Tuple{Type{field.constype}})
+                field.type = constructtype2(field.constype)
+                if field.type isa field.constype
+                    field.cons = Construct(field.type)
                 end
             else
-                error("Cannot deduce type for $(field.rawtype).")
+                error("$(field.rawtype) is neither a constructor nor a type.")
             end
-        end
-        currenttypes = map(field -> (field.constype, field.type), fields)
-        if currenttypes == lasttypes
-            break # fix point
         else
-            lasttypes = currenttypes
+            error("Cannot deduce type for $(field.rawtype).")
         end
     end
     fields
