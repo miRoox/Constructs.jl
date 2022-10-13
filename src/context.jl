@@ -1,4 +1,6 @@
 
+const pathkw = gensym("path")
+
 """
     PropertyPath(segments)
 
@@ -19,3 +21,5 @@ function Base.show(io::IO, path::PropertyPath)
         show(io, seg)
     end
 end
+
+with_property(contextkw, property) = (; contextkw..., pathkw => PropertyPath([get(PropertyPath, contextkw, pathkw).segments..., property]))

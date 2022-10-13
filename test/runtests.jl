@@ -14,6 +14,11 @@ end
         @test repr(PropertyPath()) == "(this)"
         @test repr(PropertyPath([:value])) == "(this) -> :value"
         @test repr(PropertyPath([:array, 2])) == "(this) -> :array -> 2"
+        @testset "internal" begin
+            @test Constructs.with_property((;), :value) == (; Constructs.pathkw => PropertyPath([:value]))
+            @test Constructs.with_property((; a=1), :value) == (; a=1, Constructs.pathkw => PropertyPath([:value]))
+            @test Constructs.with_property((; Constructs.pathkw => PropertyPath([:data])), :value) == (; Constructs.pathkw => PropertyPath([:data, :value]))
+        end
     end
     @testset "errors" begin
         @test sprint(showerror, ValidationError("Invalid data")) == "ConstructError: ValidationError: Invalid data"
