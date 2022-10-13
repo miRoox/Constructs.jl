@@ -29,6 +29,7 @@ end
             @test max(UnboundedUpper(), typemax(UInt64)) == UnboundedUpper()
             @test min(1, UnboundedUpper()) == 1
             @test min(UnboundedUpper(), typemax(UInt64)) == typemax(UInt64)
+            @test repr(UnboundedUpper()) == "+∞"
         end
         @testset "ConstructSize" begin
             @test ConstructSize(1, 1) == ExactSize(1)

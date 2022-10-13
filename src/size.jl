@@ -16,6 +16,7 @@ Base.max(::Integer, ::UnboundedUpper) = unboundedupper
 Base.max(x::UnboundedUpper, y::Integer) = max(y, x)
 Base.min(x::Integer, ::UnboundedUpper) = x
 Base.min(x::UnboundedUpper, y::Integer) = min(y, x)
+Base.show(io::IO, ::UnboundedUpper) = print(io, "+∞")
 
 """
     ConstructSize
