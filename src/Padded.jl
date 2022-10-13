@@ -15,7 +15,7 @@ Padded(size::Integer) = Padded(Nothing, size)
 
 function deserialize(cons::Padded, s::IO; contextkw...)
     start = position(s)
-    val = deserialize(cons.subcon, s, contextkw...)
+    val = deserialize(cons.subcon, s; contextkw...)
     stop = position(s)
     if stop > start + cons.size
         throw(PaddedError("subcon deserialized $(stop - start) bytes but was only allowed $(cons.size)."))
@@ -25,7 +25,7 @@ function deserialize(cons::Padded, s::IO; contextkw...)
 end
 function serialize(cons::Padded{T}, s::IO, val::T; contextkw...) where {T}
     start = position(s)
-    serialize(cons.subcon, s, val, contextkw...)
+    serialize(cons.subcon, s, val; contextkw...)
     stop = position(s)
     if stop > start + cons.size
         throw(PaddedError("subcon serialized $(stop - start) bytes but was only allowed $(cons.size)."))
