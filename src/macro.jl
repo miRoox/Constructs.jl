@@ -233,7 +233,13 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
             Expr(:call, 
                 GlobalRef(Constructs, :serialize),
                 Expr(:parameters,
-                    Expr(:(...), contextkw)
+                    Expr(:(...),
+                        Expr(:call,
+                            GlobalRef(Constructs, :with_property),
+                            contextkw,
+                            QuoteNode(something(field.name, gensym("anonymous")))
+                        )
+                    )
                 ),
                 escape_excludes(getconstruct(field), [this]),
                 s,
@@ -288,7 +294,13 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
             Expr(:call,
                 GlobalRef(Constructs, :deserialize),
                 Expr(:parameters,
-                    Expr(:(...), contextkw)
+                    Expr(:(...),
+                        Expr(:call,
+                            GlobalRef(Constructs, :with_property),
+                            contextkw,
+                            QuoteNode(fieldname)
+                        )
+                    )
                 ),
                 escape_excludes(getconstruct(field), [this]),
                 s,
@@ -342,7 +354,13 @@ function generateestimatesizemethod(constructname::Symbol, structname::Symbol, f
         szcall = Expr(:call, 
             GlobalRef(Constructs, :estimatesize),
             Expr(:parameters,
-                Expr(:(...), contextkw)
+                Expr(:(...),
+                    Expr(:call,
+                        GlobalRef(Constructs, :with_property),
+                        contextkw,
+                        QuoteNode(something(field.name, gensym("anonymous")))
+                    )
+                )
             ),
             escape_excludes(getconstruct(field), [this])
         )

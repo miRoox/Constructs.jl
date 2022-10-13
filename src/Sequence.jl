@@ -51,9 +51,9 @@ for n in 1:sequence_max_subcons
     cts = map(i -> Symbol("t$i"), 1:n)
     pcts = map(ct -> Expr(:(::), ct, :(Union{Type, Construct})), cts) # t$i::Union{Type, Construct}
     ccts = map(ct -> Expr(:call, :Construct, ct), cts) # Construct(t$i)
-    desers = map((sub) -> :(deserialize(seq.$sub, s; contextkw...)), subs)
-    sers = map((sub, i) -> :(serialize(seq.$sub, s, val[$i]; contextkw...)), subs, 1:n)
-    szs = map((sub) -> :(estimatesize(seq.$sub; contextkw...)), subs)
+    desers = map((sub, i) -> :(deserialize(seq.$sub, s; with_property(contextkw, $i)...)), subs, 1:n)
+    sers = map((sub, i) -> :(serialize(seq.$sub, s, val[$i]; with_property(contextkw, $i)...)), subs, 1:n)
+    szs = map((sub, i) -> :(estimatesize(seq.$sub; with_property(contextkw, $i)...)), subs, 1:n)
     # COV_EXCL_STOP
 
     @eval begin

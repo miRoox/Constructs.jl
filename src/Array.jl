@@ -50,7 +50,7 @@ SizedArray(::Type{T}, size::Vararg{Integer, N}) where {T, N} = SizedArray(Array{
 function deserialize(array::SizedArray{T, N, TA, TSubCon}, s::IO; contextkw...) where {T, N, TA, TSubCon}
     result = similar(TA, array.size)
     for i in eachindex(result)
-        result[i] = deserialize(array.subcon, s; contextkw...)
+        result[i] = deserialize(array.subcon, s; with_property(contextkw, i)...)
     end
     result
 end
@@ -61,7 +61,7 @@ function serialize(array::SizedArray{T, N, TA, TSubCon}, s::IO, obj::TA; context
     end
     bytecount = 0
     for i in eachindex(obj)
-        bytecount += serialize(array.subcon, s, obj[i]; contextkw...)
+        bytecount += serialize(array.subcon, s, obj[i]; with_property(contextkw, i)...)
     end
     bytecount
 end
@@ -96,7 +96,7 @@ function deserialize(array::GreedyVector{T, TSubCon}, s::IO; contextkw...) where
     try
         while !eof(s)
             fallback = position(s)
-            push!(result, deserialize(array.subcon, s; contextkw...))
+            push!(result, deserialize(array.subcon, s; with_property(contextkw, i)...))
             i += 1
             if i > max_iter
                 throw(ExceedMaxIterations("Exceed max iterations $max_iter", max_iter))
@@ -112,8 +112,8 @@ function deserialize(array::GreedyVector{T, TSubCon}, s::IO; contextkw...) where
 end
 function serialize(array::GreedyVector{T, TSubCon}, s::IO, obj::Vector{T}; contextkw...) where {T, TSubCon}
     bytecount = 0
-    for v in obj
-        bytecount += serialize(array.subcon, s, v; contextkw...)
+    for i in eachindex(obj)
+        bytecount += serialize(array.subcon, s, obj[i]; with_property(contextkw, i)...)
     end
     bytecount
 end
