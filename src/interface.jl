@@ -172,7 +172,7 @@ function deserialize(adapter::Adapter{TSub, T}, s::IO; contextkw...) where {TSub
     decode(adapter, obj; contextkw...)
 end
 
-estimatesize(wrapper::Adapter) = estimatesize(subcon(wrapper))
+estimatesize(wrapper::Adapter; contextkw...) = estimatesize(subcon(wrapper); contextkw...)
 
 """
     SymmetricAdapter{T} <: Adapter{T, T}
