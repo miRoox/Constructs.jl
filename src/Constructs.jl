@@ -14,6 +14,7 @@ export
     Adapter,
     SymmetricAdapter,
     Validator,
+    PropertyPath,
     UnboundedUpper,
     ConstructSize,
     ExactSize,
@@ -53,6 +54,7 @@ export
     SizedArray,
     GreedyVector
 
+include("context.jl")
 include("errors.jl")
 include("size.jl")
 include("container.jl")

@@ -9,6 +9,12 @@ using Test
 end
 
 @testset "Constructs.jl" begin
+    @testset "context" begin
+        @test PropertyPath() == PropertyPath([])
+        @test repr(PropertyPath()) == "(this)"
+        @test repr(PropertyPath([:value])) == "(this) -> :value"
+        @test repr(PropertyPath([:array, 2])) == "(this) -> :array -> 2"
+    end
     @testset "errors" begin
         @test sprint(showerror, ValidationError("Invalid data")) == "ConstructError: ValidationError: Invalid data"
     end
