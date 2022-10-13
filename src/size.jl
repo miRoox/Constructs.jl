@@ -8,12 +8,16 @@ struct UnboundedUpper <: Unsigned end
 
 const unboundedupper = UnboundedUpper()
 
+Base.:+(::UnboundedUpper, ::UnboundedUpper) = unboundedupper
 Base.:+(::Integer, ::UnboundedUpper) = unboundedupper
 Base.:+(x::UnboundedUpper, y::Integer) = y + x
+Base.:*(::UnboundedUpper, ::UnboundedUpper) = unboundedupper
 Base.:*(x::Unsigned, ::UnboundedUpper) = x > 0 ? unboundedupper : 0
 Base.:*(x::UnboundedUpper, y::Unsigned) = y * x
+Base.max(::UnboundedUpper, ::UnboundedUpper) = unboundedupper
 Base.max(::Integer, ::UnboundedUpper) = unboundedupper
 Base.max(x::UnboundedUpper, y::Integer) = max(y, x)
+Base.min(::UnboundedUpper, ::UnboundedUpper) = unboundedupper
 Base.min(x::Integer, ::UnboundedUpper) = x
 Base.min(x::UnboundedUpper, y::Integer) = min(y, x)
 Base.show(io::IO, ::UnboundedUpper) = print(io, "+∞")

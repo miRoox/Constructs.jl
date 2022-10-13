@@ -22,13 +22,17 @@ end
         @testset "UnboundedUpper" begin
             @test 1 + UnboundedUpper() == UnboundedUpper()
             @test UnboundedUpper() + typemax(UInt64) == UnboundedUpper()
+            @test UnboundedUpper() + UnboundedUpper() == UnboundedUpper()
             @test 0x10 * UnboundedUpper() == UnboundedUpper()
             @test UnboundedUpper() * typemax(UInt64) == UnboundedUpper()
             @test 0x0 * UnboundedUpper() == 0x0
+            @test UnboundedUpper() * UnboundedUpper() == UnboundedUpper()
             @test max(1, UnboundedUpper()) == UnboundedUpper()
             @test max(UnboundedUpper(), typemax(UInt64)) == UnboundedUpper()
+            @test max(UnboundedUpper(), UnboundedUpper()) == UnboundedUpper()
             @test min(1, UnboundedUpper()) == 1
             @test min(UnboundedUpper(), typemax(UInt64)) == typemax(UInt64)
+            @test min(UnboundedUpper(), UnboundedUpper()) == UnboundedUpper()
             @test repr(UnboundedUpper()) == "+∞"
         end
         @testset "ConstructSize" begin
