@@ -1,18 +1,17 @@
 
 """
-    ConstructError <: Exception
+    AbstractConstructError <: Exception
 
 Abstract error type for constructs.
 """
-abstract type ConstructError <: Exception end
+abstract type AbstractConstructError <: Exception end
 
-function Base.showerror(io::IO, err::ConstructError)
-    print(io, "ConstructError: ")
+function Base.showerror(io::IO, err::AbstractConstructError)
     print(io, typeof(err), ": ")
     print(io, message(err))
 end
 
-message(err::ConstructError) = getproperty(err, :msg)
+message(err::AbstractConstructError) = getproperty(err, :msg)
 
 """
     ValidationOk
@@ -33,7 +32,7 @@ const ValidationOK = ValidationOk()
 
 Error thrown when the validatiion failed.
 """
-struct ValidationError <: ConstructError
+struct ValidationError <: AbstractConstructError
     msg::String
 end
 
@@ -44,7 +43,7 @@ const default_max_iter = UInt(0xffff)
 
 Error thrown when exceed the max iterations.
 """
-struct ExceedMaxIterations <: ConstructError
+struct ExceedMaxIterations <: AbstractConstructError
     msg::String
     max_iter::UInt
 
@@ -56,6 +55,6 @@ end
 
 Error thrown when the encoded string or bytes takes more bytes than padding allows, or the pad value is improper.
 """
-struct PaddedError <: ConstructError
+struct PaddedError <: AbstractConstructError
     msg::String
 end

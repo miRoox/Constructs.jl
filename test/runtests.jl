@@ -21,7 +21,7 @@ end
         end
     end
     @testset "errors" begin
-        @test sprint(showerror, ValidationError("Invalid data")) == "ConstructError: ValidationError: Invalid data"
+        @test sprint(showerror, ValidationError("Invalid data")) == "ValidationError: Invalid data"
     end
     @testset "size" begin
         @testset "UnboundedUpper" begin

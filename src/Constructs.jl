@@ -20,7 +20,7 @@ export
     ExactSize,
     RangedSize,
     UnboundedSize,
-    ConstructError,
+    AbstractConstructError,
     ValidationOK,
     ValidationError,
     ExceedMaxIterations,
