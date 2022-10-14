@@ -79,15 +79,19 @@ gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eva
   Expr(:block, skipmissing([line])..., rawtype)
 ))
 
-FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(
-    name,
-    isnothing(name) ? gensym("anonymous") : name, 
-    rawtype,
-    line,
-    gentfunc(m, rawtype, line),
-    Any,
-    UndefProperty,
-    rawtype)
+function FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing})
+    erawtype = macroexpand(m, rawtype)
+    FieldInfo(
+        name,
+        isnothing(name) ? gensym("anonymous") : name, 
+        erawtype,
+        line,
+        gentfunc(m, erawtype, line),
+        Any,
+        UndefProperty,
+        erawtype
+    )
+end
 
 getconstruct(field::FieldInfo) = field.cons isa Construct ? field.cons : field.cons
 
