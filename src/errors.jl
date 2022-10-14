@@ -14,20 +14,6 @@ end
 message(err::AbstractConstructError) = getproperty(err, :msg)
 
 """
-    ValidationOk
-
-Placeholder type if there is no validatiion error.
-"""
-struct ValidationOk end
-
-"""
-    ValidationOK
-
-Placeholder if there is no validatiion error.
-"""
-const ValidationOK = ValidationOk()
-
-"""
     ValidationError(msg)
 
 Error thrown when the validatiion failed.

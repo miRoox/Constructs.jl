@@ -196,19 +196,23 @@ Abstract validator type. Validates a condition on the encoded/decoded object..
 ## Methods
 
 * [`subcon`](@ref)`(validator::Validator{T})::Construct{T}`
-* [`validate`](@ref)`(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOk, ValidationError}`
+* [`validate`](@ref)`(validator::Validator{T}, obj::T; contextkw...)`
 """
 abstract type Validator{T} <: SymmetricAdapter{T} end
 
 """
-    validate(validator::Validator{T}, obj::T; contextkw...)::Union{ValidationOk, ValidationError}
+    validate(validator::Validator{T}, obj::T; contextkw...)
+
+Checks whether the given `obj` is a valid value for the `validator`.
+
+Should return a `Bool` or throw a [`ValidationError`](@ref).
 """
 function validate end
 
 function encode(validator::Validator{T}, obj::T; contextkw...) where {T}
     result = validate(validator, obj; contextkw...)
-    if result isa ValidationError
-        throw(result)
+    if result !== true
+        throw(ValidationError("object failed validation: $obj"))
     end
     obj
 end

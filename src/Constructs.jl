@@ -21,7 +21,6 @@ export
     RangedSize,
     UnboundedSize,
     AbstractConstructError,
-    ValidationOK,
     ValidationError,
     ExceedMaxIterations,
     PaddedError,
