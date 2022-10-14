@@ -65,6 +65,7 @@ constructtype2(::Type{<:Type{T}}) where {T} = T
 
 mutable struct FieldInfo
     name::Union{Symbol, Nothing}
+    sname::Symbol # name or generated name
     rawtype::Any # raw expression for type
     line::Union{LineNumberNode, Missing}
     tfunc::Function
@@ -78,7 +79,15 @@ gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eva
   Expr(:block, skipmissing([line])..., rawtype)
 ))
 
-FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(name, rawtype, line, gentfunc(m, rawtype, line), Any, UndefProperty, rawtype)
+FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing}) = FieldInfo(
+    name,
+    isnothing(name) ? gensym("anonymous") : name, 
+    rawtype,
+    line,
+    gentfunc(m, rawtype, line),
+    Any,
+    UndefProperty,
+    rawtype)
 
 getconstruct(field::FieldInfo) = field.cons isa Construct ? field.cons : field.cons
 
@@ -237,7 +246,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
                         Expr(:call,
                             GlobalRef(Constructs, :with_property),
                             contextkw,
-                            QuoteNode(something(field.name, gensym("anonymous")))
+                            QuoteNode(field.sname)
                         )
                     )
                 ),
@@ -282,15 +291,10 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
         if !ismissing(field.line)
             push!(desercalls, field.line)
         end
-        if isnothing(field.name)
-            fieldname = gensym("anonymous")
-        else
-            fieldname = field.name
-        end
         desercall = Expr(:call,
             GlobalRef(Constructs, :setcontainerproperty!),
             this,
-            QuoteNode(fieldname),
+            QuoteNode(field.sname),
             Expr(:call,
                 GlobalRef(Constructs, :deserialize),
                 Expr(:parameters,
@@ -298,7 +302,7 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
                         Expr(:call,
                             GlobalRef(Constructs, :with_property),
                             contextkw,
-                            QuoteNode(fieldname)
+                            QuoteNode(field.sname)
                         )
                     )
                 ),
@@ -358,7 +362,7 @@ function generateestimatesizemethod(constructname::Symbol, structname::Symbol, f
                     Expr(:call,
                         GlobalRef(Constructs, :with_property),
                         contextkw,
-                        QuoteNode(something(field.name, gensym("anonymous")))
+                        QuoteNode(field.sname)
                     )
                 )
             ),
