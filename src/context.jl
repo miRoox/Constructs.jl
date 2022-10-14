@@ -11,6 +11,7 @@ struct PropertyPath
 end
 
 PropertyPath() = PropertyPath([])
+PropertyPath(path::PropertyPath, append) = PropertyPath([path.segments..., append])
 
 Base.:(==)(x::PropertyPath, y::PropertyPath) = x.segments == y.segments
 
@@ -22,4 +23,4 @@ function Base.show(io::IO, path::PropertyPath)
     end
 end
 
-with_property(contextkw, property) = (; contextkw..., pathkw => PropertyPath([get(PropertyPath, contextkw, pathkw).segments..., property]))
+with_property(contextkw, property) = (; contextkw..., pathkw => PropertyPath(get(PropertyPath, contextkw, pathkw), property))
