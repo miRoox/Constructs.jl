@@ -10,9 +10,16 @@ This is the default construct for $primitive_types_indoc.
 """
 struct PrimitiveIO{T} <: Construct{T} end
 
+"""
+    PrimitiveIO(type)
+
+Defines a primitive IO construct for `type`.
+"""
+PrimitiveIO(::Type{T}) where {T} = PrimitiveIO{T}()
+
 # primitive numbers
 for type in primitive_types
-    @eval Construct(::Type{$type}) = PrimitiveIO{$type}()
+    @eval Construct(::Type{$type}) = PrimitiveIO($type)
 end
 
 deserialize(::PrimitiveIO{T}, s::IO; contextkw...) where {T} = read(s, T)
