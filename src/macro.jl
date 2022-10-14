@@ -93,8 +93,6 @@ function FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union
     )
 end
 
-getconstruct(field::FieldInfo) = field.cons isa Construct ? field.cons : field.cons
-
 struct OtherStructInfo
     expr::Any
     line::Union{LineNumberNode, Missing}
@@ -254,7 +252,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
                         )
                     )
                 ),
-                escape_excludes(getconstruct(field), [this]),
+                escape_excludes(field.cons, [this]),
                 s,
                 fielddata
             )
@@ -310,7 +308,7 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
                         )
                     )
                 ),
-                escape_excludes(getconstruct(field), [this]),
+                escape_excludes(field.cons, [this]),
                 s,
             )
         )
@@ -370,7 +368,7 @@ function generateestimatesizemethod(constructname::Symbol, structname::Symbol, f
                     )
                 )
             ),
-            escape_excludes(getconstruct(field), [this])
+            escape_excludes(field.cons, [this])
         )
         # if the construct can't accept UndefProperty() while the code has it,
         # the size is just UnboundedSize(0) (like any other unknown sized construct)
