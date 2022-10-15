@@ -135,8 +135,11 @@ end
         @test_throws ErrorException serialize(RaiseError("Invalid data."), IOBuffer(), UndefProperty())
         @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), IOBuffer(), UndefProperty())
     end
-    @testset "JuliaSerializer" for v in (nothing, 1, 22//7, π, 3//5+7im, [1 2.5 4im; 1+5.2im 1/3 Inf], "Lorem Ipsum")
-        @test deserialize(JuliaSerializer(), serialize(JuliaSerializer(), v)) == v
+    @testset "JuliaSerializer" begin
+        @test estimatesize(JuliaSerializer()) == UnboundedSize(0)
+        @testset "serde" for v in (nothing, 1, 22//7, π, 3//5+7im, [1 2.5 4im; 1+5.2im 1/3 Inf], "Lorem Ipsum")
+            @test deserialize(JuliaSerializer(), serialize(JuliaSerializer(), v)) == v
+        end
     end
     @testset "byte order" begin
         be = (
