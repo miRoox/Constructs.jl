@@ -231,12 +231,17 @@ end
             @test_throws ArgumentError deserialize(Try(UInt32be, UInt16be, Fruit), b"\xfe")
             @test serialize(Try(UInt16be, Int8), Int8(-2)) == b"\xfe"
             @test serialize(Try(UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
+            @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
+            @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), 0x0102) == b"\x02\x01"
+            @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), UndefProperty()) == b"\x02\x01"
+            @test serialize(Try(UInt16be, Const(0xfc)), UndefProperty()) == b"\xfc"
             @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe") == Int8(-2)
             @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe\xcc") == 0xfecc
             @test_throws EOFError deserialize(Try{Integer}(UInt32be, UInt16be), b"\xfe")
             @test_throws ArgumentError deserialize(Try{Union{Integer, Base.Enum}}(UInt32be, UInt16be, Fruit), b"\xfe")
             @test serialize(Try{Integer}(UInt16be, Int8), Int8(-2)) == b"\xfe"
             @test serialize(Try{Integer}(UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
+            @test serialize(Try{Integer}(UInt32be, UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
             @test_throws MethodError serialize(Try{Integer}(UInt16be, Int8), -2)
         end
     end
