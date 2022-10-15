@@ -248,10 +248,16 @@ end
                 @test Constructs.deducetype((ts...) -> Sequence(ts...),
                         Type{UInt8}, Type{UInt16}, Type{UInt32}, Type{UInt64}, Type{UInt128}, Type{Int8}, Type{Int16}, Type{Int32}, Type{Int64}
                     ) <: Sequence{Tuple{UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64}}
-                # known issue when the number of Sequence elements is greater than 10
-                @test_broken Constructs.deducetype((ts...) -> Sequence(ts...),
+                # In Julia1.6, there is a known issue when the number of Sequence elements is greater than 10
+                @static if VERSION >= v"1.7-"
+                    @test Constructs.deducetype((ts...) -> Sequence(ts...),
+                            Type{UInt8}, Type{UInt16}, Type{UInt32}, Type{UInt64}, Type{UInt128}, Type{Int8}, Type{Int16}, Type{Int32}, Type{Int64}, Type{Int128}
+                        ) <: Sequence{Tuple{UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128}}
+                else
+                    @test_broken Constructs.deducetype((ts...) -> Sequence(ts...),
                         Type{UInt8}, Type{UInt16}, Type{UInt32}, Type{UInt64}, Type{UInt128}, Type{Int8}, Type{Int16}, Type{Int32}, Type{Int64}, Type{Int128}
                     ) <: Sequence{Tuple{UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128}}
+                end
             end
             @test Construct(Tuple{}) == Sequence()
             @test Construct(Tuple{Int}) == Sequence(Int)

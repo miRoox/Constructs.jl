@@ -22,7 +22,7 @@ Defines the sequence of construct data.
 
 # Known problems
 
-If the number of `Sequence` elements is greater than $sequence_subcons_threshold, [`@construct`](@ref) cannot deduce the field type correctly.
+In Julia 1.6, if the number of `Sequence` elements is greater than $sequence_subcons_threshold, [`@construct`](@ref) cannot deduce the field type correctly.
 """
 Sequence() = Sequence_0()
 Construct(::Type{Tuple{}}) = Sequence_0()
