@@ -16,6 +16,15 @@ struct PrimitiveIO{T} <: Construct{T} end
     PrimitiveIO(type)
 
 Defines a primitive IO construct for `type`.
+
+# Examples
+
+```jldoctest
+julia> serialize(PrimitiveIO(Complex{Bool}), im)
+2-element Vector{UInt8}:
+ 0x00
+ 0x01
+```
 """
 PrimitiveIO(::Type{T}) where {T} = PrimitiveIO{T}()
 

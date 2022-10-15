@@ -17,6 +17,26 @@ end
 Try2{TU}(c1::TSubCon1, c2::TSubCon2) where {TU, T1<:TU, T2<:TU, TSubCon1<:Construct{T1}, TSubCon2<:Construct{T2}} = Try2{TU, T1, T2, TSubCon1, TSubCon2}(c1, c2)
 Try2(c1::Construct{T1}, c2::Construct{T2}) where {T1, T2} = Try2{Union{T1, T2}}(c1, c2)
 
+"""
+    Try(subcon1, subcon2, ...)
+    Try{TU}(subcon1, subcon2, ...)
+
+Try each `subcon` and use the first successful one.
+
+# Examples
+
+Another non-exhaustive enum:
+
+```jldoctest
+julia> @enum Fruit::UInt8 apple=1 banana=2 orange=3
+
+julia> deserialize(Try(Fruit, UInt8), b"\\x02")
+banana::Fruit = 0x02
+
+julia> deserialize(Try(Fruit, UInt8), b"\\x04")
+0x04
+```
+"""
 Try(ct1::Union{Type, Construct}, ct2::Union{Type, Construct}) = Try2(Construct(ct1), Construct(ct2))
 Try{TU}(ct1::Union{Type, Construct}, ct2::Union{Type, Construct}) where {TU} = Try2{TU}(Construct(ct1), Construct(ct2))
 Try(ct1::Union{Type, Construct}, ct2::Union{Type, Construct}, rest::Vararg{Union{Type, Construct}}) = Try2(Construct(ct1), Try(ct2, rest...))

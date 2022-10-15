@@ -9,6 +9,28 @@ struct Padded{T, TSubCon<:Construct{T}} <: Wrapper{T, T}
     # TODO: [warn] check size
 end
 
+"""
+    Padded([base = Nothing,] n)
+
+Create `n`-bytes padded data from `base`.
+
+# Arguments
+
+- `base::Union{Type, Construct}`: the type/construct to be padded.
+- `n::Integer`: the size in bytes after padded.
+
+# Examples
+
+```jldoctest
+julia> deserialize(Padded(Int8, 2), b"\\x01\\xfc")
+1
+
+julia> serialize(Padded(Int8, 2), Int8(1))
+2-element Vector{UInt8}:
+ 0x01
+ 0x00
+```
+"""
 Padded(subcon::TSubCon, size::Integer) where {TSubCon<:Construct} = Padded(subcon, convert(UInt, size))
 Padded(t::Type, size::Integer) = Padded(Construct(t), size)
 Padded(size::Integer) = Padded(Nothing, size)

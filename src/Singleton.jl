@@ -14,6 +14,22 @@ struct Singleton{T} <: Construct{T}
     end
 end
 
+"""
+    Singleton(type)
+    Singleton(instance)
+
+Defines an empty construct for singleton type.
+
+# Examples
+
+```jldoctest
+julia> serialize(missing)
+UInt8[]
+
+julia> deserialize(Singleton(pi), UInt8[])
+π = 3.1415926535897...
+```
+"""
 Singleton(::Type{T}) where {T} = Singleton{T}()
 Singleton(::T) where {T} = Singleton{T}()
 

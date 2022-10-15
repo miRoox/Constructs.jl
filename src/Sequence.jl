@@ -15,15 +15,6 @@ Base.getindex(seq::Sequence{Tuple{T1}}) where {T1} = getfield(seq, 1)
 
 struct Sequence_0 <: Sequence{Tuple{}} end
 
-"""
-    Sequence(elements...)
-
-Defines the sequence of construct data.
-
-# Known problems
-
-In Julia 1.6, if the number of `Sequence` elements is greater than $sequence_subcons_threshold, [`@construct`](@ref) cannot deduce the field type correctly.
-"""
 Sequence() = Sequence_0()
 Construct(::Type{Tuple{}}) = Sequence_0()
 
@@ -95,6 +86,27 @@ function SequenceN(subcons::Vararg{Union{Type, Construct}, N}) where {N}
     SequenceN{N, CTT, typeof(csubcons)}(csubcons)
 end
 
+"""
+    Sequence(elements...)
+
+Defines the sequence of construct data based on `elements`.
+
+# Examples
+
+```jldoctest
+julia> serialize((true, 0x23))
+2-element Vector{UInt8}:
+ 0x01
+ 0x23
+
+julia> deserialize(Sequence(Bool, UInt8), b"\\xab\\xcd")
+(true, 0xcd)
+```
+
+# Known problems
+
+In Julia 1.6, if the number of `Sequence` elements is greater than $sequence_subcons_threshold, [`@construct`](@ref) cannot deduce the field type correctly.
+"""
 Sequence(ts::Vararg{Union{Type, Construct}}) = SequenceN(ts...)
 Construct(t::Type{<:Tuple}) = SequenceN(fieldtypes(t)...)
 
