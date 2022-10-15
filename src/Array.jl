@@ -1,18 +1,18 @@
 """
-    Repeater{T, N, TA<:AbstractArray{T,N}} <: Wrapper{T, TA}
+    Repeater{T, TA<:AbstractArray{T}} <: Wrapper{T, TA}
 
 Abstract base type for Array wrapper.
 """
-abstract type Repeater{T, N, TA<:AbstractArray{T,N}} <: Wrapper{T, TA} end
+abstract type Repeater{T, TA<:AbstractArray{T}} <: Wrapper{T, TA} end
 
 deduceArrayType(::Type{TA}, ::Type{T}, N::Integer) where {T, TA<:AbstractArray} = deducetype(Base.similar, TA, Type{T}, Dims{N})
 
 """
-    SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Repeater{T, N, TA}
+    SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Repeater{T, TA}
 
 Homogenous array of elements.
 """
-struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Repeater{T, N, TA}
+struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Repeater{T, TA}
     subcon::TSubCon
     size::NTuple{N, UInt}
 
@@ -68,11 +68,11 @@ end
 estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(array.subcon; contextkw...)
 
 """
-    GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, 1, Vector{T}}
+    GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, Vector{T}}
 
 Homogenous array of elements for unknown count of elements by deserializing until end of stream.
 """
-struct GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, 1, Vector{T}}
+struct GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, Vector{T}}
     subcon::TSubCon
 end
 
