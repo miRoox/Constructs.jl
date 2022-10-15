@@ -1,11 +1,11 @@
 """
-    Const{T, TSubCon<:Construct{T}, VT} <: Validator{T}
+    Const{T, TSubCon<:Construct{T}} <: Validator{T}
 
 Field enforcing a constant.
 """
-struct Const{T, TSubCon<:Construct{T}, VT} <: Validator{T}
+struct Const{T, TSubCon<:Construct{T}} <: Validator{T}
     subcon::TSubCon
-    value::VT
+    value::T
 end
 
 """
@@ -39,14 +39,15 @@ ERROR: ValidationError: 2 mismatch the const value 1.
 [...]
 ```
 """
-Const(::Type{T}, value::VT) where {T, VT} = Const(Construct(T), value)
+Const(subcon::Construct{T}, value) where {T} = Const(subcon, convert(T, value))
+Const(::Type{T}, value) where {T} = Const(Construct(T), value)
 Const(value::T) where {T} = Const(Construct(T), value)
 Const(value::AbstractArray{V, N}) where {V, N} = Const(SizedArray(typeof(similar(value, size(value))), V, size(value)...), value)
 
-function validate(cons::Const{T, TSubCon, VT}, obj::T; contextkw...) where {T, TSubCon, VT}
+function validate(cons::Const{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
     (cons.value == obj) === true || throw(ValidationError("$obj mismatch the const value $(cons.value)."))
 end
 
-function serialize(cons::Const{T, TSubCon, VT}, s::IO, ::UndefProperty; contextkw...) where {T, TSubCon, VT}
-    serialize(cons, s, convert(T, cons.value); contextkw...)
+function serialize(cons::Const{T, TSubCon}, s::IO, ::UndefProperty; contextkw...) where {T, TSubCon}
+    serialize(cons, s, cons.value; contextkw...)
 end
