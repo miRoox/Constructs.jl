@@ -23,7 +23,7 @@ julia> deserialize(LittleEndian(UInt16), b"\\x12\\x34")
 0x3412
 ```
 """
-LittleEndian(::Type{T}) where {T<:mbnunion} = LittleEndian(Construct(T))
+LittleEndian(::Type{T}) where {T} = LittleEndian(Construct(T))
 
 encode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = htol(obj)
 decode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = ltoh(obj)
@@ -49,7 +49,7 @@ julia> deserialize(BigEndian(UInt16), b"\\x12\\x34")
 0x1234
 ```
 """
-BigEndian(::Type{T}) where {T<:mbnunion} = BigEndian(Construct(T))
+BigEndian(::Type{T}) where {T} = BigEndian(Construct(T))
 
 encode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = hton(obj)
 decode(::BigEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = ntoh(obj)

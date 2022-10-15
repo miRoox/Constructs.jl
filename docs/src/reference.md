@@ -5,55 +5,69 @@ Pages = ["reference.md"]
 Depth = 3
 ```
 
+```@docs
+Constructs
+```
+
 ## Basic Interfaces
 
-Basic construct:
+### `Construct`
 
 ```@docs
-Construct
+Construct{T}
+Construct(cons::Construct)
 serialize
+serialize(cons::Construct{T}, filename::AbstractString, obj; contextkw...) where {T}
+serialize(cons::Construct{T}, obj; contextkw...) where {T}
+serialize(cons::Construct{T}, s::IO, ::UndefProperty; contextkw...) where {T}
 deserialize
+deserialize(cons::Construct, filename::AbstractString; contextkw...)
+deserialize(cons::Construct, bytes::AbstractVector{UInt8}; contextkw...)
 estimatesize
 ```
 
-Construct wrapper:
+### `Wrapper`
 
 ```@docs
-Wrapper
-subcon
+Wrapper{TSub, T}
+subcon(wrapper::Wrapper)
 ```
 
-Construct adapter:
+### `Adapter`
 
 ```@docs
-Adapter
-SymmetricAdapter
+Adapter{TSub, T}
+SymmetricAdapter{T}
 encode
 decode
 ```
 
-Construct validator:
+### `Validator`
 
 ```@docs
-Validator
+Validator{T}
 validate
-ValidationError
 ```
 
 ## Primitive Constructs
 
 ```@docs
-PrimitiveIO
-Singleton
+PrimitiveIO{T}
+PrimitiveIO(::Type{T}) where {T}
+Singleton{T}
+Singleton(::Type{T}) where {T}
 JuliaSerializer
 RaiseError
+RaiseError(msg::AbstractString)
 ```
 
 ## Endianness Adapters
 
 ```@docs
-LittleEndian
-BigEndian
+LittleEndian{T, TSubCon<:Construct{T}}
+LittleEndian(::Type{T}) where {T}
+BigEndian{T, TSubCon<:Construct{T}}
+BigEndian(::Type{T}) where {T}
 ```
 
 ```@autodocs
@@ -61,10 +75,12 @@ Modules = [Constructs]
 Filter = c -> c isa LittleEndian || c isa BigEndian
 ```
 
-# Enums
+## Enums
 
 ```@docs
-IntEnum
+IntEnum{Ex<:EnumExhaustibility, T<:Integer, TSubCon<:Construct{T}, E<:Base.Enum}
+IntEnum(subcon::Union{Type, Construct}, ::Type{E}) where {E<:Base.Enum}
+IntEnum{Ex}(subcon::TSubCon, ::Type{E}) where {Ex, T<:Integer, TSubCon<:Construct{T}, E<:Base.Enum}
 EnumNonExhaustive
 EnumExhaustive
 ```
@@ -72,32 +88,39 @@ EnumExhaustive
 ## Sequence
 
 ```@docs
-Sequence
+Sequence{TT<:Tuple}
+Sequence(ts::Vararg{Union{Type, Construct}})
 ```
 
 ## Repeaters
 
 ```@docs
-SizedArray
-GreedyVector
+Repeater{T, TA<:AbstractArray{T}}
+SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}}
+SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
+GreedyVector{T, TSubCon<:Construct{T}}
+GreedyVector(type::Type)
 ```
 
 ## Conditional
 
 ```@docs
-Try
+Try{TU}
+Try(ct1::Union{Type, Construct}, ct2::Union{Type, Construct})
 ```
 
 ## Padded
 
 ```@docs
-Padded
+Padded{T, TSubCon<:Construct{T}}
+Padded(subcon::TSubCon, size::Integer) where {TSubCon<:Construct}
 ```
 
 ## Validators
 
 ```@docs
-Const
+Const{T, TSubCon<:Construct{T}}
+Const(subcon::Construct{T}, value) where {T}
 ```
 
 ## `@construct` Macro
@@ -105,8 +128,10 @@ Const
 ```@docs
 @construct
 this
-Container
+Container{T}
+Container(obj::T) where {T}
 UndefProperty
+PropertyPath
 ```
 
 ## Construct Sizes
@@ -122,7 +147,8 @@ UnboundedUpper
 ## Errors
 
 ```@docs
-ConstructError
+AbstractConstructError
+ValidationError
 ExceedMaxIterations
 PaddedError
 ```

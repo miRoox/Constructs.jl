@@ -50,6 +50,7 @@ export
     Const,
     Try,
     Sequence,
+    Repeater,
     SizedArray,
     GreedyVector
 
