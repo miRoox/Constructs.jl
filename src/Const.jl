@@ -31,11 +31,11 @@ julia> deserialize(Const(0x01), b"\\x01")
 
 ```jldoctest
 julia> serialize(Const(0x01), 0x03)
-ERROR: ConstructError: ValidationError: 3 mismatch the const value 1.
+ERROR: ValidationError: 3 mismatch the const value 1.
 [...]
 
 julia> deserialize(Const(0x01), b"\\x02")
-ERROR: ConstructError: ValidationError: 2 mismatch the const value 1.
+ERROR: ValidationError: 2 mismatch the const value 1.
 [...]
 ```
 """
