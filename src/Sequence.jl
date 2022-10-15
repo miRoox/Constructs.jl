@@ -1,5 +1,5 @@
 
-const sequence_max_subcons = 64
+const sequence_subcons_threshold = 9
 
 """
     Sequence{Tuple{Ts...}} <: Construct{Tuple{Ts...}}
@@ -15,6 +15,15 @@ Base.getindex(seq::Sequence{Tuple{T1}}) where {T1} = getfield(seq, 1)
 
 struct Sequence_0 <: Sequence{Tuple{}} end
 
+"""
+    Sequence(elements...)
+
+Defines the sequence of construct data.
+
+# Known problems
+
+If the number of `Sequence` elements is greater than $sequence_subcons_threshold, [`@construct`](@ref) cannot deduce the field type correctly.
+"""
 Sequence() = Sequence_0()
 Construct(::Type{Tuple{}}) = Sequence_0()
 
@@ -39,7 +48,7 @@ estimatesize(::Sequence_0; contextkw...) = ExactSize(0)
 # end
 # estimatesize(seq::Sequence_1; contextkw...) = estimatesize(seq.subcon1; contextkw...)
 
-for n in 1:sequence_max_subcons
+for n in 1:sequence_subcons_threshold
     ## temporary expressions/symbols should be excluded from the code coverage.
     # COV_EXCL_START
     seqname = Symbol("Sequence_$n")
@@ -76,18 +85,23 @@ for n in 1:sequence_max_subcons
 end
 
 ## Following implementation is simple but not friendly for type deducing
-# struct Sequence{N, TT<:NTuple{N, Any}, TSubCons<:NTuple{N, Construct}} <: Construct{TT}
-#     subcons::TSubCons
-#
-#     function Sequence{N, TT, TSubCons}(subcons::TSubCons) where {N, TT<:NTuple{N, Any}, TSubCons<:Tuple{N, Construct}}
-#         CTT = Tuple{map(constructtype, subcons)...}
-#         CTT::Type{TT}
-#         new{N, TT, TSubCons}(subcons)
-#     end
-# end
-#
-# function Sequence(subcons::Vararg{Union{Type, Construct}, N}) where {N}
-#     CTT = Tuple{map(constructtype, subcons)...}
-#     csubcons = (map(Construct, subcons)...)
-#     Sequence{N, CTT, typeof(csubcons)}(csubcons)
-# end
+struct SequenceN{N, TT<:NTuple{N, Any}, TSubCons<:NTuple{N, Construct}} <: Sequence{TT}
+    subcons::TSubCons
+end
+
+function SequenceN(subcons::Vararg{Union{Type, Construct}, N}) where {N}
+    CTT = Tuple{map(constructtype, subcons)...}
+    csubcons = tuple(map(Construct, subcons)...)
+    SequenceN{N, CTT, typeof(csubcons)}(csubcons)
+end
+
+Sequence(ts::Vararg{Union{Type, Construct}}) = SequenceN(ts...)
+Construct(t::Type{<:Tuple}) = SequenceN(fieldtypes(t)...)
+
+Base.getindex(seq::SequenceN, i::Integer) = seq.subcons[i]
+
+deserialize(seq::SequenceN, s::IO; contextkw...) = tuple(map(((i, sub),) -> deserialize(sub, s; with_property(contextkw, i)...), enumerate(seq.subcons))...)
+function serialize(seq::SequenceN{N, TT, TSubCons}, s::IO, t::TT; contextkw...) where {N, TT, TSubCons}
+    sum(((i, sub, v),) -> serialize(sub, s, v; with_property(contextkw, i)...), zip(1:length(t), seq.subcons, t); init=0)
+end
+estimatesize(seq::SequenceN; contextkw...) = sum(((i, sub),) -> estimatesize(sub; with_property(contextkw, i)...), enumerate(seq.subcons); init=ExactSize(0))

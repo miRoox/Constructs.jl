@@ -245,13 +245,22 @@ end
                 @test Constructs.deducetype(() -> Sequence()) <: Sequence{Tuple{}}
                 @test Constructs.deducetype(t -> Sequence(t), Type{Int}) <: Sequence{Tuple{Int}}
                 @test Constructs.deducetype((t1, t2) -> Sequence(t1, t2), Type{Int}, PrimitiveIO{Float64}) <: Sequence{Tuple{Int, Float64}}
+                @test Constructs.deducetype((ts...) -> Sequence(ts...),
+                        Type{UInt8}, Type{UInt16}, Type{UInt32}, Type{UInt64}, Type{UInt128}, Type{Int8}, Type{Int16}, Type{Int32}, Type{Int64}
+                    ) <: Sequence{Tuple{UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64}}
+                # known issue when the number of Sequence elements is greater than 10
+                @test_broken Constructs.deducetype((ts...) -> Sequence(ts...),
+                        Type{UInt8}, Type{UInt16}, Type{UInt32}, Type{UInt64}, Type{UInt128}, Type{Int8}, Type{Int16}, Type{Int32}, Type{Int64}, Type{Int128}
+                    ) <: Sequence{Tuple{UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128}}
             end
             @test Construct(Tuple{}) == Sequence()
             @test Construct(Tuple{Int}) == Sequence(Int)
             @test Construct(Tuple{Int, Float16}) == Sequence(Int, Float16)
+            @test Construct(Tuple{UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128}) == Sequence(UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128)
             @test Sequence(Int)[] == Construct(Int)
             @test Sequence(Int, Float16)[2] == Construct(Float16)
             @test Sequence(Int, Padded(Float16, 6))[2] == Padded(Float16, 6)
+            @test Sequence(UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128)[10] == Construct(Int128)
             @test estimatesize(Sequence()) == 0
             @test deserialize(Sequence(), UInt8[]) === ()
             @test serialize(()) == UInt8[]
@@ -259,6 +268,15 @@ end
             @test estimatesize(Sequence(Int, Padded(Float16, 6))) == estimatesize(Int) + estimatesize(Padded(Float16, 6))
             @test deserialize(Sequence(Padded(Int8, 2), UInt16be), b"\x01\xfe\x01\x02") == (Int8(1), 0x0102)
             @test serialize(Sequence(Padded(Int8, 2), UInt16be), (Int8(1), 0x0102)) == b"\x01\x00\x01\x02"
+            @test estimatesize(Sequence(UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128)) == sum(estimatesize, (UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128))
+            @test deserialize(
+                Sequence(UInt8, UInt16be, UInt32be, UInt64be, UInt128be, Int8, Int16be, Int32be, Int64be, Int128be),
+                b"\x01\x00\x02\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x06\x00\x07\x00\x00\x00\x08\x00\x00\x00\x00\x00\x00\x00\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0a"
+                ) === (0x01, 0x0002, 0x00000003, 0x0000000000000004, 0x00000000000000000000000000000005, Int8(6), Int16(7), Int32(8), Int64(9), Int128(10))
+            @test serialize(
+                Sequence(UInt8, UInt16be, UInt32be, UInt64be, UInt128be, Int8, Int16be, Int32be, Int64be, Int128be),
+                (0x01, 0x0002, 0x00000003, 0x0000000000000004, 0x00000000000000000000000000000005, Int8(6), Int16(7), Int32(8), Int64(9), Int128(10))
+                ) == b"\x01\x00\x02\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x06\x00\x07\x00\x00\x00\x08\x00\x00\x00\x00\x00\x00\x00\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0a"
         end
         @testset "SizedArray" begin
             @testset "deduce type" begin
