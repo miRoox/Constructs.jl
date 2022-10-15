@@ -189,6 +189,7 @@ end
             @test estimatesize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit)) == sizeof(UInt16)
             @test deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x00\x01") == banna
             @test deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x00\x1f") == reinterpret(Fruit, 0x1f)
+            @test deserialize(IntEnum{EnumNonExhaustive}(Fruit), b"\x1f") == reinterpret(Fruit, 0x1f)
             @test_throws InexactError deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x01\x00")
             @test serialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), orange) == b"\x00\x02"
             @test serialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), reinterpret(Fruit, 0x1f)) == b"\x00\x1f"
