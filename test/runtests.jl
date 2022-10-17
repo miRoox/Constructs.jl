@@ -144,6 +144,17 @@ end
         end
         @test_throws TypeError deserialize(JuliaSerializer(UInt), serialize(JuliaSerializer(Int), 1))
     end
+    @testset "functional" begin
+        @testset "Validator" begin
+            @test estimatesize(Validator(Int32, (v; kw...) -> v >= 0)) == 4
+            @test serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), 0) == b"\x00"
+            @test_throws ValidationError serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), -1)
+            @test_throws ValidationError serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), 0; min_value=1)
+            @test deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\x00") == 0
+            @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\xfe")
+            @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\x00"; min_value=1)
+        end
+    end
     @testset "byte order" begin
         be = (
             (0x0102, b"\x01\x02"),

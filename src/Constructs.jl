@@ -61,6 +61,7 @@ include("size.jl")
 include("container.jl")
 include("interface.jl")
 include("macro.jl")
+include("functional.jl")
 
 include("PrimitiveIO.jl")
 include("Singleton.jl")

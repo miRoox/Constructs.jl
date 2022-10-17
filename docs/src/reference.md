@@ -46,6 +46,7 @@ decode
 
 ```@docs
 Validator{T}
+Validator(subcon::Union{Type, Construct}, validate::Function)
 validate
 ```
 
