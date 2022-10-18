@@ -61,6 +61,14 @@ Serialize an object into a stream.
 """
 function serialize end
 
+function serialize(cons::Construct{T}, s::IO, obj::U; contextkw...) where {T, U}
+    if !(U <: T)
+        serialize(cons, s, convert(T, obj); contextkw...)
+    else # avoid infinity recursive calls
+        throw(MethodError(serialize, (NamedTuple(contextkw), cons, s, obj)))
+    end
+end
+
 """
     serialize(cons::Construct, s::IO, ::UndefProperty; contextkw...)
 
