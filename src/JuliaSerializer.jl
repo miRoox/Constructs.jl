@@ -1,11 +1,18 @@
 """
-    JuliaSerializer <: Construct{Any}
+    JuliaSerializer{T} <: Construct{T}
 
 Standard Julia serialization.
 
 See also: [`Serialization`](https://docs.julialang.org/en/v1.6/stdlib/Serialization/)
 """
-struct JuliaSerializer <: Construct{Any} end
+struct JuliaSerializer{T} <: Construct{T} end
 
-deserialize(::JuliaSerializer, s::IO; contextkw...) = Serialization.deserialize(s)
-serialize(::JuliaSerializer, s::IO, obj; contextkw...) = Serialization.serialize(s, obj)
+"""
+    JuliaSerializer([type])
+
+Create the standard Julia serializer.
+"""
+JuliaSerializer(::Type{T} = Any) where {T} = JuliaSerializer{T}()
+
+deserialize(::JuliaSerializer{T}, s::IO; contextkw...) where {T} = convert(T, Serialization.deserialize(s))
+serialize(::JuliaSerializer{T}, s::IO, obj::T; contextkw...) where {T} = Serialization.serialize(s, obj)

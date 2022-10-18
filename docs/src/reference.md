@@ -56,7 +56,8 @@ PrimitiveIO{T}
 PrimitiveIO(::Type{T}) where {T}
 Singleton{T}
 Singleton(::Type{T}) where {T}
-JuliaSerializer
+JuliaSerializer{T}
+JuliaSerializer(::Type{T} = Any) where {T}
 RaiseError
 RaiseError(msg::AbstractString)
 ```
