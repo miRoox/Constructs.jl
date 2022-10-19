@@ -14,5 +14,5 @@ Create the standard Julia serializer.
 """
 JuliaSerializer(::Type{T} = Any) where {T} = JuliaSerializer{T}()
 
-deserialize(::JuliaSerializer{T}, s::IO; contextkw...) where {T} = convert(T, Serialization.deserialize(s))
+deserialize(::JuliaSerializer{T}, s::IO; contextkw...) where {T} = Serialization.deserialize(s)::T
 serialize(::JuliaSerializer{T}, s::IO, obj::T; contextkw...) where {T} = Serialization.serialize(s, obj)
