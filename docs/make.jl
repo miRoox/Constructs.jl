@@ -9,7 +9,7 @@ DocMeta.setdocmeta!(Constructs, :DocTestSetup, :(using Constructs); recursive=tr
 function should_push_preview(event_path = get(ENV, "GITHUB_EVENT_PATH", nothing))
     event_path === nothing && return false
     event = JSON.parsefile(event_path)
-    labels = [x["name"] for x in event["pull_request"]["labels"]]
+    labels = [get(x, "name", missing) for x in get(Vector, get(Dict, event, "pull_request"), "labels")]
     return "push_preview" in labels
 end
 
