@@ -48,6 +48,7 @@ export
     EnumNonExhaustive,
     IntEnum,
     Const,
+    Overwrite,
     Try,
     Sequence,
     Repeater,
@@ -69,6 +70,7 @@ include("Padded.jl")
 include("Endians.jl")
 include("IntEnum.jl")
 include("Const.jl")
+include("Overwrite.jl")
 include("Try.jl")
 include("Sequence.jl")
 include("Array.jl")

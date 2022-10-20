@@ -218,6 +218,19 @@ end
         @test serialize(Const(UInt16be, 0x0102), UndefProperty()) == b"\x01\x02"
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
+    @testset "Overwrite" begin
+        @test serialize(Overwrite(UInt8, 0x01), 2) == b"\x01"
+        @test serialize(Overwrite(UInt8, 0x02), UndefProperty()) == b"\x02"
+        @test serialize(Overwrite(Int8, (v; kw...) -> abs(v)), -2) == b"\x02"
+        @test serialize(Overwrite(Int8, (v; kw...) -> abs(v)), -2; path=PropertyPath()) == b"\x02"
+        @test serialize(Overwrite(Float16le, (v; kw...) -> round(v; digits=get(kw, :digits, 0))), 1.125) == b"\x00\x3c" # Float16(1.0)
+        @test serialize(Overwrite(Float16le, (v; kw...) -> round(v; digits=get(kw, :digits, 0))), 1.125; digits=1) == b"\x66\x3c" # Float16(1.1)
+        @test serialize(Overwrite(Int8, (v; kw...) -> get(kw, :value, 7)), 6) == b"\x07"
+        @test serialize(Overwrite(Int8, (v; kw...) -> get(kw, :value, 7)), 6; value=5) == b"\x05"
+        @test_throws MethodError serialize(Overwrite(UInt8, UndefProperty()), 2)
+        @test deserialize(Overwrite(UInt8, 0x01), b"\x04") == 0x04
+        @test deserialize(Overwrite(UInt8, UndefProperty()), b"\x04") == 0x04
+    end
     @testset "conditional" begin
         @testset "Try" begin
             @testset "deduce type" begin

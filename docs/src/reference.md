@@ -117,11 +117,13 @@ Padded{T, TSubCon<:Construct{T}}
 Padded(subcon::TSubCon, size::Integer) where {TSubCon<:Construct}
 ```
 
-## Validators
+## Others
 
 ```@docs
 Const{T, TSubCon<:Construct{T}}
 Const(subcon::Construct{T}, value) where {T}
+Overwrite{T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}}
+Overwrite(subcon::Construct{T}, value::T) where {T}
 ```
 
 ## `@construct` Macro
