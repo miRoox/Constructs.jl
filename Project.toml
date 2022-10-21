@@ -5,6 +5,8 @@ version = "0.1.1"
 
 [deps]
 Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+StringEncodings = "69024149-9ee7-55f6-a4c4-859efe599b68"
 
 [compat]
 julia = "1.6"
+StringEncodings = "0.3"
