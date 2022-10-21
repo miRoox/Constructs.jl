@@ -4,6 +4,8 @@ Inspired by [Construct](https://construct.readthedocs.io/).
 """
 module Constructs
 
+using StringEncodings
+
 import Serialization
 
 export
