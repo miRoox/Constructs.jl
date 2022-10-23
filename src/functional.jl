@@ -2,8 +2,16 @@
 struct FunctionValidator{T, TSubCon<:Construct{T}} <: Validator{T}
     subcon::TSubCon
     validate::Function
+
+    function FunctionValidator{T, TSubCon}(subcon::TSubCon, validate::Function) where {T, TSubCon<:Construct{T}}
+        if !hasmethod(validate, Tuple{T}, ())
+            throw(ArgumentError("$validate doesn't have a method for (::$T)."))
+        end
+        new{T, TSubCon}(subcon, validate)
+    end
 end
 
+FunctionValidator(subcon::TSubCon, validate::Function) where {T, TSubCon<:Construct{T}} = FunctionValidator{T, TSubCon}(subcon, validate)
 FunctionValidator(::Type{T}, validate::Function) where {T} = FunctionValidator(Construct(T), validate)
 
 """
@@ -25,8 +33,16 @@ end
 struct FunctionSymmetricAdapter{T, TSubCon<:Construct{T}} <: SymmetricAdapter{T}
     subcon::TSubCon
     encode::Function
+    
+    function FunctionSymmetricAdapter{T, TSubCon}(subcon::TSubCon, encode::Function) where {T, TSubCon<:Construct{T}}
+        if !hasmethod(encode, Tuple{T}, ())
+            throw(ArgumentError("$encode doesn't have a method for (::$T)."))
+        end
+        new{T, TSubCon}(subcon, encode)
+    end
 end
 
+FunctionSymmetricAdapter(subcon::TSubCon, encode::Function) where {T, TSubCon<:Construct{T}} = FunctionSymmetricAdapter{T, TSubCon}(subcon, encode)
 FunctionSymmetricAdapter(::Type{T}, encode::Function) where {T} = FunctionSymmetricAdapter(Construct(T), encode)
 
 """
