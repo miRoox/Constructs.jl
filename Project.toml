@@ -1,7 +1,7 @@
 name = "Constructs"
 uuid = "ba9efadc-3ee3-4b4a-abe2-d0e326fbcffa"
 authors = ["Yong-an Lu <miroox@outlook.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
