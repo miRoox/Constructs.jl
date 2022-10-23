@@ -25,7 +25,7 @@ Overwrite the value when serializing from `getter`.
 # Arguments
 
 - `base::Union{Type, Construct}`: the underlying type/construct.
-- `getter`: the function/value to overwrite when serializing. the function should have signature like `(::T; contextkw...)`.
+- `getter`: the function/value to overwrite when serializing. the function should have signature like `(::T; contextkw...)` and satisfies idempotence (`getter(getter(x)) == getter(x)`).
 
 # Examples
 
@@ -45,10 +45,10 @@ julia> deserialize(Overwrite(UInt8, 0x01), b"\\x05")
 Overwrite(subcon::Construct{T}, value::T) where {T} = Overwrite(subcon, ((obj; contextkw...) -> value))
 Overwrite(::Type{T}, getter) where {T} = Overwrite(Construct(T), getter)
 
-encode(cons::Overwrite{T, TSubCon, GT}, obj::T; contextkw...) where {T, TSubCon, GT<:Function} = convert(T, cons.getter(obj; contextkw...))
+encode(cons::Overwrite{T, TSubCon, GT}, obj::T; contextkw...) where {T, TSubCon, GT<:Function} = convert(T, apply_optional_contextkw(cons.getter, obj, contextkw))
 # getter could be undefined when deserializing
 decode(::Overwrite{T, TSubCon, GT}, obj::T; contextkw...) where {T, TSubCon, GT} = obj
 
 function serialize(cons::Overwrite, s::IO, v::UndefProperty; contextkw...)
-    serialize(cons, s, cons.getter(v; contextkw...); contextkw...)
+    serialize(cons, s, apply_optional_contextkw(cons.getter, v, contextkw); contextkw...)
 end
