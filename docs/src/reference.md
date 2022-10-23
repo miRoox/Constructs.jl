@@ -38,6 +38,7 @@ subcon(wrapper::Wrapper)
 ```@docs
 Adapter{TSub, T}
 SymmetricAdapter{T}
+SymmetricAdapter(subcon::Union{Type, Construct}, encode::Function)
 encode
 decode
 ```
