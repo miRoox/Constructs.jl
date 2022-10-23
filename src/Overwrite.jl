@@ -6,7 +6,16 @@ Overwrite the value when serializing. Deserialization simply passes down.
 struct Overwrite{T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}} <: Adapter{T, T}
     subcon::TSubCon
     getter::GT
+    
+    function Overwrite{T, TSubCon, GT}(subcon::TSubCon, getter::GT) where {T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}}
+        if getter isa Function && !hasmethod(getter, Tuple{T}, ())
+            throw(ArgumentError("$getter doesn't have a method for (::$T)."))
+        end
+        new{T, TSubCon, GT}(subcon, getter)
+    end
 end
+
+Overwrite(subcon::TSubCon, getter::GT) where {T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}} = Overwrite{T, TSubCon, GT}(subcon, getter)
 
 """
     Overwrite(base, getter)

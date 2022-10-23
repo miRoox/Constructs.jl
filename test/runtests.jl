@@ -146,6 +146,7 @@ end
     end
     @testset "functional" begin
         @testset "Validator" begin
+            @test_throws ArgumentError Validator(UInt8, () -> true)
             @test estimatesize(Validator(Int32, (v; kw...) -> v >= 0)) == 4
             @test serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), 0) == b"\x00"
             @test_throws ValidationError serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), -1)
@@ -155,6 +156,7 @@ end
             @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\x00"; min_value=1)
         end
         @testset "SymmetricAdapter" begin
+            @test_throws ArgumentError Adapter(UInt8, () -> 0x01)
             @test SymmetricAdapter(UInt8, ~) == Adapter(UInt8, ~)
             @test estimatesize(Adapter(UInt8, ~)) == sizeof(UInt8)
             @test serialize(Adapter(UInt8, ~), 0xcd) == b"\x32"
@@ -236,6 +238,7 @@ end
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "Overwrite" begin
+        @test_throws ArgumentError Overwrite(UInt8, () -> 0x01)
         @test serialize(Overwrite(UInt8, 0x01), 2) == b"\x01"
         @test serialize(Overwrite(UInt8, 0x02), UndefProperty()) == b"\x02"
         @test serialize(Overwrite(Int8, (v; kw...) -> abs(v)), -2) == b"\x02"
