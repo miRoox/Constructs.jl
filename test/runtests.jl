@@ -147,20 +147,32 @@ end
     @testset "functional" begin
         @testset "Validator" begin
             @test_throws ArgumentError Validator(UInt8, () -> true)
-            @test estimatesize(Validator(Int32, (v; kw...) -> v >= 0)) == 4
-            @test serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), 0) == b"\x00"
-            @test_throws ValidationError serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), -1)
-            @test_throws ValidationError serialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), 0; min_value=1)
-            @test deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\x00") == 0
-            @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\xfe")
-            @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\x00"; min_value=1)
+            @test estimatesize(Validator(Int32, (v) -> v >= 0)) == 4
+            @test serialize(Validator(Int8, (v) -> v >= 0), 0) == b"\x00"
+            @test serialize(Validator(Int8, (v) -> v >= 0), 0; path=PropertyPath()) == b"\x00"
+            @test_throws ValidationError serialize(Validator(Int8, (v) -> v >= 0), -1)
+            @test serialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), 0) == b"\x00"
+            @test_throws ValidationError serialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), -1)
+            @test_throws ValidationError serialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), 0; min_value=1)
+            @test deserialize(Validator(Int8, (v) -> v >= 0), b"\x00") == 0
+            @test deserialize(Validator(Int8, (v) -> v >= 0), b"\x00"; path=PropertyPath()) == 0
+            @test_throws ValidationError deserialize(Validator(Int8, (v) -> v >= 0), b"\xfe")
+            @test deserialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), b"\x00") == 0
+            @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), b"\xfe")
+            @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), b"\x00"; min_value=1)
         end
         @testset "SymmetricAdapter" begin
             @test_throws ArgumentError Adapter(UInt8, () -> 0x01)
             @test SymmetricAdapter(UInt8, ~) == Adapter(UInt8, ~)
             @test estimatesize(Adapter(UInt8, ~)) == sizeof(UInt8)
             @test serialize(Adapter(UInt8, ~), 0xcd) == b"\x32"
+            @test serialize(Adapter(UInt8, ~), 0xcd; path=PropertyPath()) == b"\x32"
             @test deserialize(Adapter(UInt8, ~), b"\xab") == 0x54
+            @test deserialize(Adapter(UInt8, ~), b"\xab"; path=PropertyPath()) == 0x54
+            @test serialize(Adapter(UInt8, (v; kw...) -> xor(v, get(kw, :mask, 0x00))), 0xcd) == b"\xcd"
+            @test serialize(Adapter(UInt8, (v; kw...) -> xor(v, get(kw, :mask, 0x00))), 0xcd; mask=0xfe) == b"\x33"
+            @test deserialize(Adapter(UInt8, (v; kw...) -> xor(v, get(kw, :mask, 0x00))), b"\xab") == 0xab
+            @test deserialize(Adapter(UInt8, (v; kw...) -> xor(v, get(kw, :mask, 0x00))), b"\xab"; mask=0xef) == 0x44
         end
     end
     @testset "byte order" begin
@@ -241,8 +253,8 @@ end
         @test_throws ArgumentError Overwrite(UInt8, () -> 0x01)
         @test serialize(Overwrite(UInt8, 0x01), 2) == b"\x01"
         @test serialize(Overwrite(UInt8, 0x02), UndefProperty()) == b"\x02"
-        @test serialize(Overwrite(Int8, (v; kw...) -> abs(v)), -2) == b"\x02"
-        @test serialize(Overwrite(Int8, (v; kw...) -> abs(v)), -2; path=PropertyPath()) == b"\x02"
+        @test serialize(Overwrite(Int8, abs), -2) == b"\x02"
+        @test serialize(Overwrite(Int8, abs), -2; path=PropertyPath()) == b"\x02"
         @test serialize(Overwrite(Float16le, (v; kw...) -> round(v; digits=get(kw, :digits, 0))), 1.125) == b"\x00\x3c" # Float16(1.0)
         @test serialize(Overwrite(Float16le, (v; kw...) -> round(v; digits=get(kw, :digits, 0))), 1.125; digits=1) == b"\x66\x3c" # Float16(1.1)
         @test serialize(Overwrite(Int8, (v; kw...) -> get(kw, :value, 7)), 6) == b"\x07"

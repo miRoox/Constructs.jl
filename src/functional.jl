@@ -1,4 +1,12 @@
 
+function apply_optional_contextkw(f::Function, obj::T, contextkw) where {T}
+    if hasmethod(f, Tuple{T}, keys(contextkw))
+        f(obj; contextkw...)
+    else
+        f(obj)
+    end
+end
+
 struct FunctionValidator{T, TSubCon<:Construct{T}} <: Validator{T}
     subcon::TSubCon
     validate::Function
@@ -27,7 +35,7 @@ Create a validator based on the function.
 Validator(subcon::Union{Type, Construct}, validate::Function) = FunctionValidator(subcon, validate)
 
 function validate(cons::FunctionValidator{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
-    cons.validate(obj; contextkw...)
+    apply_optional_contextkw(cons.validate, obj, contextkw)
 end
 
 struct FunctionSymmetricAdapter{T, TSubCon<:Construct{T}} <: SymmetricAdapter{T}
@@ -54,11 +62,11 @@ Create a symmetric adapter based on the `encode` function.
 # Arguments
 
 - `subcon::Union{Type, Construct}`: the underlying type/construct.
-- `encode`: the encoding function. the function should have signature like `(::T; contextkw...)->T` and satisfies `encode(encode(x)) == x`
+- `encode`: the encoding function. the function should have signature like `(::T; contextkw...)->T` and satisfies involution (`encode(encode(x)) == x`).
 """
 SymmetricAdapter(subcon::Union{Type, Construct}, encode::Function) = FunctionSymmetricAdapter(subcon, encode)
 Adapter(subcon::Union{Type, Construct}, encode::Function) = FunctionSymmetricAdapter(subcon, encode)
 
 function encode(cons::FunctionSymmetricAdapter{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
-    convert(T, cons.encode(obj; contextkw...))
+    convert(T, apply_optional_contextkw(cons.encode, obj, contextkw))
 end
