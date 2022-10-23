@@ -154,6 +154,12 @@ end
             @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\xfe")
             @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v>= get(kw, :min_value, 0)), b"\x00"; min_value=1)
         end
+        @testset "SymmetricAdapter" begin
+            @test SymmetricAdapter(UInt8, ~) == Adapter(UInt8, ~)
+            @test estimatesize(Adapter(UInt8, ~)) == sizeof(UInt8)
+            @test serialize(Adapter(UInt8, ~), 0xcd) == b"\x32"
+            @test deserialize(Adapter(UInt8, ~), b"\xab") == 0x54
+        end
     end
     @testset "byte order" begin
         be = (
