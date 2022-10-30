@@ -1,16 +1,10 @@
-
-"""
-    RaiseError{E<:Exception} <: Construct{Union{}}
-
-Helper to raise an user-defined error.
-"""
 struct RaiseError{E<:Exception} <: Construct{Union{}}
     err::E
 end
 
 """
-    RaiseError(error::Exception)
-    RaiseError(message::String)
+    RaiseError(error::Exception) -> Construct{Union{}}
+    RaiseError(message::String) -> Construct{Union{}}
 
 Raise specific `error` or `ErrorException(message)` when serializing or deserializing any data.
 """

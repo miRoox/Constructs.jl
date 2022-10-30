@@ -1,22 +1,18 @@
-"""
-    Const{T, TSubCon<:Construct{T}} <: Validator{T}
-
-Field enforcing a constant.
-"""
 struct Const{T, TSubCon<:Construct{T}} <: Validator{T}
     subcon::TSubCon
     value::T
 end
 
 """
-    Const([base,] value)
+    Const([T], value::T) -> Construct{T}
+    Const(subcon::Construct{T}, value::T) -> Construct{T}
 
 Defines a constant `value`, usually used for file headers.
 
 # Arguments
 
-- `base::Union{Type, Construct}`: the underlying type/construct.
-- `value`: the expected value.
+- `subcon::Construct{T}`: the underlying construct.
+- `value::T`: the expected value.
 
 # Examples
 

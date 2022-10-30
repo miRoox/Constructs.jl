@@ -2,19 +2,14 @@
 const mbntypes = (Int16, UInt16, Int32, UInt32, Int64, UInt64, Int128, UInt128, Float16, Float32, Float64)
 const mbnunion = Union{mbntypes...}
 
-"""
-    LittleEndian{T, TSubCon<:Construct{T}} <: Adapter{T, T}
-
-Little endian data adapter for serializing and deserializing.
-"""
 struct LittleEndian{T<:mbnunion, TSubCon<:Construct{T}} <: Adapter{T, T}
     subcon::TSubCon
 end
 
 """
-    LittleEndian(type)
+    LittleEndian(T) -> Construct{T}
 
-Defines the little endian format `type`.
+Defines the little endian format `T`.
 
 # Examples
 
@@ -28,19 +23,14 @@ LittleEndian(::Type{T}) where {T} = LittleEndian(Construct(T))
 encode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = htol(obj)
 decode(::LittleEndian{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon} = ltoh(obj)
 
-"""
-    BigEndian{T, TSubCon<:Construct{T}} <: Adapter{T, T}
-
-Big endian data adapter for serializing and deserializing.
-"""
 struct BigEndian{T<:mbnunion, TSubCon<:Construct{T}} <: Adapter{T, T}
     subcon::TSubCon
 end
 
 """
-    BigEndian(type)
+    BigEndian(T) -> Construct{T}
 
-Defines the big endian format `type`.
+Defines the big endian format `T`.
 
 # Examples
 

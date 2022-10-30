@@ -1,8 +1,3 @@
-"""
-    Padded{T, TSubCon<:Construct{T}} <: Wrapper{T, T}
-
-Represents Padded data.
-"""
 struct Padded{T, TSubCon<:Construct{T}} <: Wrapper{T, T}
     subcon::TSubCon
     size::UInt
@@ -10,13 +5,14 @@ struct Padded{T, TSubCon<:Construct{T}} <: Wrapper{T, T}
 end
 
 """
-    Padded([base = Nothing,] n)
+    Padded([T = Nothing], n) -> Construct{T}
+    Padded(subcon::Construct{T}, n) -> Construct{T}
 
-Create `n`-bytes padded data from `base`.
+Create `n`-bytes padded data from `subcon`.
 
 # Arguments
 
-- `base::Union{Type, Construct}`: the type/construct to be padded.
+- `subcon::Construct{T}`: the construct to be padded.
 - `n::Integer`: the size in bytes after padded.
 
 # Examples

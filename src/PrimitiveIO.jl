@@ -3,19 +3,14 @@ const primitive_types = (Bool, Char, UInt8, UInt16, UInt32, UInt64, UInt128, Int
 const primitive_types_indoc = join(map(t -> string("`", t, "`"), primitive_types), ", ", " and ")
 # COV_EXCL_STOP
 
-"""
-    PrimitiveIO{T} <: Construct{T}
-
-Construct based on primitive [`read`](https://docs.julialang.org/en/v1.6/base/io-network/#Base.read)/[`write`](https://docs.julialang.org/en/v1.6/base/io-network/#Base.write).
-
-This is the default construct for $primitive_types_indoc.
-"""
 struct PrimitiveIO{T} <: Construct{T} end
 
 """
-    PrimitiveIO(type)
+    PrimitiveIO(T) -> Construct{T}
 
-Defines a primitive IO construct for `type`.
+Defines a primitive IO construct for `type` based on [`read`](https://docs.julialang.org/en/v1.6/base/io-network/#Base.read) and [`write`](https://docs.julialang.org/en/v1.6/base/io-network/#Base.write).
+
+This is the default construct for $primitive_types_indoc.
 
 # Examples
 

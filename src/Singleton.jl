@@ -1,10 +1,3 @@
-"""
-    Singleton{T} <: Construct{T}
-
-Singleton type empty construct.
-
-This is the default constructor for `Nothing` and `Missing`.
-"""
 struct Singleton{T} <: Construct{T}
     function Singleton{T}() where {T}
         if !Base.issingletontype(T)
@@ -15,10 +8,12 @@ struct Singleton{T} <: Construct{T}
 end
 
 """
-    Singleton(type)
-    Singleton(instance)
+    Singleton(T) -> Construct{T}
+    Singleton(instance::T) -> Construct{T}
 
 Defines an empty construct for singleton type.
+
+This is the default constructor for `Nothing` and `Missing`.
 
 # Examples
 

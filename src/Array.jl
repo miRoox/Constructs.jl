@@ -7,11 +7,6 @@ abstract type Repeater{T, TA<:AbstractArray{T}} <: Wrapper{T, TA} end
 
 deduceArrayType(::Type{TA}, ::Type{T}, N::Integer) where {T, TA<:AbstractArray} = deducetype(Base.similar, TA, Type{T}, Dims{N})
 
-"""
-    SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Repeater{T, TA}
-
-Homogenous array of elements.
-"""
 struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Repeater{T, TA}
     subcon::TSubCon
     size::NTuple{N, UInt}
@@ -29,14 +24,16 @@ end
 #     SizedArray(CTA::Type{<:TA}, subcon, convert(NTuple{N, UInt}, size))
 # end
 """
-    SizedArray([arraytype,] element, size...)
+    SizedArray([TA], T, size...) -> Construct{TA}
+    SizedArray([TA], element::Construct{T}, size...) -> Construct{TA}
 
 Defines an array with specific size and element.
 
 # Arguments
 
-- `arraytype::Type`: the target array type, the default is `Array{T, N}`.
-- `element::Union{Type, Construct}`: the type/construct of elements.
+- `TA<:AbstractArray{T}`: the target array type, the default is `Array{T, N}`.
+- `T`: the type of elements.
+- `element::Construct{T}`: the construct of elements.
 - `size`: the size of the array.
 """
 function SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
@@ -67,24 +64,20 @@ function serialize(array::SizedArray{T, N, TA, TSubCon}, s::IO, obj::TA; context
 end
 estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(array.subcon; contextkw...)
 
-"""
-    GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, Vector{T}}
-
-Homogenous array of elements for unknown count of elements by deserializing until end of stream.
-"""
 struct GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, Vector{T}}
     subcon::TSubCon
 end
 
 """
-    GreedyVector(element)
+    GreedyVector(T) -> Construct{Vector{T}}
+    GreedyVector(element::Construct{T}) -> Construct{Vector{T}}
 
 Defines an unknown-sized vector, which will deserialize elements as much as possible.
 
 # Arguments
 
-- `element::Union{Type, Construct}`: the type/construct of elements.
-
+- `T`: the type of elements.
+- `element::Construct{T}`: the construct of elements.
 """
 GreedyVector(type::Type) = GreedyVector(Construct(type))
 
