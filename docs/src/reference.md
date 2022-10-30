@@ -60,6 +60,12 @@ JuliaSerializer
 RaiseError
 ```
 
+## String
+
+```@docs
+NullTerminatedString
+```
+
 ## Endianness Adapters
 
 ```@docs

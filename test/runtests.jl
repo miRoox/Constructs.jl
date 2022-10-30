@@ -198,6 +198,41 @@ end
             @test serialize(BigEndian(type), n) == bs
         end
     end
+    @testset "string" begin
+        @testset "NullTerminatedString" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(() -> NullTerminatedString()) <: Construct{String}
+                @test Constructs.deducetype(() -> NullTerminatedString("UTF-16LE")) <: Construct{String}
+                @test Constructs.deducetype(() -> NullTerminatedString(GenericString)) <: Construct{GenericString}
+            end
+            @testset "raw" begin
+                @test Construct(String) == NullTerminatedString(String)
+                @test estimatesize(NullTerminatedString()) == UnboundedSize(0)
+                @test deserialize(NullTerminatedString(), b"啊aξ") == "啊aξ"
+                @test deserialize(NullTerminatedString(), b"啊aξ\0ϕ一r") == "啊aξ"
+                @test serialize(NullTerminatedString(), "啊aξ") == b"啊aξ\0"
+                @test serialize(NullTerminatedString(), "啊aξ\0ϕ一r") == b"啊aξ\0ϕ一r\0"
+            end
+            @testset "UTF-8" begin
+                @test deserialize(NullTerminatedString("UTF-8"), b"啊aξ") == "啊aξ"
+                @test deserialize(NullTerminatedString("UTF-8"), b"啊aξ\0ϕ一r") == "啊aξ"
+                @test serialize(NullTerminatedString("UTF-8"), "啊aξ") == b"啊aξ\0"
+                @test serialize(NullTerminatedString("UTF-8"), "啊aξ\0ϕ一r") == b"啊aξ\0ϕ一r\0"
+            end
+            @testset "GB18030" begin
+                @test deserialize(NullTerminatedString("GB18030"), b"\xb0\xa1a\xa6\xce") == "啊aξ"
+                @test deserialize(NullTerminatedString("GB18030"), b"\xb0\xa1a\xa6\xce\0\x81\x30\xcd\x31\xd2\xbbr") == "啊aξ"
+                @test serialize(NullTerminatedString("GB18030"), "啊aξ") == b"\xb0\xa1a\xa6\xce\0"
+                @test serialize(NullTerminatedString("GB18030"), "啊aξ\0ϕ一r") == b"\xb0\xa1a\xa6\xce\0\x81\x30\xcd\x31\xd2\xbbr\0"
+            end
+            @testset "UTF-16LE" begin
+                @test deserialize(NullTerminatedString("UTF-16LE"), b"\x4a\x55a\x00\xbe\x03") == "啊aξ"
+                @test deserialize(NullTerminatedString("UTF-16LE"), b"\x4a\x55a\x00\xbe\x03\0\0\xd5\x03\x00\x4er\x00") == "啊aξ"
+                @test serialize(NullTerminatedString("UTF-16LE"), "啊aξ") == b"\x4a\x55a\x00\xbe\x03\0\0"
+                @test serialize(NullTerminatedString("UTF-16LE"), "啊aξ\0ϕ一r") == b"\x4a\x55a\x00\xbe\x03\0\0\xd5\x03\x00\x4er\x00\0\0"
+            end
+        end
+    end
     @testset "enum" begin
         @testset "auto type" begin
             @test estimatesize(Fruit) == sizeof(Int8)

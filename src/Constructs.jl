@@ -39,6 +39,7 @@ export
     Singleton,
     RaiseError,
     JuliaSerializer,
+    NullTerminatedString,
     Padded,
     LittleEndian,
     BigEndian,
@@ -67,6 +68,7 @@ include("functional.jl")
 
 include("PrimitiveIO.jl")
 include("Singleton.jl")
+include("String.jl")
 include("Error.jl")
 include("JuliaSerializer.jl")
 include("Padded.jl")
