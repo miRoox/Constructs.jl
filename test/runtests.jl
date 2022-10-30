@@ -234,10 +234,10 @@ end
     end
     @testset "const" begin
         @testset "deduce type" begin
-            @test Constructs.deducetype(() -> Const(0x0102)) == Const{UInt16, PrimitiveIO{UInt16}}
-            @test Constructs.deducetype(() -> Const(b"BMP")) == Const{Vector{UInt8}, SizedArray{UInt8, 1, Vector{UInt8}, PrimitiveIO{UInt8}}}
-            @test Constructs.deducetype(() -> Const(Int32, 0x0102)) == Const{Int32, PrimitiveIO{Int32}}
-            @test Constructs.deducetype(() -> Const(Int32be, 0x0102)) == Const{Int32, typeof(Int32be)}
+            @test Constructs.deducetype(() -> Const(0x0102)) <: Construct{UInt16}
+            @test Constructs.deducetype(() -> Const(b"BMP")) <: Construct{Vector{UInt8}}
+            @test Constructs.deducetype(() -> Const(Int32, 0x0102)) <: Construct{Int32}
+            @test Constructs.deducetype(() -> Const(Int32be, 0x0102)) <: Construct{Int32}
         end
         @test estimatesize(Const(0x0102)) == sizeof(0x0102)
         @test estimatesize(Const(b"BMP")) == sizeof(b"BMP")
@@ -343,10 +343,10 @@ end
         end
         @testset "SizedArray" begin
             @testset "deduce type" begin
-                @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
-                @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
-                @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) == SizedArray{Int, 2, Array{Int, 2}, PrimitiveIO{Int}}
-                @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) == SizedArray{Bool, 2, BitArray{2}, PrimitiveIO{Bool}}
+                @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) <: Repeater{Int, Array{Int, 2}}
+                @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) <: Repeater{Bool, BitArray{2}}
+                @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) <: Repeater{Int, Array{Int, 2}}
+                @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) <: Repeater{Bool, BitArray{2}}
             end
             @test_throws TypeError SizedArray(BitArray{3}, Int, 2, 3, 5) # element type mismatch
             @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized
