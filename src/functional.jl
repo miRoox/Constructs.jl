@@ -23,13 +23,14 @@ FunctionValidator(subcon::TSubCon, validate::Function) where {T, TSubCon<:Constr
 FunctionValidator(::Type{T}, validate::Function) where {T} = FunctionValidator(Construct(T), validate)
 
 """
-    Validator(subcon, validate)
+    Validator(T, validate) -> Validator{T}
+    Validator(subcon::Construct{T}, validate) -> Validator{T}
 
-Create a validator based on the function.
+Create a validator based on the `validate` function.
 
 # Arguments
 
-- `subcon::Union{Type, Construct}`: the underlying type/construct.
+- `subcon::Construct{T}`: the underlying construct.
 - `validate`: the validate function. the function should have signature like `(::T; contextkw...)->Bool`.
 """
 Validator(subcon::Union{Type, Construct}, validate::Function) = FunctionValidator(subcon, validate)
@@ -54,14 +55,16 @@ FunctionSymmetricAdapter(subcon::TSubCon, encode::Function) where {T, TSubCon<:C
 FunctionSymmetricAdapter(::Type{T}, encode::Function) where {T} = FunctionSymmetricAdapter(Construct(T), encode)
 
 """
-    Adapter(subcon, encode)
-    SymmetricAdapter(subcon, encode)
+    Adapter(T, encode) -> SymmetricAdapter{T}
+    Adapter(subcon::Construct{T}, encode) -> SymmetricAdapter{T}
+    SymmetricAdapter(T, encode) -> SymmetricAdapter{T}
+    SymmetricAdapter(subcon::Construct{T}, encode) -> SymmetricAdapter{T}
 
 Create a symmetric adapter based on the `encode` function.
 
 # Arguments
 
-- `subcon::Union{Type, Construct}`: the underlying type/construct.
+- `subcon::Construct{T}`: the underlying construct.
 - `encode`: the encoding function. the function should have signature like `(::T; contextkw...)->T` and satisfies involution (`encode(encode(x)) == x`).
 """
 SymmetricAdapter(subcon::Union{Type, Construct}, encode::Function) = FunctionSymmetricAdapter(subcon, encode)

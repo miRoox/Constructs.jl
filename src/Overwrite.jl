@@ -1,8 +1,3 @@
-"""
-    Overwrite{T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}} <: Adapter{T, T}
-
-Overwrite the value when serializing. Deserialization simply passes down.
-"""
 struct Overwrite{T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}} <: Adapter{T, T}
     subcon::TSubCon
     getter::GT
@@ -18,14 +13,18 @@ end
 Overwrite(subcon::TSubCon, getter::GT) where {T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}} = Overwrite{T, TSubCon, GT}(subcon, getter)
 
 """
-    Overwrite(base, getter)
+    Overwrite(T, value::T) -> Construct{T}
+    Overwrite(T, getter) -> Construct{T}
+    Overwrite(subcon::Construct{T}, value::T) -> Construct{T}
+    Overwrite(subcon::Construct{T}, getter) -> Construct{T}
 
-Overwrite the value when serializing from `getter`.
+Overwrite the value when serializing from `getter`/`value`. Deserialization simply passes down.
 
 # Arguments
 
-- `base::Union{Type, Construct}`: the underlying type/construct.
-- `getter`: the function/value to overwrite when serializing. the function should have signature like `(::T; contextkw...)` and satisfies idempotence (`getter(getter(x)) == getter(x)`).
+- `subcon::Construct{T}`: the underlying construct.
+- `value::T`: the value to overwrite when serializing.
+- `getter`: the function to overwrite when serializing. the function should have signature like `(::T; contextkw...)` and satisfies idempotence (`getter(getter(x)) == getter(x)`).
 
 # Examples
 

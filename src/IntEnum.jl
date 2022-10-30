@@ -15,26 +15,21 @@ Indicates the enumeration is non-exhaustive.
 """
 struct EnumNonExhaustive <: EnumExhaustibility end
 
-"""
-    IntEnum{Ex<:EnumExhaustibility, T, TSubCon<:Construct{T}, E<:Base.Enum} <: Adapter{T, E}
-
-Integer-based enum adapter for serializing and deserializing.
-
-This is the default constructor for `Base.Enum{T}`.
-"""
 struct IntEnum{Ex<:EnumExhaustibility, T<:Integer, TSubCon<:Construct{T}, E<:Base.Enum} <: Adapter{T, E}
     subcon::TSubCon
 end
 
 """
-    IntEnum{EnumNonExhaustive}([base,] enum)
+    IntEnum{EnumNonExhaustive}([T], E) -> Construct{E}
+    IntEnum{EnumNonExhaustive}(subcon::Construct{T}, E) -> Construct{E}
 
-Defines the non-exhaustive `enum`.
+Defines the non-exhaustive enumeration based on integer type `T`.
 
 # Arguments
 
-- `base::Union{Type, Construct}`: the base integer type/construct.
-- `enum::Type`: the enum type.
+- `T<:Integer`: the underly integer type, default is the base type of `E`.
+- `subcon::Construct{T}`: the underly integer construct.
+- `E<:Base.Enum`: the enum type.
 
 # Examples
 
@@ -50,14 +45,18 @@ IntEnum{Ex}(::Type{T}, ::Type{E}) where {Ex, T<:Integer, E<:Base.Enum} = IntEnum
 IntEnum{Ex}(::Type{E}) where {Ex, T<:Integer, E<:Base.Enum{T}} = IntEnum{Ex}(Construct(T), E)
 
 """
-    IntEnum([base,] enum)
+    IntEnum([T], E) -> Construct{E}
+    IntEnum(subcon::Construct{T}, E) -> Construct{E}
 
-Defines the (exhaustive) `enum`.
+Defines the (exhaustive) enumeration based on integer type `T`.
+
+This is the default constructor for `Base.Enum{T}`.
 
 # Arguments
 
-- `base::Union{Type, Construct}`: the base integer type/construct.
-- `enum::Type`: the enum type.
+- `T<:Integer`: the underly integer type, default is the base type of `E`.
+- `subcon::Construct{T}`: the underly integer construct.
+- `E<:Base.Enum`: the enum type.
 
 # Examples
 

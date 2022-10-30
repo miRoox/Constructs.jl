@@ -1,16 +1,11 @@
-"""
-    JuliaSerializer{T} <: Construct{T}
-
-Standard Julia serialization.
-
-See also: [`Serialization`](https://docs.julialang.org/en/v1.6/stdlib/Serialization/)
-"""
 struct JuliaSerializer{T} <: Construct{T} end
 
 """
-    JuliaSerializer([type])
+    JuliaSerializer([T = Any]) -> Construct{T}
 
 Create the standard Julia serializer.
+
+See also: [`Serialization`](https://docs.julialang.org/en/v1.6/stdlib/Serialization/)
 """
 JuliaSerializer(::Type{T} = Any) where {T} = JuliaSerializer{T}()
 

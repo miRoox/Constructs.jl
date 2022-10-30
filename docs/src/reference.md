@@ -30,7 +30,7 @@ estimatesize
 
 ```@docs
 Wrapper{TSub, T}
-subcon(wrapper::Wrapper)
+subcon
 ```
 
 ### `Adapter`
@@ -54,23 +54,17 @@ validate
 ## Primitive Constructs
 
 ```@docs
-PrimitiveIO{T}
-PrimitiveIO(::Type{T}) where {T}
-Singleton{T}
-Singleton(::Type{T}) where {T}
-JuliaSerializer{T}
-JuliaSerializer(::Type{T} = Any) where {T}
+PrimitiveIO
+Singleton
+JuliaSerializer
 RaiseError
-RaiseError(msg::AbstractString)
 ```
 
 ## Endianness Adapters
 
 ```@docs
-LittleEndian{T, TSubCon<:Construct{T}}
-LittleEndian(::Type{T}) where {T}
-BigEndian{T, TSubCon<:Construct{T}}
-BigEndian(::Type{T}) where {T}
+LittleEndian
+BigEndian
 ```
 
 ```@autodocs
@@ -81,7 +75,6 @@ Filter = c -> c isa LittleEndian || c isa BigEndian
 ## Enums
 
 ```@docs
-IntEnum{Ex<:EnumExhaustibility, T<:Integer, TSubCon<:Construct{T}, E<:Base.Enum}
 IntEnum(subcon::Union{Type, Construct}, ::Type{E}) where {E<:Base.Enum}
 IntEnum{Ex}(subcon::TSubCon, ::Type{E}) where {Ex, T<:Integer, TSubCon<:Construct{T}, E<:Base.Enum}
 EnumNonExhaustive
@@ -91,41 +84,34 @@ EnumExhaustive
 ## Sequence
 
 ```@docs
-Sequence{TT<:Tuple}
-Sequence(ts::Vararg{Union{Type, Construct}})
+Sequence
 ```
 
 ## Repeaters
 
 ```@docs
-Repeater{T, TA<:AbstractArray{T}}
-SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}}
-SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
-GreedyVector{T, TSubCon<:Construct{T}}
-GreedyVector(type::Type)
+Repeater
+SizedArray
+GreedyVector
 ```
 
 ## Conditional
 
 ```@docs
-Try{TU}
-Try(ct1::Union{Type, Construct}, ct2::Union{Type, Construct})
+Try
 ```
 
 ## Padded
 
 ```@docs
-Padded{T, TSubCon<:Construct{T}}
-Padded(subcon::TSubCon, size::Integer) where {TSubCon<:Construct}
+Padded
 ```
 
 ## Others
 
 ```@docs
-Const{T, TSubCon<:Construct{T}}
-Const(subcon::Construct{T}, value) where {T}
-Overwrite{T, TSubCon<:Construct{T}, GT<:Union{Function, UndefProperty}}
-Overwrite(subcon::Construct{T}, value::T) where {T}
+Const
+Overwrite
 ```
 
 ## `@construct` Macro

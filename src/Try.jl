@@ -1,9 +1,3 @@
-
-"""
-    Try{TU} <: Construct{TU}
-
-Attempts to serialize/deserialize each of the subconstructs.
-"""
 abstract type Try{TU} <: Construct{TU} end
 
 struct Try2{TU, T1, T2, TSubCon1<:Construct{T1}, TSubCon2<:Construct{T2}} <: Try{TU}
@@ -18,8 +12,8 @@ Try2{TU}(c1::TSubCon1, c2::TSubCon2) where {TU, T1<:TU, T2<:TU, TSubCon1<:Constr
 Try2(c1::Construct{T1}, c2::Construct{T2}) where {T1, T2} = Try2{Union{T1, T2}}(c1, c2)
 
 """
-    Try(subcon1, subcon2, ...)
-    Try{TU}(subcon1, subcon2, ...)
+    Try(subcon1, subcon2, ...) -> Construct{Union{T1, T2, ...}}
+    Try{TU}(subcon1, subcon2, ...) -> Construct{TU}
 
 Try each `subcon` and use the first successful one.
 

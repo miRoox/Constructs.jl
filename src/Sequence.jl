@@ -1,13 +1,6 @@
 
 const sequence_subcons_threshold = 9
 
-"""
-    Sequence{Tuple{Ts...}} <: Construct{Tuple{Ts...}}
-
-A sequence of construct data.
-
-This is the default constructor for `Tuple{Ts...}`.
-"""
 abstract type Sequence{TT<:Tuple} <: Construct{TT} end
 
 Base.getindex(seq::Sequence, i::Integer) = getfield(seq, convert(Int, i))
@@ -87,9 +80,11 @@ function SequenceN(subcons::Vararg{Union{Type, Construct}, N}) where {N}
 end
 
 """
-    Sequence(elements...)
+    Sequence(elements...) -> Construct{Tuple{Ts...}}
 
 Defines the sequence of construct data based on `elements`.
+
+This is the default constructor for `Tuple{Ts...}`.
 
 # Examples
 
