@@ -232,6 +232,54 @@ end
                 @test serialize(NullTerminatedString("UTF-16LE"), "啊aξ\0ϕ一r") == b"\x4a\x55a\x00\xbe\x03\0\0\xd5\x03\x00\x4er\x00\0\0"
             end
         end
+        @testset "PaddedString" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype((n) -> PaddedString(n), Int) <: Construct{String}
+                @test Constructs.deducetype((n) -> PaddedString(n, "UTF-16LE"), Int) <: Construct{String}
+                @test Constructs.deducetype((n) -> PaddedString(GenericString, n), Int) <: Construct{GenericString}
+            end
+            @testset "raw" begin
+                @test estimatesize(PaddedString(9)) == 9
+                @test deserialize(PaddedString(4), b"啊aξ") == "啊a"
+                @test deserialize(PaddedString(6), b"啊a\0\0") == "啊a"
+                @test deserialize(PaddedString(6), b"啊\0a\0") == "啊\0a"
+                @test_throws PaddedError serialize(PaddedString(4), "啊aξ")
+                @test serialize(PaddedString(4), "啊a") == b"啊a"
+                @test serialize(PaddedString(6), "啊a") == b"啊a\0\0"
+                @test serialize(PaddedString(6), "啊\0a") == b"啊\0a\0"
+            end
+            @testset "UTF-8" begin
+                @test estimatesize(PaddedString(9, "UTF-8")) == 9
+                @test deserialize(PaddedString(4, "UTF-8"), b"啊aξ") == "啊a"
+                @test deserialize(PaddedString(6, "UTF-8"), b"啊a\0\0") == "啊a"
+                @test deserialize(PaddedString(6, "UTF-8"), b"啊\0a\0") == "啊\0a"
+                @test_throws PaddedError serialize(PaddedString(4, "UTF-8"), "啊aξ")
+                @test serialize(PaddedString(4, "UTF-8"), "啊a") == b"啊a"
+                @test serialize(PaddedString(6, "UTF-8"), "啊a") == b"啊a\0\0"
+                @test serialize(PaddedString(6, "UTF-8"), "啊\0a") == b"啊\0a\0"
+            end
+            @testset "GB18030" begin
+                @test estimatesize(PaddedString(9, "GB18030")) == 9
+                @test deserialize(PaddedString(3, "GB18030"), b"\xb0\xa1a\xa6\xce") == "啊a"
+                @test deserialize(PaddedString(5, "GB18030"), b"\xb0\xa1a\0\0") == "啊a"
+                @test deserialize(PaddedString(5, "GB18030"), b"\xb0\xa1\0a\0") == "啊\0a"
+                @test_throws PaddedError serialize(PaddedString(4, "GB18030"), "啊aξ")
+                @test serialize(PaddedString(3, "GB18030"), "啊a") == b"\xb0\xa1a"
+                @test serialize(PaddedString(5, "GB18030"), "啊a") == b"\xb0\xa1a\0\0"
+                @test serialize(PaddedString(5, "GB18030"), "啊\0a") == b"\xb0\xa1\0a\0"
+            end
+            @testset "UTF-16LE" begin
+                @test estimatesize(PaddedString(9, "UTF-16LE")) == 9
+                @test deserialize(PaddedString(4, "UTF-16LE"), b"\x4a\x55a\x00\xbe\x03") == "啊a"
+                @test deserialize(PaddedString(6, "UTF-16LE"), b"\x4a\x55a\x00\0\0") == "啊a"
+                @test deserialize(PaddedString(7, "UTF-16LE"), b"\x4a\x55\0\0a\x00\0") == "啊\0a"
+                @test_throws PaddedError serialize(PaddedString(4, "UTF-16LE"), "啊aξ")
+                @test serialize(PaddedString(4, "UTF-16LE"), "啊a") == b"\x4a\x55a\x00"
+                @test serialize(PaddedString(5, "UTF-16LE"), "啊a") == b"\x4a\x55a\x00\0"
+                @test serialize(PaddedString(6, "UTF-16LE"), "啊a") == b"\x4a\x55a\x00\0\0"
+                @test serialize(PaddedString(7, "UTF-16LE"), "啊\0a") == b"\x4a\x55\0\0a\x00\0"
+            end
+        end
     end
     @testset "enum" begin
         @testset "auto type" begin
