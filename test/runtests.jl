@@ -319,11 +319,13 @@ end
         @testset "deduce type" begin
             @test Constructs.deducetype(() -> Const(0x0102)) <: Construct{UInt16}
             @test Constructs.deducetype(() -> Const(b"BMP")) <: Construct{Vector{UInt8}}
+            @test Constructs.deducetype(() -> Const("BMP")) <: Construct{String}
             @test Constructs.deducetype(() -> Const(Int32, 0x0102)) <: Construct{Int32}
             @test Constructs.deducetype(() -> Const(Int32be, 0x0102)) <: Construct{Int32}
         end
         @test estimatesize(Const(0x0102)) == sizeof(0x0102)
         @test estimatesize(Const(b"BMP")) == sizeof(b"BMP")
+        @test estimatesize(Const("BMP")) == sizeof("BMP")
         @test estimatesize(Const(Int32, 0x0102)) == sizeof(Int32)
         @test estimatesize(Const(Int32be, 0x0102)) == sizeof(Int32)
         @test deserialize(Const(UInt16be, 0x0102), b"\x01\x02") == 0x0102
