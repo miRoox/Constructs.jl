@@ -347,16 +347,19 @@ end
                 @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) <: Repeater{Bool, BitArray{2}}
                 @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) <: Repeater{Int, Array{Int, 2}}
                 @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) <: Repeater{Bool, BitArray{2}}
+                @test Constructs.deducetype((size) -> SizedArray(Int, size), NTuple{3, Int}) <: Repeater{Int, Array{Int, 3}}
+                @test Constructs.deducetype((size) -> SizedArray(BitArray{5}, Bool, size), NTuple{5, Int}) <: Repeater{Bool, BitArray{5}}
             end
-            @test_throws TypeError SizedArray(BitArray{3}, Int, 2, 3, 5) # element type mismatch
+            @test_throws TypeError SizedArray(BitArray{3}, Int, (2, 3, 5)) # element type mismatch
             @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized
             @test_throws TypeError SizedArray(typeof(view([1],1)), Int, 1) # indirect array cannot be deserialized
-            @test estimatesize(SizedArray(Int64)) == sizeof(Int64)
+            @test estimatesize(SizedArray(Int64, ())) == sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
+            @test estimatesize(SizedArray(BitArray{2}, Bool, (2, 3))) == 2*3*sizeof(Bool)
             @test estimatesize(SizedArray(BitArray{3}, Bool, 2, 3, 5)) == 2*3*5*sizeof(Bool)
-            @test deserialize(SizedArray(Int8), b"\x02")[] == 2
-            @test serialize(SizedArray(Int8), ones(Int8)) == b"\x01"
+            @test deserialize(SizedArray(Int8, ()), b"\x02")[] == 2
+            @test serialize(SizedArray(Int8, ()), ones(Int8, ())) == b"\x01"
             @test deserialize(SizedArray(Int8, 3), b"\x01\xff\x00") == Int8[1, -1, 0]
             @test serialize(SizedArray(Int8, 3), Int8[1, -1, 0]) == b"\x01\xff\x00"
             @test_throws DimensionMismatch serialize(SizedArray(Int8, 3), Int8[1, -1])
@@ -485,7 +488,7 @@ end
                     width::UInt32
                     height::UInt32
                     ::Padded(8)
-                    pixel::SizedArray(UInt8, (this.height, this.width))
+                    pixel::SizedArray(UInt8, this.signature, this.width)
                 end
             end
         )
