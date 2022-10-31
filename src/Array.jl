@@ -35,13 +35,15 @@ Defines an array with specific size and element.
 - `element::Construct{T}`: the construct of elements.
 - `size`: the size of the array.
 """
-function SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
+function SizedArray(::Type{TA}, subcon::TSubCon, size::NTuple{N, Integer}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}}
     SizedArray{T, N, TA, TSubCon}(subcon, convert(NTuple{N, UInt}, size))
 end
+SizedArray(::Type{TA}, subcon::TSubCon, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray, TSubCon<:Construct{T}} = SizedArray(TA, subcon, tuple(size...))
 SizedArray(::Type{TA}, ::Type{T}, size::Vararg{Integer, N}) where {T, N, TA<:AbstractArray} = SizedArray(TA, Construct(T), size...)
+SizedArray(::Type{TA}, ::Type{T}, size::NTuple{N, Integer}) where {T, N, TA<:AbstractArray} = SizedArray(TA, Construct(T), size)
 
-SizedArray(subcon::Construct{T}, size::Vararg{Integer, N}) where {T, N} = SizedArray(Array{T, N}, subcon, size...)
-SizedArray(::Type{T}, size::Vararg{Integer, N}) where {T, N} = SizedArray(Array{T, N}, Construct(T), size...)
+SizedArray(subcon::Union{Construct{T}, Type{T}}, size::Vararg{Integer, N}) where {T, N} = SizedArray(Array{T, N}, Construct(subcon), size...)
+SizedArray(subcon::Union{Construct{T}, Type{T}}, size::NTuple{N, Integer}) where {T, N} = SizedArray(Array{T, N}, Construct(subcon), size)
 
 function deserialize(array::SizedArray{T, N, TA, TSubCon}, s::IO; contextkw...) where {T, N, TA, TSubCon}
     result = similar(TA, array.size)
