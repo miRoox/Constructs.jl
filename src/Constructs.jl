@@ -40,6 +40,7 @@ export
     RaiseError,
     JuliaSerializer,
     NullTerminatedString,
+    PaddedString,
     Padded,
     LittleEndian,
     BigEndian,
