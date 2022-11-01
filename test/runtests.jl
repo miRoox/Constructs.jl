@@ -343,12 +343,12 @@ end
         end
         @testset "SizedArray" begin
             @testset "deduce type" begin
-                @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) <: Repeater{Int, Array{Int, 2}}
-                @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) <: Repeater{Bool, BitArray{2}}
-                @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) <: Repeater{Int, Array{Int, 2}}
-                @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) <: Repeater{Bool, BitArray{2}}
-                @test Constructs.deducetype((size) -> SizedArray(Int, size), NTuple{3, Int}) <: Repeater{Int, Array{Int, 3}}
-                @test Constructs.deducetype((size) -> SizedArray(BitArray{5}, Bool, size), NTuple{5, Int}) <: Repeater{Bool, BitArray{5}}
+                @test Constructs.deducetype(() -> SizedArray(Int, 1, 2)) <: Construct{Array{Int, 2}}
+                @test Constructs.deducetype(() -> SizedArray(BitArray{2}, Bool, 1, 2)) <: Construct{BitArray{2}}
+                @test Constructs.deducetype((x, y) -> SizedArray(Int, x, y), Int, Int) <: Construct{Array{Int, 2}}
+                @test Constructs.deducetype((x, y) -> SizedArray(BitArray{2}, Bool, x, y), Int, Int) <: Construct{BitArray{2}}
+                @test Constructs.deducetype((size) -> SizedArray(Int, size), NTuple{3, Int}) <: Construct{Array{Int, 3}}
+                @test Constructs.deducetype((size) -> SizedArray(BitArray{5}, Bool, size), NTuple{5, Int}) <: Construct{BitArray{5}}
             end
             @test_throws TypeError SizedArray(BitArray{3}, Int, (2, 3, 5)) # element type mismatch
             @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized

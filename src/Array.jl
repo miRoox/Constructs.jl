@@ -1,13 +1,7 @@
-"""
-    Repeater{T, TA<:AbstractArray{T}} <: Wrapper{T, TA}
-
-Abstract base type for Array wrapper.
-"""
-abstract type Repeater{T, TA<:AbstractArray{T}} <: Wrapper{T, TA} end
 
 deduceArrayType(::Type{TA}, ::Type{T}, N::Integer) where {T, TA<:AbstractArray} = deducetype(Base.similar, TA, Type{T}, Dims{N})
 
-struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Repeater{T, TA}
+struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Wrapper{T, TA}
     subcon::TSubCon
     size::NTuple{N, UInt}
 
@@ -65,7 +59,7 @@ function serialize(array::SizedArray{T, N, TA, TSubCon}, s::IO, obj::TA; context
 end
 estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(array.subcon; contextkw...)
 
-struct GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, Vector{T}}
+struct GreedyVector{T, TSubCon<:Construct{T}} <: Wrapper{T, Vector{T}}
     subcon::TSubCon
 end
 
