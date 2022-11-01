@@ -51,7 +51,6 @@ export
     Overwrite,
     Try,
     Sequence,
-    Repeater,
     SizedArray,
     GreedyVector
 

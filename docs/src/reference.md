@@ -90,7 +90,6 @@ Sequence
 ## Repeaters
 
 ```@docs
-Repeater
 SizedArray
 GreedyVector
 ```
