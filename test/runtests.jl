@@ -366,6 +366,23 @@ end
             @test deserialize(SizedArray(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
             @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == b"\x01\x04\x02\x05\x03\x06"
         end
+        @testset "PrefixedArray" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(() -> PrefixedArray(UInt32, UInt8)) <: Construct{Vector{UInt8}}
+                @test Constructs.deducetype(() -> PrefixedArray(Sequence(UInt16, UInt16), UInt8)) <: Construct{Matrix{UInt8}}
+                @test Constructs.deducetype(() -> PrefixedArray(BitVector, UInt32, Bool)) <: Construct{BitVector}
+                @test Constructs.deducetype(() -> PrefixedArray(BitArray{2}, Sequence(UInt16, UInt16), Bool)) <: Construct{BitArray{2}}
+            end
+            @test estimatesize(PrefixedArray(UInt32, UInt8)) == UnboundedSize(sizeof(UInt32))
+            @test estimatesize(PrefixedArray(Sequence(UInt32, UInt16), UInt8)) == UnboundedSize(sizeof(UInt32) + sizeof(UInt16))
+            @test estimatesize(PrefixedArray(BitVector, UInt32, Bool)) == UnboundedSize(sizeof(UInt32))
+            @test estimatesize(PrefixedArray(BitArray{2}, Sequence(UInt16, UInt16), Bool)) == UnboundedSize(2 * sizeof(UInt16))
+            @test deserialize(PrefixedArray(UInt16le, Int8), b"\x02\x00\x12\xfe") == Int8[18, -2]
+            @test serialize(PrefixedArray(UInt16le, Int8), Int8[-3, 1, 7]) == b"\x03\x00\xfd\x01\x07"
+            @test deserialize(PrefixedArray(Sequence(UInt8, UInt16le), Int8), b"\x03\x02\x00\xff\xfe\xfd\x01\x02\x03") == Int8[-1 1; -2 2; -3 3]
+            @test serialize(PrefixedArray(Sequence(UInt16le, UInt8), Int8), Int8[-3 -2 -1; 1 2 3]) == b"\x02\x00\x03\xfd\x01\xfe\x02\xff\x03"
+            @test_throws InexactError serialize(PrefixedArray(Int8, UInt8), collect(0x01:0xff))
+        end
         @testset "GreedyVector" begin
             @test estimatesize(GreedyVector(Int8)) == UnboundedSize(0)
             @test deserialize(GreedyVector(Int8), b"\x01\xff\x00") == Int8[1, -1, 0]

@@ -91,6 +91,7 @@ Sequence
 
 ```@docs
 SizedArray
+PrefixedArray
 GreedyVector
 ```
 
