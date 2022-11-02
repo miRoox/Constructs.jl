@@ -59,6 +59,41 @@ function serialize(array::SizedArray{T, N, TA, TSubCon}, s::IO, obj::TA; context
 end
 estimatesize(array::SizedArray; contextkw...) = prod(array.size) * estimatesize(array.subcon; contextkw...)
 
+"""
+    PrefixedArray([TA], S|size, T|element) -> Construct{TA}
+
+Defines an array with its size in the header.
+
+# Arguments
+
+- `TA<:AbstractArray{T, N}`: the target array type, the default is `Array{T, N}`.
+- `S<:Union{Integer, NTuple{N, Integer}}`: the type of the size in the header.
+- `T`: the type of elements.
+- `size::Construct{S}`: the construct of size.
+- `element::Construct{T}`: the construct of elements.
+"""
+PrefixedArray(size::Union{Type, Construct}, el::Union{Type, Construct}) = PrefixedArray(Construct(size), Construct(el))
+PrefixedArray(::Type{TA}, size::Union{Type, Construct}, el::Union{Type, Construct}) where {TA} = PrefixedArray(TA, Construct(size), Construct(el))
+
+PrefixedArray(sizecon::Construct{S}, subcon::Construct{T}) where {S<:Integer, T} = PrefixedArray(Vector{T}, sizecon, subcon)
+PrefixedArray(sizecon::Construct{S}, subcon::Construct{T}) where {N, S<:NTuple{N, Integer}, T} = PrefixedArray(Array{T, N}, sizecon, subcon)
+
+function PrefixedArray(::Type{TA}, sizecon::Construct{S}, subcon::Construct{T}) where {S<:Integer, T, TA<:AbstractVector{T}}
+    Prefixed{S, TA, typeof(sizecon), SizedArray{T, 1, TA, typeof(subcon)}}(
+        sizecon,
+        length,
+        (n::S) -> SizedArray(TA, subcon, n)
+    )
+end
+
+function PrefixedArray(::Type{TA}, sizecon::Construct{S}, subcon::Construct{T}) where {N, S<:NTuple{N, Integer}, T, TA<:AbstractArray{T, N}}
+    Prefixed{S, TA, typeof(sizecon), SizedArray{T, N, TA, typeof(subcon)}}(
+        sizecon,
+        size,
+        (n::S) -> SizedArray(TA, subcon, n)
+    )
+end
+
 struct GreedyVector{T, TSubCon<:Construct{T}} <: Wrapper{T, Vector{T}}
     subcon::TSubCon
 end

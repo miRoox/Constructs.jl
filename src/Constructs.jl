@@ -52,6 +52,7 @@ export
     Try,
     Sequence,
     SizedArray,
+    PrefixedArray,
     GreedyVector
 
 include("context.jl")
