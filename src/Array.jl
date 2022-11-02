@@ -24,8 +24,7 @@ end
 #     SizedArray(CTA::Type{<:TA}, subcon, convert(NTuple{N, UInt}, size))
 # end
 """
-    SizedArray([TA], T, size...) -> Construct{TA}
-    SizedArray([TA], element::Construct{T}, size...) -> Construct{TA}
+    SizedArray([TA], T|element, size...) -> Construct{TA}
 
 Defines an array with specific size and element.
 
@@ -69,8 +68,7 @@ struct GreedyVector{T, TSubCon<:Construct{T}} <: Repeater{T, Vector{T}}
 end
 
 """
-    GreedyVector(T) -> Construct{Vector{T}}
-    GreedyVector(element::Construct{T}) -> Construct{Vector{T}}
+    GreedyVector(T|element) -> Construct{Vector{T}}
 
 Defines an unknown-sized vector, which will deserialize elements as much as possible.
 

@@ -20,8 +20,7 @@ struct IntEnum{Ex<:EnumExhaustibility, T<:Integer, TSubCon<:Construct{T}, E<:Bas
 end
 
 """
-    IntEnum{EnumNonExhaustive}([T], E) -> Construct{E}
-    IntEnum{EnumNonExhaustive}(subcon::Construct{T}, E) -> Construct{E}
+    IntEnum{EnumNonExhaustive}([T|subcon], E) -> Construct{E}
 
 Defines the non-exhaustive enumeration based on integer type `T`.
 
@@ -45,8 +44,7 @@ IntEnum{Ex}(::Type{T}, ::Type{E}) where {Ex, T<:Integer, E<:Base.Enum} = IntEnum
 IntEnum{Ex}(::Type{E}) where {Ex, T<:Integer, E<:Base.Enum{T}} = IntEnum{Ex}(Construct(T), E)
 
 """
-    IntEnum([T], E) -> Construct{E}
-    IntEnum(subcon::Construct{T}, E) -> Construct{E}
+    IntEnum([T|subcon], E) -> Construct{E}
 
 Defines the (exhaustive) enumeration based on integer type `T`.
 

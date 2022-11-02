@@ -4,8 +4,7 @@ struct Const{T, TSubCon<:Construct{T}} <: Validator{T}
 end
 
 """
-    Const([T], value::T) -> Construct{T}
-    Const(subcon::Construct{T}, value::T) -> Construct{T}
+    Const([T|subcon], value::T) -> Construct{T}
 
 Defines a constant `value`, usually used for file headers.
 
