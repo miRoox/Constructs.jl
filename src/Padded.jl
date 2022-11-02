@@ -5,8 +5,7 @@ struct Padded{T, TSubCon<:Construct{T}} <: Wrapper{T, T}
 end
 
 """
-    Padded([T = Nothing], n) -> Construct{T}
-    Padded(subcon::Construct{T}, n) -> Construct{T}
+    Padded([T|subcon = Nothing], n) -> Construct{T}
 
 Create `n`-bytes padded data from `subcon`.
 

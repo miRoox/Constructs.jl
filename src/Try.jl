@@ -12,8 +12,8 @@ Try2{TU}(c1::TSubCon1, c2::TSubCon2) where {TU, T1<:TU, T2<:TU, TSubCon1<:Constr
 Try2(c1::Construct{T1}, c2::Construct{T2}) where {T1, T2} = Try2{Union{T1, T2}}(c1, c2)
 
 """
-    Try(subcon1, subcon2, ...) -> Construct{Union{T1, T2, ...}}
-    Try{TU}(subcon1, subcon2, ...) -> Construct{TU}
+    Try(T1|subcon1, T2|subcon2, ...) -> Construct{Union{T1, T2, ...}}
+    Try{TU}(T1|subcon1, T2|subcon2, ...) -> Construct{TU}
 
 Try each `subcon` and use the first successful one.
 

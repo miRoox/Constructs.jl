@@ -80,7 +80,7 @@ function SequenceN(subcons::Vararg{Union{Type, Construct}, N}) where {N}
 end
 
 """
-    Sequence(elements...) -> Construct{Tuple{Ts...}}
+    Sequence(Ts|elements...) -> Construct{Tuple{Ts...}}
 
 Defines the sequence of construct data based on `elements`.
 
