@@ -70,3 +70,24 @@ Adapter(subcon::Union{Type, Construct}, encode::Function) = FunctionSymmetricAda
 function encode(cons::FunctionSymmetricAdapter{T, TSubCon}, obj::T; contextkw...) where {T, TSubCon}
     convert(T, apply_optional_contextkw(cons.encode, obj, contextkw))
 end
+
+# internal template
+struct Prefixed{S, T, TSizeCon<:Construct{S}, TSubCon<:Construct{T}} <: Construct{T}
+    sizecon::TSizeCon
+    sizegetter::Function # obj::T -> S
+    fsubcon::Function # size::S -> TSubCon
+end
+
+function deserialize(cons::Prefixed{S, T, TSizeCon, TSubCon}, s::IO; contextkw...) where {S, T, TSizeCon<:Construct{S}, TSubCon<:Construct{T}}
+    size::S = deserialize(cons.sizecon, s; contextkw...)
+    subcon::TSubCon = cons.fsubcon(size)
+    deserialize(subcon, s; contextkw...)
+end
+
+function serialize(cons::Prefixed{S, T, TSizeCon, TSubCon}, s::IO, obj::T; contextkw...) where {S, T, TSizeCon<:Construct{S}, TSubCon<:Construct{T}}
+    size::S = cons.sizegetter(obj)
+    subcon::TSubCon = cons.fsubcon(size)
+    serialize(cons.sizecon, s, size; contextkw...) + serialize(subcon, s, obj; contextkw...)
+end
+
+estimatesize(cons::Prefixed; contextkw...) = estimatesize(cons.sizecon; contextkw...) + UnboundedSize(0) # assume the size of subcon is unbounded.
