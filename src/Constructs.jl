@@ -4,6 +4,7 @@ Inspired by [Construct](https://construct.readthedocs.io/).
 """
 module Constructs
 
+using Requires
 using StringEncodings
 
 import Serialization
