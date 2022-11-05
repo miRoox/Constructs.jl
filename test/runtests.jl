@@ -477,8 +477,6 @@ end
                 @test Constructs.deducetype((size) -> SizedArray(BitArray{5}, Bool, size), NTuple{5, Int}) <: Construct{BitArray{5}}
             end
             @test_throws TypeError SizedArray(BitArray{3}, Int, (2, 3, 5)) # element type mismatch
-            @test_throws TypeError SizedArray(UnitRange{Int}, Int, 3) # immutable array cannot be deserialized
-            @test_throws TypeError SizedArray(typeof(view([1],1)), Int, 1) # indirect array cannot be deserialized
             @test estimatesize(SizedArray(Int64, ())) == sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 10)) == 10*sizeof(Int64)
             @test estimatesize(SizedArray(Int64, 2, 3, 5)) == 2*3*5*sizeof(Int64)
