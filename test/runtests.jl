@@ -280,6 +280,47 @@ end
                 @test serialize(PaddedString(7, "UTF-16LE"), "啊\0a") == b"\x4a\x55\0\0a\x00\0"
             end
         end
+        @testset "PrefixedString" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(() -> PrefixedString(UInt)) <: Construct{String}
+                @test Constructs.deducetype(() -> PrefixedString(UInt, "UTF-16LE")) <: Construct{String}
+                @test Constructs.deducetype(() -> PrefixedString(GenericString, UInt)) <: Construct{GenericString}
+            end
+            @testset "raw" begin
+                @test estimatesize(PrefixedString(UInt)) == UnboundedSize(sizeof(UInt))
+                @test deserialize(PrefixedString(UInt8), b"\x04啊aξ") == "啊a"
+                @test deserialize(PrefixedString(UInt16le), b"\x05\x00啊a\0\0") == "啊a\0"
+                @test deserialize(PrefixedString(UInt16le), b"\x05\x00啊\0a\0") == "啊\0a"
+                @test serialize(PrefixedString(UInt8), "啊a") == b"\x04啊a"
+                @test serialize(PrefixedString(UInt16le), "啊\0a") == b"\x05\x00啊\0a"
+                @test_throws InexactError serialize(PrefixedString(UInt8), '啊'^0xff)
+            end
+            @testset "UTF-8" begin
+                @test estimatesize(PrefixedString(UInt, "UTF-8")) == UnboundedSize(sizeof(UInt))
+                @test deserialize(PrefixedString(UInt8, "UTF-8"), b"\x04啊aξ") == "啊a"
+                @test deserialize(PrefixedString(UInt16le, "UTF-8"), b"\x05\x00啊a\0\0") == "啊a\0"
+                @test deserialize(PrefixedString(UInt16le, "UTF-8"), b"\x05\x00啊\0a\0") == "啊\0a"
+                @test serialize(PrefixedString(UInt8, "UTF-8"), "啊a") == b"\x04啊a"
+                @test serialize(PrefixedString(UInt16le, "UTF-8"), "啊\0a") == b"\x05\x00啊\0a"
+                @test_throws InexactError serialize(PrefixedString(UInt8, "UTF-8"), '啊'^0xff)
+            end
+            @testset "GB18030" begin
+                @test deserialize(PrefixedString(UInt8, "GB18030"), b"\x03\xb0\xa1a\xa6\xce") == "啊a"
+                @test deserialize(PrefixedString(UInt16le, "GB18030"), b"\x05\x00\xb0\xa1a\0") == "啊a\0"
+                @test deserialize(PrefixedString(UInt16le, "GB18030"), b"\x05\x00\xb0\xa1\0a") == "啊\0a"
+                @test serialize(PrefixedString(UInt8, "GB18030"), "啊a") == b"\x03\xb0\xa1a"
+                @test serialize(PrefixedString(UInt16le, "GB18030"), "啊\0a") == b"\x04\x00\xb0\xa1\0a"
+                @test_throws InexactError serialize(PrefixedString(UInt8, "GB18030"), '啊'^0xff)
+            end
+            @testset "UTF-16LE" begin
+                @test deserialize(PrefixedString(UInt8, "UTF-16LE"), b"\x04\x4a\x55a\x00\xbe\x03") == "啊a"
+                @test deserialize(PrefixedString(UInt16le, "UTF-16LE"), b"\x06\x00\x4a\x55a\x00\0\0") == "啊a\0"
+                @test deserialize(PrefixedString(UInt16le, "UTF-16LE"), b"\x06\x00\x4a\x55\0\0a\x00") == "啊\0a"
+                @test serialize(PrefixedString(UInt8, "UTF-16LE"), "啊a") == b"\x04\x4a\x55a\x00"
+                @test serialize(PrefixedString(UInt16le, "UTF-16LE"), "啊\0a") == b"\x06\x00\x4a\x55\0\0a\x00"
+                @test_throws InexactError serialize(PrefixedString(UInt8, "UTF-16LE"), '啊'^0xff)
+            end
+        end
     end
     @testset "enum" begin
         @testset "auto type" begin

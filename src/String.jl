@@ -54,6 +54,55 @@ end
 
 estimatesize(cons::PaddedString; contextkw...) = ExactSize(cons.size)
 
+struct PrefixedString{S<:AbstractString, Enc<:Union{Encoding, RawEncoding}, I<:Integer, TSizeCon<:Construct{I}} <: Construct{S}
+    sizecon::TSizeCon
+end
+
+"""
+    PrefixedString([T], S|size, [encoding]) -> Construct{T}
+
+String with the size in the header.
+
+# Arguments
+
+- `T<:AbstractString`: the underlying string type.
+- `S<:Integer`: the typeof the string size.
+- `size::Construct{S}`: the construct of the string size (in bytes).
+- `encoding::Union{Encoding, String}`: the string encoding.
+"""
+PrefixedString(size::Union{Type{I}, Construct{I}}) where {I<:Integer} = PrefixedString(String, Construct(size))
+PrefixedString(size::Union{Type{I}, Construct{I}}, enc::Union{Encoding, AbstractString}) where {I<:Integer} = PrefixedString(String, Construct(size), enc)
+
+PrefixedString(::Type{S}, size::Union{Type{I}, Construct{I}}) where {S<:AbstractString, I<:Integer} = PrefixedString(S, Construct(size), RawEncoding())
+PrefixedString(::Type{S}, size::Union{Type{I}, Construct{I}}, enc::AbstractString) where {S<:AbstractString, I<:Integer} = PrefixedString(S, Construct(size), Encoding(enc))
+PrefixedString(::Type{S}, ::Type{I}, enc::Union{Encoding, RawEncoding}) where {S<:AbstractString, I<:Integer} = PrefixedString(S, Construct(I), enc)
+
+PrefixedString(::Type{S}, sizecon::Construct{I}, enc::Enc) where {S<:AbstractString, I<:Integer, Enc<:Union{Encoding, RawEncoding}} = PrefixedString{S, Enc, I, typeof(sizecon)}(sizecon)
+
+function serialize(cons::PrefixedString{S, RawEncoding, I, TSizeCon}, s::IO, obj::S; contextkw...) where {S<:AbstractString, I, TSizeCon}
+    serialize(cons.sizecon, s, sizeof(obj); contextkw...) + write(s, obj)
+end
+function serialize(cons::PrefixedString{S, Enc, I, TSizeCon}, s::IO, obj::S; contextkw...) where {S<:AbstractString, Enc<:Encoding, I, TSizeCon}
+    b = IOBuffer()
+    p = StringEncoder(b, Enc(), encoding(S))
+    write(p, obj)
+    close(p)
+    seekstart(b)
+    bs = take!(b)
+    serialize(cons.sizecon, s, length(bs); contextkw...) + write(s, bs)
+end
+
+function deserialize(cons::PrefixedString{S, RawEncoding, I, TSizeCon}, s::IO; contextkw...) where {S<:AbstractString, I, TSizeCon}
+    size = deserialize(cons.sizecon, s; contextkw...)
+    S(read(s, size))
+end
+function deserialize(cons::PrefixedString{S, Enc, I, TSizeCon}, s::IO; contextkw...) where {S<:AbstractString, Enc<:Encoding, I, TSizeCon}
+    size = deserialize(cons.sizecon, s; contextkw...)
+    b = IOBuffer(read(s, size); read=true)
+    S(read(StringDecoder(b, Enc(), encoding(S))))
+end
+
+estimatesize(cons::PrefixedString; contextkw...) = estimatesize(cons.sizecon; contextkw...) + UnboundedSize(0)
 
 struct NullTerminatedString{S<:AbstractString, Enc<:Union{Encoding, RawEncoding}} <: Construct{S} end
 
