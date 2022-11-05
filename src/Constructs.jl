@@ -41,6 +41,7 @@ export
     JuliaSerializer,
     NullTerminatedString,
     PaddedString,
+    PrefixedString,
     Padded,
     LittleEndian,
     BigEndian,

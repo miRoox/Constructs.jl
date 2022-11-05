@@ -65,6 +65,7 @@ RaiseError
 ```@docs
 NullTerminatedString
 PaddedString
+PrefixedString
 ```
 
 ## Endianness Adapters
