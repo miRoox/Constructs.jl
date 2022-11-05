@@ -1,13 +1,13 @@
 
-deduceArrayType(::Type{TA}, ::Type{T}, N::Integer) where {T, TA<:AbstractArray} = deducetype(Base.similar, TA, Type{T}, Dims{N})
+# deduceArrayType(::Type{TA}, ::Type{T}, N::Integer) where {T, TA<:AbstractArray} = deducetype(Base.similar, TA, Type{T}, Dims{N})
 
 struct SizedArray{T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}} <: Wrapper{T, TA}
     subcon::TSubCon
     size::NTuple{N, UInt}
 
     function SizedArray{T, N, TA, TSubCon}(subcon::TSubCon, size::NTuple{N, UInt}) where {T, N, TA<:AbstractArray{T,N}, TSubCon<:Construct{T}}
-        CTA = deduceArrayType(TA, T, N)
-        CTA::Type{TA}
+        # CTA = deduceArrayType(TA, T, N)
+        # CTA::Type{<:TA}
         new{T, N, TA, TSubCon}(subcon, size)
     end
 end
