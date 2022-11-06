@@ -84,7 +84,7 @@ end
         @test repr(UndefProperty()) == "#undef"
         @test_throws ArgumentError Container(1)
         @test Container(im).im
-        @test Container{Complex{Bool}}().im == UndefProperty()
+        @test Container{Complex{Bool}}().im == UndefProperty{Bool}()
         @test_throws ErrorException Container{Complex{Bool}}().i
         @test_throws ErrorException Container(im).im = false
         @test propertynames(Container(1//2)) == propertynames(1//2)
@@ -98,8 +98,8 @@ end
         """
         @test repr("text/plain", Container{Complex{Int64}}()) == """
         Container{Complex{Int64}}:
-          re: #undef
-          im: #undef
+          re: Int64 = #undef
+          im: Int64 = #undef
         """
     end
     @testset "primitive io" begin
@@ -377,6 +377,11 @@ end
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "Overwrite" begin
+        @testset "deduce type" begin
+            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UInt8) <: Construct{UInt8}
+            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), Function) <: Construct{UInt8}
+            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UndefProperty) <: Construct{UInt8}
+        end
         @test_throws ArgumentError Overwrite(UInt8, () -> 0x01)
         @test serialize(Overwrite(UInt8, 0x01), 2) == b"\x01"
         @test serialize(Overwrite(UInt8, 0x02), UndefProperty()) == b"\x02"

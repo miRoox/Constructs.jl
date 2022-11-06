@@ -158,9 +158,6 @@ end
 function deducefieldtypes!(fields::Vector{>:FieldInfo})
     namedfields = filter(field -> field.name isa Symbol, fields)
     for field in fields
-        if field.type != UndefProperty
-            continue
-        end
         thistype = NamedTuple{tuple(map(field -> field.name, namedfields)...), Tuple{map(field -> field.type, namedfields)...}}
         fieldconstype = deducetype(field.tfunc, thistype)
         if fieldconstype !== Union{}
@@ -232,7 +229,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
             push!(sercalls, field.line)
         end
         if isnothing(field.name)
-            fielddata = UndefProperty()
+            fielddata = UndefProperty{field.type}()
         else
             fielddata = Expr(:(.),
                 this,
@@ -370,7 +367,7 @@ function generateestimatesizemethod(constructname::Symbol, structname::Symbol, f
             ),
             escape_excludes(field.cons, [this])
         )
-        # if the construct can't accept UndefProperty() while the code has it,
+        # if the construct can't accept UndefProperty{T}() while the code has it,
         # the size is just UnboundedSize(0) (like any other unknown sized construct)
         szcall = Expr(:try,
             Expr(:block, szcall),

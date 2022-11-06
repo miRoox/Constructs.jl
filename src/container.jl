@@ -1,12 +1,17 @@
 
 """
-    UndefProperty
+    UndefProperty{T}
 
 Placeholder for undefined properties in [`Container`](@ref).
 """
-struct UndefProperty end
+struct UndefProperty{T} end
+
+UndefProperty() = UndefProperty{Any}()
 
 Base.show(io::IO, ::UndefProperty) = print(io, "#undef")
+
+undeftypeof(::UndefProperty{T}) where {T} = T
+undeftypeof(obj) = typeof(obj)
 
 """
     Container{T}
@@ -22,8 +27,8 @@ Create an uninitialized container for `T`.
 ```jldoctest
 julia> Container{Complex{Int64}}()
 Container{Complex{Int64}}:
-  re: #undef
-  im: #undef
+  re: Int64 = #undef
+  im: Int64 = #undef
 ```
 """
 struct Container{T}
@@ -39,7 +44,7 @@ end
 
 Base.getproperty(obj::Container{T}, name::Symbol) where {T} = get(getfield(obj, 1), name) do
     if name in fieldnames(T)
-        UndefProperty()
+        UndefProperty{fieldtype(T, name)}()
     else
         error("type $T has no field $name")
     end
@@ -73,13 +78,9 @@ function Base.show(io::IO, mime::MIME"text/plain", obj::Container)
         print(io, "  ")
         print(io, prop)
         print(io, ": ")
-        if val isa UndefProperty
-            show(io, val)
-        else
-            show(io, typeof(val))
-            print(io, " = ")
-            show(io, mime, val)
-        end
+        show(io, undeftypeof(val))
+        print(io, " = ")
+        show(io, mime, val)
         print(io, "\n")
     end
 end
