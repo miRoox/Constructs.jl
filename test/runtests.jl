@@ -1,4 +1,5 @@
 using Constructs
+using StaticArrays: MVector, MMatrix, @MArray
 using MacroTools
 using Test
 
@@ -489,6 +490,12 @@ end
             @test_throws DimensionMismatch serialize(SizedArray(Int8, 3), Int8[1, -1])
             @test deserialize(SizedArray(Int8, 2, 3), Vector{UInt8}(1:6)) == Int8[1 3 5; 2 4 6]
             @test serialize(SizedArray(Int8, 2, 3), Int8[1 2 3; 4 5 6]) == b"\x01\x04\x02\x05\x03\x06"
+            @testset "StaticArrays" begin
+                @test estimatesize(MVector{5, UInt16}) == 5*sizeof(UInt16)
+                @test estimatesize(MMatrix{2, 3, UInt16, 2*3}) == 2*3*sizeof(UInt16)
+                @test serialize(@MArray [0x01 0x03; 0x02 0x04]) == b"\x01\x02\x03\x04"
+                @test deserialize(MMatrix{2, 3, UInt8, 2*3}, b"\x01\x02\x03\x07\x08\x09") == @MArray [0x01 0x03 0x08; 0x02 0x07 0x09]
+            end
         end
         @testset "PrefixedArray" begin
             @testset "deduce type" begin

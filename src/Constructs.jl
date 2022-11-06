@@ -83,4 +83,8 @@ include("Try.jl")
 include("Sequence.jl")
 include("Array.jl")
 
+function __init__()
+    @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" include("ext/StaticArrays.jl")
+end
+
 end
