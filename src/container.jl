@@ -8,6 +8,7 @@ struct UndefProperty{T} end
 
 UndefProperty() = UndefProperty{Any}()
 
+Base.getproperty(::UndefProperty{T}, name::Symbol) where {T} = UndefProperty{fieldtype(T, name)}()
 Base.show(io::IO, ::UndefProperty) = print(io, "#undef")
 
 undeftypeof(::UndefProperty{T}) where {T} = T
