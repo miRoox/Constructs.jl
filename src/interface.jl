@@ -130,6 +130,8 @@ function default(::Construct{T}; contextkw...) where {T}
     end
 end
 
+default(t::Type{<:Number}; contextkw...) = zero(t)
+
 """
     Wrapper{TSub, T} <: Construct{T}
 
