@@ -109,6 +109,7 @@ end
             @test estimatesize(type) == sizeof(type)
             @test deserialize(type, zeros(UInt8, sizeof(type))) == zero(type)
             @test serialize(zero(type)) == zeros(UInt8, sizeof(type))
+            @test serialize(UndefProperty{type}()) == zeros(UInt8, sizeof(type))
         end
         @testset "char $c" for c in ['\x00', 'A', 'α', '啊', '🆗']
             codes = transcode(UInt8, [codepoint(c)])
@@ -419,7 +420,7 @@ end
             @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
             @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), 0x0102) == b"\x02\x01"
             @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), UndefProperty{Union{UInt16, Int8}}()) == b"\x02\x01"
-            @test serialize(Try(UInt16be, Const(0xfc)), UndefProperty{Union{UInt16, UInt8}}()) == b"\xfc"
+            @test serialize(Try(Fruit, Const(0xfc)), UndefProperty{Union{Fruit, UInt8}}()) == b"\xfc"
             @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe") == Int8(-2)
             @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe\xcc") == 0xfecc
             @test_throws EOFError deserialize(Try{Integer}(UInt32be, UInt16be), b"\xfe")
