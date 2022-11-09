@@ -19,11 +19,11 @@ Construct(cons::Construct)
 serialize
 serialize(cons::Construct{T}, filename::AbstractString, obj; contextkw...) where {T}
 serialize(cons::Construct{T}, obj; contextkw...) where {T}
-serialize(cons::Construct{T}, s::IO, ::UndefProperty; contextkw...) where {T}
 deserialize
 deserialize(cons::Construct, filename::AbstractString; contextkw...)
 deserialize(cons::Construct, bytes::AbstractVector{UInt8}; contextkw...)
 estimatesize
+Constructs.default
 ```
 
 ### `Wrapper`

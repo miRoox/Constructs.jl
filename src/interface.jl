@@ -69,23 +69,8 @@ function serialize(cons::Construct{T}, s::IO, obj::U; contextkw...) where {T, U}
     end
 end
 
-"""
-    serialize(cons::Construct{T}, s::IO, ::UndefProperty; contextkw...) -> T
-
-Serialize an insufficient object into a stream.
-
-# Note
-
-This method is usually called for anonymous fields in [`@construct`](@ref).
-
-By default, only singleton types support this because they don't need to write anything.
-"""
-function serialize(cons::Construct{T}, s::IO, ::UndefProperty; contextkw...) where {T}
-    if Base.issingletontype(T)
-        serialize(cons, s, T.instance; contextkw...)
-    else
-        throw(MethodError(serialize, (NamedTuple(contextkw), cons, s, UndefProperty())))
-    end
+function serialize(cons::Construct, s::IO, ::UndefProperty; contextkw...)
+    serialize(cons, s, default(cons; contextkw...); contextkw...)
 end
 
 """
@@ -116,9 +101,9 @@ serialize(type::Type, s::IO, obj; contextkw...) = serialize(Construct(type), s, 
 serialize(type::Type, filename::AbstractString, obj; contextkw...) = serialize(Construct(type), filename, obj; contextkw...)
 serialize(type::Type, obj; contextkw...) = serialize(Construct(type), obj; contextkw...)
 
-serialize(s::IO, obj; contextkw...) = serialize(Construct(typeof(obj)), s, obj; contextkw...)
-serialize(filename::AbstractString, obj; contextkw...) = serialize(Construct(typeof(obj)), filename, obj; contextkw...)
-serialize(obj; contextkw...) = serialize(Construct(typeof(obj)), obj; contextkw...)
+serialize(s::IO, obj; contextkw...) = serialize(Construct(undeftypeof(obj)), s, obj; contextkw...)
+serialize(filename::AbstractString, obj; contextkw...) = serialize(Construct(undeftypeof(obj)), filename, obj; contextkw...)
+serialize(obj; contextkw...) = serialize(Construct(undeftypeof(obj)), obj; contextkw...)
 
 """
     estimatesize(cons::Construct; contextkw...) -> ConstructSize
@@ -128,6 +113,22 @@ Estimate the size of the type.
 """
 estimatesize(::Construct; contextkw...) = UnboundedSize(0)
 estimatesize(t::Type; contextkw...) = estimatesize(Construct(t); contextkw...)
+
+"""
+    default(cons::Construct{T}; contextkw...) -> T
+    default(T; contextkw...) -> T
+
+Get default value for the construct/type.
+
+This method is usually called for anonymous fields in [`@construct`](@ref).
+"""
+function default(::Construct{T}; contextkw...) where {T}
+    if Base.issingletontype(T)
+        T()
+    else
+        default(T; contextkw...)
+    end
+end
 
 """
     Wrapper{TSub, T} <: Construct{T}
