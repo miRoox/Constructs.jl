@@ -141,6 +141,4 @@ function serialize(array::GreedyVector{T, TSubCon}, s::IO, obj::Vector{T}; conte
 end
 
 # only when the data can be discarded.
-function serialize(array::GreedyVector{T, TSubCon}, s::IO, ::UndefProperty; contextkw...) where {T, TSubCon}
-    serialize(array, s, Vector{T}(); contextkw...)
-end
+default(::GreedyVector{T, TSubCon}; contextkw...) where {T, TSubCon} = Vector{T}()

@@ -46,7 +46,7 @@ function deserialize(cons::Try2, s::IO; contextkw...)
     end
 end
 
-function serialize_try(cons::Try2, s::IO, v; contextkw...)
+function serialize(cons::Try2{TU, T1, T2, TSubCon1, TSubCon2}, s::IO, v::T1; contextkw...) where {TU, T2, T1<:T2, TSubCon1, TSubCon2}
     fallback = position(s)
     try
         serialize(cons.subcon1, s, v; contextkw...)
@@ -54,10 +54,6 @@ function serialize_try(cons::Try2, s::IO, v; contextkw...)
         seek(s, fallback)
         serialize(cons.subcon2, s, v; contextkw...)
     end
-end
-
-function serialize(cons::Try2{TU, T1, T2, TSubCon1, TSubCon2}, s::IO, v::T1; contextkw...) where {TU, T2, T1<:T2, TSubCon1, TSubCon2}
-    serialize_try(cons, s, v; contextkw...)
 end
 
 function serialize(cons::Try2{TU, T1, T2, TSubCon1, TSubCon2}, s::IO, v::T1; contextkw...) where {TU, T1, T2, TSubCon1, TSubCon2}
@@ -68,8 +64,12 @@ function serialize(cons::Try2{TU, T1, T2, TSubCon1, TSubCon2}, s::IO, v::T2; con
     serialize(cons.subcon2, s, v; contextkw...)
 end
 
-function serialize(cons::Try2{TU, T1, T2, TSubCon1, TSubCon2}, s::IO, v::UndefProperty; contextkw...) where {TU, T1, T2, TSubCon1, TSubCon2}
-    serialize_try(cons, s, v; contextkw...)
-end
-
 estimatesize(cons::Try2; contextkw...) = union(estimatesize(cons.subcon1; contextkw...), estimatesize(cons.subcon2; contextkw...))
+
+function default(cons::Try2; contextkw...)
+    try
+        default(cons.subcon1; contextkw...)
+    catch
+        default(cons.subcon2; contextkw...)
+    end
+end

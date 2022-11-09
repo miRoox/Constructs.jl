@@ -44,6 +44,4 @@ function validate(cons::Const{T, TSubCon}, obj::T; contextkw...) where {T, TSubC
     (cons.value == obj) === true || throw(ValidationError("$obj mismatch the const value $(cons.value)."))
 end
 
-function serialize(cons::Const{T, TSubCon}, s::IO, ::UndefProperty; contextkw...) where {T, TSubCon}
-    serialize(cons, s, cons.value; contextkw...)
-end
+default(cons::Const{T, TSubCon}; contextkw...) where {T, TSubCon} = cons.value

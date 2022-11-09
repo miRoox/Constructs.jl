@@ -123,7 +123,7 @@ end
             @test estimatesize(type) == 0
             @test deserialize(type, UInt8[]) === instance
             @test serialize(instance) == UInt8[]
-            @test serialize(type, UndefProperty()) == UInt8[]
+            @test serialize(UndefProperty{type}()) == UInt8[]
         end
         @testset "non-singleton type $type" for type in (Bool, Union{}, Char, DataType)
             @test_throws ArgumentError Singleton(type)
@@ -135,8 +135,8 @@ end
         @test_throws ValidationError deserialize(RaiseError(ValidationError("Invalid data.")), b"")
         @test_throws ErrorException serialize(RaiseError("Invalid data."), IOBuffer(), nothing)
         @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), IOBuffer(), nothing)
-        @test_throws ErrorException serialize(RaiseError("Invalid data."), IOBuffer(), UndefProperty())
-        @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), IOBuffer(), UndefProperty())
+        @test_throws ErrorException serialize(RaiseError("Invalid data."), IOBuffer(), UndefProperty{Union{}}())
+        @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), IOBuffer(), UndefProperty{Union{}}())
     end
     @testset "JuliaSerializer" begin
         @test estimatesize(JuliaSerializer()) == UnboundedSize(0)
@@ -375,7 +375,7 @@ end
         @test deserialize(Const(UInt16be, 0x0102), b"\x01\x02") == 0x0102
         @test_throws ValidationError deserialize(Const(UInt16le, 0x0102), b"\x01\x02")
         @test serialize(Const(UInt16be, 0x0102), 0x0102) == b"\x01\x02"
-        @test serialize(Const(UInt16be, 0x0102), UndefProperty()) == b"\x01\x02"
+        @test serialize(Const(UInt16be, 0x0102), UndefProperty{UInt16}()) == b"\x01\x02"
         @test_throws ValidationError serialize(Const(0x0102), 0x0201)
     end
     @testset "Overwrite" begin
@@ -386,7 +386,7 @@ end
         end
         @test_throws ArgumentError Overwrite(UInt8, () -> 0x01)
         @test serialize(Overwrite(UInt8, 0x01), 2) == b"\x01"
-        @test serialize(Overwrite(UInt8, 0x02), UndefProperty()) == b"\x02"
+        @test serialize(Overwrite(UInt8, 0x02), UndefProperty{UInt8}()) == b"\x02"
         @test serialize(Overwrite(Int8, abs), -2) == b"\x02"
         @test serialize(Overwrite(Int8, abs), -2; path=PropertyPath()) == b"\x02"
         @test serialize(Overwrite(Float16le, (v; kw...) -> round(v; digits=get(kw, :digits, 0))), 1.125) == b"\x00\x3c" # Float16(1.0)
@@ -418,8 +418,8 @@ end
             @test serialize(Try(UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
             @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
             @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), 0x0102) == b"\x02\x01"
-            @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), UndefProperty()) == b"\x02\x01"
-            @test serialize(Try(UInt16be, Const(0xfc)), UndefProperty()) == b"\xfc"
+            @test serialize(Try(Const(UInt16le, 0x0102), UInt16be, Int8), UndefProperty{Union{UInt16, Int8}}()) == b"\x02\x01"
+            @test serialize(Try(UInt16be, Const(0xfc)), UndefProperty{Union{UInt16, UInt8}}()) == b"\xfc"
             @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe") == Int8(-2)
             @test deserialize(Try{Integer}(UInt16be, Int8), b"\xfe\xcc") == 0xfecc
             @test_throws EOFError deserialize(Try{Integer}(UInt32be, UInt16be), b"\xfe")
@@ -525,7 +525,7 @@ end
             @test estimatesize(GreedyVector(Int8)) == UnboundedSize(0)
             @test deserialize(GreedyVector(Int8), b"\x01\xff\x00") == Int8[1, -1, 0]
             @test serialize(GreedyVector(Int8), Int8[1, -1, 0]) == b"\x01\xff\x00"
-            @test serialize(GreedyVector(Int8), UndefProperty()) == b""
+            @test serialize(GreedyVector(Int8), UndefProperty{Vector{Int8}}()) == b""
             @test deserialize(GreedyVector(UInt16be), b"\x01\xff\x02\xab\xcc") == [0x01ff, 0x02ab]
             @test serialize(GreedyVector(UInt16be), [0x01ff, 0xcc0a]) == b"\x01\xff\xcc\x0a"
             @test_throws ExceedMaxIterations deserialize(GreedyVector(Nothing), b"\x00")
@@ -541,7 +541,7 @@ end
         @test_throws PaddedError serialize(Padded(Int32, 3), Int32(1))
         @test deserialize(Padded(2), b"\x01\xff") === nothing
         @test serialize(Padded(2), nothing) == b"\x00\x00"
-        @test serialize(Padded(2), UndefProperty()) == b"\x00\x00"
+        @test serialize(Padded(2), UndefProperty{Nothing}()) == b"\x00\x00"
     end
     @testset "internal" begin
         @testset "sym macro" begin

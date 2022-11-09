@@ -48,6 +48,4 @@ encode(cons::Overwrite{T, TSubCon, GT}, obj::T; contextkw...) where {T, TSubCon,
 # getter could be undefined when deserializing
 decode(::Overwrite{T, TSubCon, GT}, obj::T; contextkw...) where {T, TSubCon, GT} = obj
 
-function serialize(cons::Overwrite, s::IO, v::UndefProperty; contextkw...)
-    serialize(cons, s, apply_optional_contextkw(cons.getter, v, contextkw); contextkw...)
-end
+default(cons::Overwrite{T, TSubCon, GT}; contextkw...) where {T, TSubCon, GT<:Function} = convert(T, apply_optional_contextkw(cons.getter, UndefProperty{T}(), contextkw))
