@@ -5,7 +5,7 @@ using Test
 
 @enum Fruit::Int8 begin
     apple
-    banna
+    banana
     orange
 end
 
@@ -329,21 +329,21 @@ end
     @testset "enum" begin
         @testset "auto type" begin
             @test estimatesize(Fruit) == sizeof(Int8)
-            @test deserialize(Fruit, b"\x01") == banna
+            @test deserialize(Fruit, b"\x01") == banana
             @test_throws ArgumentError deserialize(Fruit, b"\x1f")
             @test serialize(orange) == b"\x02"
             @test serialize(reinterpret(Fruit, 0x1f)) == b"\x1f"
         end
         @testset "override base type" begin
             @test estimatesize(IntEnum(UInt8, Fruit)) == sizeof(UInt8)
-            @test deserialize(IntEnum(UInt8, Fruit), b"\x01") == banna
+            @test deserialize(IntEnum(UInt8, Fruit), b"\x01") == banana
             @test_throws ArgumentError deserialize(IntEnum(UInt8, Fruit), b"\x1f")
             @test serialize(IntEnum(UInt8, Fruit), orange) == b"\x02"
             @test serialize(IntEnum(UInt8, Fruit), reinterpret(Fruit, 0x1f)) == b"\x1f"
         end
         @testset "override base type construct" begin
             @test estimatesize(IntEnum(UInt16be, Fruit)) == sizeof(UInt16)
-            @test deserialize(IntEnum(UInt16be, Fruit), b"\x00\x01") == banna
+            @test deserialize(IntEnum(UInt16be, Fruit), b"\x00\x01") == banana
             @test_throws ArgumentError deserialize(IntEnum(UInt16be, Fruit), b"\x00\x1f")
             @test_throws InexactError deserialize(IntEnum(UInt16be, Fruit), b"\x01\x00")
             @test serialize(IntEnum(UInt16be, Fruit), orange) == b"\x00\x02"
@@ -352,7 +352,7 @@ end
         @testset "non-exhaustive" begin
             @test_throws TypeError IntEnum{BigEndian}(Fruit)
             @test estimatesize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit)) == sizeof(UInt16)
-            @test deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x00\x01") == banna
+            @test deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x00\x01") == banana
             @test deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x00\x1f") == reinterpret(Fruit, 0x1f)
             @test deserialize(IntEnum{EnumNonExhaustive}(Fruit), b"\x1f") == reinterpret(Fruit, 0x1f)
             @test_throws InexactError deserialize(IntEnum{EnumNonExhaustive}(UInt16be, Fruit), b"\x01\x00")
