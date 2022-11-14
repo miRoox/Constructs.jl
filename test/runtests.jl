@@ -399,6 +399,29 @@ end
         @test deserialize(Overwrite(UInt8, UndefProperty()), b"\x04") == 0x04
     end
     @testset "conditional" begin
+        @testset "Optional" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(t -> Optional(t), Type{Int}) <: Construct{Union{Int, Nothing}}
+                @test Constructs.deducetype((t, v) -> Optional(t, v), Type{Int}, Missing) <: Construct{Union{Int, Missing}}
+                @test Constructs.deducetype((t, v) -> Optional(t, v), Type{Int}, Int) <: Construct{Int}
+                @test Constructs.deducetype((t, v) -> Optional{Int}(t, v), Type{Int}, Int) <: Construct{Int}
+                @test Constructs.deducetype((t, v) -> Optional{Integer}(t, v), Type{Int}, UInt) <: Construct{Integer}
+            end
+            @test_throws MethodError Optional{Int}(Int)
+            @test estimatesize(Optional(Int)) == RangedSize(0, sizeof(Int))
+            @test estimatesize(Optional(Int, 0)) == RangedSize(0, sizeof(Int))
+            @test deserialize(Optional(Fruit), b"\x02") === orange
+            @test deserialize(Optional(Fruit), b"\x10") === nothing
+            @test deserialize(Optional(Fruit, missing), b"\x10") === missing
+            @test deserialize(Optional(Const(0x01), 0x00), b"\x10") === 0x00
+            @test serialize(Optional(Fruit), apple) == b"\x00"
+            @test serialize(Optional(Fruit), nothing) == b""
+            @test serialize(Optional(Fruit), UndefProperty{Union{Fruit, Nothing}}()) == b""
+            @test serialize(Optional(Const(0x01), 0xff), 0x01) == b"\x01"
+            @test serialize(Optional(Const(0x01), 0xff), 0x02) == b""
+            @test serialize(Optional(Const(0x01), 0xff), UndefProperty{UInt8}()) == b""
+            @test serialize(Optional(UInt8, 0xff), UndefProperty{UInt8}()) == b"\xff"
+        end
         @testset "Try" begin
             @testset "deduce type" begin
                 @test Constructs.deducetype((t1, t2) -> Try(t1, t2), Type{Int}, PrimitiveIO{UInt}) <: Try{Union{Int, UInt}}
