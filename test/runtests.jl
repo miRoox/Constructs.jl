@@ -134,10 +134,9 @@ end
         @test estimatesize(RaiseError("Invalid data.")) == 0
         @test_throws ErrorException deserialize(RaiseError("Invalid data."), b"")
         @test_throws ValidationError deserialize(RaiseError(ValidationError("Invalid data.")), b"")
-        @test_throws ErrorException serialize(RaiseError("Invalid data."), IOBuffer(), nothing)
-        @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), IOBuffer(), nothing)
-        @test_throws ErrorException serialize(RaiseError("Invalid data."), IOBuffer(), UndefProperty{Union{}}())
-        @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), IOBuffer(), UndefProperty{Union{}}())
+        @test_throws ErrorException serialize(RaiseError("Invalid data."), UndefProperty{Union{}}())
+        @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), UndefProperty{Union{}}())
+        @test_throws MethodError serialize(RaiseError("Invalid data."), nothing)
     end
     @testset "JuliaSerializer" begin
         @test estimatesize(JuliaSerializer()) == UnboundedSize(0)
