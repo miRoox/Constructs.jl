@@ -106,6 +106,7 @@ GreedyVector
 ## Conditional
 
 ```@docs
+Optional
 Try
 ```
 

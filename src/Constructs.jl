@@ -55,6 +55,7 @@ export
     IntEnum,
     Const,
     Overwrite,
+    Optional,
     Try,
     Sequence,
     SizedArray,
@@ -79,6 +80,7 @@ include("Endians.jl")
 include("IntEnum.jl")
 include("Const.jl")
 include("Overwrite.jl")
+include("Optional.jl")
 include("Try.jl")
 include("Sequence.jl")
 include("Array.jl")
