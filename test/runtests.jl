@@ -164,6 +164,13 @@ end
             @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), b"\xfe")
             @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), b"\x00"; min_value=1)
         end
+        @testset "type Adapter" begin
+            @test estimatesize(Adapter(UInt8, Int)) == sizeof(UInt8)
+            @test serialize(Adapter(UInt8, Int), 10) == b"\x0a"
+            @test_throws InexactError serialize(Adapter(UInt8, Int), 256)
+            @test deserialize(Adapter(UInt8, Int), b"\x0f") == 15
+            @test_throws InexactError deserialize(Adapter(UInt16le, Int8), b"\xff\xff")
+        end
         @testset "SymmetricAdapter" begin
             @test_throws ArgumentError Adapter(UInt8, () -> 0x01)
             @test SymmetricAdapter(UInt8, ~) == Adapter(UInt8, ~)
