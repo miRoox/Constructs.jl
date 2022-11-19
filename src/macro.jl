@@ -227,12 +227,32 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
         if !ismissing(field.line)
             push!(sercalls, field.line)
         end
+        fieldcons = escape_excludes(field.cons, [this])
+        fielddata = Expr(:(.),
+            this,
+            QuoteNode(field.name)
+        )
         if field.hidden
-            fielddata = UndefProperty{field.type}()
-        else
-            fielddata = Expr(:(.),
-                this,
-                QuoteNode(field.name)
+            fielddata = Expr(:block,
+                Expr(:call,
+                    GlobalRef(Constructs, :setcontainerproperty!),
+                    this,
+                    QuoteNode(field.name),
+                    Expr(:call,
+                        GlobalRef(Constructs, :default),
+                        Expr(:parameters,
+                            Expr(:(...),
+                                Expr(:call,
+                                    GlobalRef(Constructs, :with_property),
+                                    contextkw,
+                                    QuoteNode(field.name)
+                                )
+                            )
+                        ),
+                        fieldcons,
+                    )
+                ),
+                fielddata
             )
         end
         sercall = Expr(:(+=),
@@ -248,7 +268,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
                         )
                     )
                 ),
-                escape_excludes(field.cons, [this]),
+                fieldcons,
                 s,
                 fielddata
             )
