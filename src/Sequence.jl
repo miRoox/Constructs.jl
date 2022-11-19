@@ -47,6 +47,7 @@ for n in 1:sequence_subcons_threshold
     desers = map((sub, i) -> :(deserialize(seq.$sub, s; with_property(contextkw, $i)...)), subs, 1:n)
     sers = map((sub, i) -> :(serialize(seq.$sub, s, val[$i]; with_property(contextkw, $i)...)), subs, 1:n)
     szs = map((sub, i) -> :(estimatesize(seq.$sub; with_property(contextkw, $i)...)), subs, 1:n)
+    defs = map((sub, i) -> :(default(seq.$sub; with_property(contextkw, $i)...)), subs, 1:n)
     # COV_EXCL_STOP
 
     @eval begin
@@ -65,6 +66,7 @@ for n in 1:sequence_subcons_threshold
             +($(sers...))
         end
         estimatesize(seq::$seqname; contextkw...) = +($(szs...))
+        default(seq::$seqname; contextkw...) = tuple($(defs...))
     end
 end
 
@@ -112,3 +114,4 @@ function serialize(seq::SequenceN{N, TT, TSubCons}, s::IO, t::TT; contextkw...) 
     sum(((i, sub, v),) -> serialize(sub, s, v; with_property(contextkw, i)...), zip(1:length(t), seq.subcons, t); init=0)
 end
 estimatesize(seq::SequenceN; contextkw...) = sum(((i, sub),) -> estimatesize(sub; with_property(contextkw, i)...), enumerate(seq.subcons); init=ExactSize(0))
+default(seq::SequenceN; contextkw...) = tuple(map(((i, sub),) -> default(sub; with_property(contextkw, i)...), enumerate(seq.subcons))...)

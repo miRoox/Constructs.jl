@@ -491,10 +491,12 @@ end
             @test estimatesize(Sequence()) == 0
             @test deserialize(Sequence(), UInt8[]) === ()
             @test serialize(()) == UInt8[]
+            @test serialize(Sequence(), UndefProperty{Tuple{}}()) == UInt8[]
             @test estimatesize(Sequence(Int, Float16)) == estimatesize(Int) + estimatesize(Float16)
             @test estimatesize(Sequence(Int, Padded(Float16, 6))) == estimatesize(Int) + estimatesize(Padded(Float16, 6))
             @test deserialize(Sequence(Padded(Int8, 2), UInt16be), b"\x01\xfe\x01\x02") == (Int8(1), 0x0102)
             @test serialize(Sequence(Padded(Int8, 2), UInt16be), (Int8(1), 0x0102)) == b"\x01\x00\x01\x02"
+            @test serialize(Sequence(Const(0x01), Int8), UndefProperty{Tuple{UInt8, Int8}}()) == b"\x01\x00"
             @test estimatesize(Sequence(UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128)) == sum(estimatesize, (UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128))
             @test deserialize(
                 Sequence(UInt8, UInt16be, UInt32be, UInt64be, UInt128be, Int8, Int16be, Int32be, Int64be, Int128be),
@@ -504,6 +506,10 @@ end
                 Sequence(UInt8, UInt16be, UInt32be, UInt64be, UInt128be, Int8, Int16be, Int32be, Int64be, Int128be),
                 (0x01, 0x0002, 0x00000003, 0x0000000000000004, 0x00000000000000000000000000000005, Int8(6), Int16(7), Int32(8), Int64(9), Int128(10))
                 ) == b"\x01\x00\x02\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05\x06\x00\x07\x00\x00\x00\x08\x00\x00\x00\x00\x00\x00\x00\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0a"
+            @test serialize(
+                Sequence(UInt8, UInt16be, UInt32be, UInt64be, UInt128be, Int8, Int16be, Int32be, Int64be, Int128be),
+                UndefProperty{Tuple{UInt8, UInt16, UInt32, UInt64, UInt128, Int8, Int16, Int32, Int64, Int128}}()
+                ) == zeros(UInt8, 2 * (2 ^ 5 - 1))
         end
         @testset "SizedArray" begin
             @testset "deduce type" begin
