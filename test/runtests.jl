@@ -643,7 +643,16 @@ end
                 pixel::SizedArray(UInt8, this.height, this.width)
             end
         end
-        @testset "expand pass" for ex in [structonly, withname, withoverwrite]
+        withhidden = quote
+            @construct struct Bitmap <: AbstractImage
+                [signature]::Const(b"BMP")
+                [width]::Overwrite(UInt32, convert(UInt32, size(this.pixel, 2)))
+                [height]::Overwrite(UInt32, convert(UInt32, size(this.pixel, 1)))
+                ::Padded(8)
+                pixel::SizedArray(UInt8, this.height, this.width)
+            end
+        end
+        @testset "expand pass" for ex in [structonly, withname, withoverwrite, withhidden]
             @test @capture @show(macroexpand(@__MODULE__, ex)) begin
                 begin
                     doc_
@@ -681,6 +690,16 @@ end
                 end
             end
         )
+        invalidfield = (
+            ErrorException,
+            quote
+                @construct struct Bitmap <: AbstractImage
+                    {x}::Const(b"BMP")
+                    width::UInt32
+                    height::UInt32
+                end
+            end
+        )
         deducefailed = (
             ErrorException,
             quote
@@ -704,7 +723,7 @@ end
                 end
             end
         )
-        @testset "expand error" for (err, ex) in [notstruct, missingtype, deducefailed, nodefaultconstruct]
+        @testset "expand error" for (err, ex) in [notstruct, missingtype, invalidfield, deducefailed, nodefaultconstruct]
             @static if Base.VERSION >= v"1.7-"
                 @test_throws err macroexpand(@__MODULE__, ex)
             else
@@ -733,6 +752,22 @@ end
             @test_throws ValidationError serialize(Bitmap1(b"PMB", 3, 2, UInt8[1 2 3; 7 8 9]))
             @test_throws EOFError deserialize(Bitmap1, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03")
             @test_throws ValidationError deserialize(Bitmap1, b"PMB\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
+        end
+        @testset "Bitmap2" begin
+            @construct struct Bitmap2 <: AbstractImage
+                ::Padded(Const(b"BMP"), 4)
+                [width]::Overwrite(UInt16le, _ -> convert(UInt16, size(this.pixel, 2)))
+                [height]::Overwrite(UInt16le, _ -> convert(UInt16, size(this.pixel, 1)))
+                pixel::SizedArray(UInt8, this.height, this.width)
+            end
+            @test Bitmap2 <: AbstractImage
+            @test fieldnames(Bitmap2) == (:pixel,)
+            @test fieldtype(Bitmap2, :pixel) == Matrix{UInt8}
+            @test_broken estimatesize(Bitmap2) == UnboundedSize(4 + 2 * sizeof(UInt16)) # known issue: should redesign container
+            @test serialize(Bitmap2(UInt8[1 2 3; 7 8 9])) == b"BMP\x00\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09"
+            @test deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09").pixel == UInt8[1 2 3; 7 8 9]
+            @test_throws EOFError deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03")
+            @test_throws ValidationError deserialize(Bitmap2, b"PMB\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
         end
     end
 end

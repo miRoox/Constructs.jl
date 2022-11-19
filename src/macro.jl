@@ -140,8 +140,15 @@ function dumpstructinfo(m::Module, structdef::Expr)
                 error("invalid syntax: please specify a type/construct for $(node).")
             elseif node isa Expr && node.head == :(::)
                 rawtype = node.args[end]
-                if length(node.args) == 2 # x::Int
-                    push!(infos, FieldInfo(m, node.args[1], rawtype, line))
+                if length(node.args) == 2
+                    name = node.args[1]
+                    if name isa Symbol # x::Int
+                        push!(infos, FieldInfo(m, name, rawtype, line))
+                    elseif name isa Expr && name.head == :vect  # [x]::Int
+                        push!(infos, FieldInfo(m, only(name.args), rawtype, line; hidden=true))
+                    else
+                        error("invalid syntax: invalid field $(name).")
+                    end
                 elseif length(node.args) == 1 # ::Padded(4)
                     push!(infos, FieldInfo(m, gensym("(anonymous)"), rawtype, line; hidden=true))
                 else
