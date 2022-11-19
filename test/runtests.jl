@@ -627,7 +627,16 @@ end
                 pixel::SizedArray(UInt8, this.height, this.width)
             end
         end
-        @testset "expand pass" for ex in [structonly, withname]
+        withoverwrite = quote
+            @construct struct Bitmap <: AbstractImage
+                signature::Const(b"BMP")
+                width::Overwrite(UInt32, convert(UInt32, size(this.pixel, 2)))
+                height::Overwrite(UInt32, convert(UInt32, size(this.pixel, 1)))
+                ::Padded(8)
+                pixel::SizedArray(UInt8, this.height, this.width)
+            end
+        end
+        @testset "expand pass" for ex in [structonly, withname, withoverwrite]
             @test @capture @show(macroexpand(@__MODULE__, ex)) begin
                 begin
                     doc_
