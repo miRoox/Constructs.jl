@@ -64,10 +64,10 @@ constructtype2(::Type{<:Construct{T}}) where {T} = T
 constructtype2(::Type{<:Type{T}}) where {T} = T
 
 mutable struct FieldInfo
-    name::Union{Symbol, Nothing}
-    sname::Symbol # name or generated name
+    name::Symbol # name or generated name
     rawtype::Any # raw expression for type
     line::Union{LineNumberNode, Missing}
+    hidden::Bool
     tfunc::Function
     constype::Type
     type::Type
@@ -79,13 +79,13 @@ gentfunc(m::Module, rawtype::Any, line::Union{LineNumberNode, Missing})=Core.eva
   Expr(:block, skipmissing([line])..., rawtype)
 ))
 
-function FieldInfo(m::Module, name::Union{Symbol, Nothing}, rawtype, line::Union{LineNumberNode, Missing})
+function FieldInfo(m::Module, name::Symbol, rawtype, line::Union{LineNumberNode, Missing}; hidden::Bool = false)
     erawtype = macroexpand(m, rawtype)
     FieldInfo(
         name,
-        isnothing(name) ? gensym("anonymous") : name, 
         erawtype,
         line,
+        hidden,
         gentfunc(m, erawtype, line),
         Any,
         UndefProperty,
@@ -141,9 +141,9 @@ function dumpstructinfo(m::Module, structdef::Expr)
             elseif node isa Expr && node.head == :(::)
                 rawtype = node.args[end]
                 if length(node.args) == 2 # x::Int
-                    push!(infos, FieldInfo(m ,node.args[1], rawtype, line))
+                    push!(infos, FieldInfo(m, node.args[1], rawtype, line))
                 elseif length(node.args) == 1 # ::Padded(4)
-                    push!(infos, FieldInfo(m, nothing, rawtype, line))
+                    push!(infos, FieldInfo(m, gensym("(anonymous)"), rawtype, line; hidden=true))
                 else
                     push!(infos, OtherStructInfo(node, line))
                 end
@@ -156,9 +156,8 @@ function dumpstructinfo(m::Module, structdef::Expr)
 end
 
 function deducefieldtypes!(fields::Vector{>:FieldInfo})
-    namedfields = filter(field -> field.name isa Symbol, fields)
     for field in fields
-        thistype = NamedTuple{tuple(map(field -> field.name, namedfields)...), Tuple{map(field -> field.type, namedfields)...}}
+        thistype = NamedTuple{tuple(map(field -> field.name, fields)...), Tuple{map(field -> field.type, fields)...}}
         fieldconstype = deducetype(field.tfunc, thistype)
         if fieldconstype !== Union{}
             field.constype = fieldconstype
@@ -183,7 +182,7 @@ function replacestructdef(structdef::Expr, infos::Vector{Union{FieldInfo, OtherS
     sizehint!(stnodes, length(structdef.args[3].args))
     for info in infos
         if info isa FieldInfo
-            if isnothing(info.name) # omit field without name
+            if info.hidden # omit hidden field
                 continue
             else
                 if !ismissing(info.line)
@@ -228,7 +227,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
         if !ismissing(field.line)
             push!(sercalls, field.line)
         end
-        if isnothing(field.name)
+        if field.hidden
             fielddata = UndefProperty{field.type}()
         else
             fielddata = Expr(:(.),
@@ -245,7 +244,7 @@ function generateserializemethod(constructname::Symbol, structname::Symbol, fiel
                         Expr(:call,
                             GlobalRef(Constructs, :with_property),
                             contextkw,
-                            QuoteNode(field.sname)
+                            QuoteNode(field.name)
                         )
                     )
                 ),
@@ -293,7 +292,7 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
         desercall = Expr(:call,
             GlobalRef(Constructs, :setcontainerproperty!),
             this,
-            QuoteNode(field.sname),
+            QuoteNode(field.name),
             Expr(:call,
                 GlobalRef(Constructs, :deserialize),
                 Expr(:parameters,
@@ -301,7 +300,7 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
                         Expr(:call,
                             GlobalRef(Constructs, :with_property),
                             contextkw,
-                            QuoteNode(field.sname)
+                            QuoteNode(field.name)
                         )
                     )
                 ),
@@ -311,7 +310,7 @@ function generatedeserializemethod(constructname::Symbol, structname::Symbol, fi
         )
         push!(desercalls, desercall)
     end
-    thisfields = map(filter(field -> !isnothing(field.name), fields)) do field
+    thisfields = map(filter(field -> !field.hidden, fields)) do field
         Expr(:(.),
             this,
             QuoteNode(field.name)
@@ -361,7 +360,7 @@ function generateestimatesizemethod(constructname::Symbol, structname::Symbol, f
                     Expr(:call,
                         GlobalRef(Constructs, :with_property),
                         contextkw,
-                        QuoteNode(field.sname)
+                        QuoteNode(field.name)
                     )
                 )
             ),
