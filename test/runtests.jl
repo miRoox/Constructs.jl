@@ -572,6 +572,7 @@ end
         @test deserialize(Padded(2), b"\x01\xff") === nothing
         @test serialize(Padded(2), nothing) == b"\x00\x00"
         @test serialize(Padded(2), UndefProperty{Nothing}()) == b"\x00\x00"
+        @test serialize(Padded(Const(b"HA"), 4), UndefProperty{Vector{UInt8}}()) == b"HA\x00\x00"
     end
     @testset "internal" begin
         @testset "sym macro" begin
