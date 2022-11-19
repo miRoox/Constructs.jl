@@ -88,7 +88,7 @@ function FieldInfo(m::Module, name::Symbol, rawtype, line::Union{LineNumberNode,
         hidden,
         gentfunc(m, erawtype, line),
         Any,
-        UndefProperty,
+        Any, # type deduction should start from the top type (Any)
         erawtype
     )
 end
