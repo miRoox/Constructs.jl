@@ -51,3 +51,4 @@ function serialize(cons::Padded{T}, s::IO, val::T; contextkw...) where {T}
     cons.size
 end
 estimatesize(cons::Padded; contextkw...) = ExactSize(cons.size)
+default(cons::Padded; contextkw...) = default(cons.subcon; contextkw...)
