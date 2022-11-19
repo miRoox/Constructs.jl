@@ -71,6 +71,29 @@ function encode(cons::FunctionSymmetricAdapter{T, TSubCon}, obj::T; contextkw...
     convert(T, apply_optional_contextkw(cons.encode, obj, contextkw))
 end
 
+struct TypeAdapter{T, U, TSubCon<:Construct{T}} <: Adapter{T, U}
+    subcon::TSubCon
+end
+
+TypeAdapter(subcon::TSubCon, ::Type{U}) where {T, U, TSubCon<:Construct{T}} = TypeAdapter{T, U, TSubCon}(subcon)
+TypeAdapter(::Type{T}, ::Type{U}) where {T, U} = TypeAdapter(Construct(T), U)
+
+"""
+    Adapter(T|subcon, U) -> Adapter{T, U}
+
+Create a adapter for type `U`.
+
+# Arguments
+
+- `T`: the underlying data type.
+- `subcon::Construct{T}`: the underlying construct.
+- `U`: the object type.
+"""
+Adapter(subcon::Union{Type, Construct}, type::Type) = TypeAdapter(subcon, type)
+
+encode(::TypeAdapter{T, U, TSubCon}, obj::U; contextkw...) where {T, U, TSubCon} = convert(T, obj)
+decode(::TypeAdapter{T, U, TSubCon}, obj::T; contextkw...) where {T, U, TSubCon} = convert(U, obj)
+
 # internal template
 struct Prefixed{S, T, TSizeCon<:Construct{S}, TSubCon<:Construct{T}} <: Construct{T}
     sizecon::TSizeCon
