@@ -39,16 +39,14 @@ struct Container{T}
         if !isstructtype(T)
             throw(ArgumentError("$T is not a struct type."))
         end
-        new{T}(Dict{Symbol, Any}())
+        props = Dict{Symbol, Any}()
+        sizehint!(props, fieldcount(T))
+        new{T}(props)
     end
 end
 
 Base.getproperty(obj::Container{T}, name::Symbol) where {T} = get(getfield(obj, 1), name) do
-    if name in fieldnames(T)
-        UndefProperty{fieldtype(T, name)}()
-    else
-        error("type $T has no field $name")
-    end
+    UndefProperty{fieldtype(T, name)}()
 end
 Base.setproperty!(::Container, name::Symbol, ::Any) = error("Container property $name cannot be set.")
 function Base.propertynames(obj::Container{T}, private::Bool = false) where {T}
