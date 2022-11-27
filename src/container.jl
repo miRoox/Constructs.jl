@@ -32,10 +32,14 @@ Container{Complex{Int64}}:
   im: Int64 = #undef
 ```
 """
-struct Container{T}
+abstract type Container{T} end
+
+Container{T}() where {T} = AnyContainer{T}()
+
+struct AnyContainer{T} <: Container{T}
     _props::Dict{Symbol, Any}
 
-    function Container{T}() where {T}
+    function AnyContainer{T}() where {T}
         if !isstructtype(T)
             throw(ArgumentError("$T is not a struct type."))
         end
@@ -45,17 +49,19 @@ struct Container{T}
     end
 end
 
-Base.getproperty(obj::Container{T}, name::Symbol) where {T} = get(getfield(obj, 1), name) do
+Base.getproperty(obj::AnyContainer{T}, name::Symbol) where {T} = get(getfield(obj, 1), name) do
     UndefProperty{fieldtype(T, name)}()
 end
-Base.setproperty!(::Container, name::Symbol, ::Any) = error("Container property $name cannot be set.")
-function Base.propertynames(obj::Container{T}, private::Bool = false) where {T}
-    tuple(union(private ? fieldnames(Container) : (), fieldnames(T), keys(getfield(obj, 1)))...)
+Base.setproperty!(::Container, name::Symbol, ::Any) = error("Container property cannot be set: $name")
+function Base.propertynames(obj::AnyContainer{T}, private::Bool = false) where {T}
+    tuple(union(private ? fieldnames(AnyContainer) : (), fieldnames(T), keys(getfield(obj, 1)))...)
 end
-setcontainerproperty!(obj::Container, name::Symbol, value::Any) = getfield(obj, 1)[name] = value
+setcontainerproperty!(obj::AnyContainer, name::Symbol, value::Any) = getfield(obj, 1)[name] = value
+
+Base.summary(io::IO, ::Container{T}) where {T} = show(io, Container{T})
 
 function Base.show(io::IO, obj::Container)
-    show(io, typeof(obj))
+    summary(io, obj)
     print(io, "(")
     for (i, prop) in enumerate(propertynames(obj))
         val = getproperty(obj, prop)
@@ -70,7 +76,7 @@ function Base.show(io::IO, obj::Container)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", obj::Container)
-    show(io, typeof(obj))
+    summary(io, obj)
     print(io, ":\n")
     for prop in propertynames(obj)
         val = getproperty(obj, prop)
