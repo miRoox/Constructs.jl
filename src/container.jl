@@ -34,6 +34,9 @@ Container{Complex{Int64}}:
 """
 abstract type Container{T} end
 
+# internal use: for macro generated types
+abstract type ShadowContainer{T} <: Container{T} end
+
 Container{T}() where {T} = AnyContainer{T}()
 
 struct AnyContainer{T} <: Container{T}
@@ -57,6 +60,7 @@ function Base.propertynames(obj::AnyContainer{T}, private::Bool = false) where {
     tuple(union(private ? fieldnames(AnyContainer) : (), fieldnames(T), keys(getfield(obj, 1)))...)
 end
 setcontainerproperty!(obj::AnyContainer, name::Symbol, value::Any) = getfield(obj, 1)[name] = value
+setcontainerproperty!(obj::ShadowContainer, name::Symbol, value) = setfield!(obj, name, value)
 
 Base.summary(io::IO, ::Container{T}) where {T} = show(io, Container{T})
 
