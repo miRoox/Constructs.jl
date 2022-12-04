@@ -1,7 +1,7 @@
 name = "Constructs"
 uuid = "ba9efadc-3ee3-4b4a-abe2-d0e326fbcffa"
 authors = ["Yong-an Lu <miroox@outlook.com>"]
-version = "0.1.1"
+version = "0.2.0"
 
 [deps]
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
