@@ -103,23 +103,23 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         infos = dumpstructinfo(m, structdef)
         fields = filter(info -> info isa FieldInfo, infos)
         deducefieldtypes!(fields)
-        typedstructdef = replacestructdef(structdef, infos)
         structname = getdefname(structdef)
-        constructdef = generateconstructdef(constructname, structname)
-        serializedef = generateserializemethod(constructname, structname, fields)
-        deserializedef = generatedeserializemethod(constructname, structname, fields)
-        estimatesizedef = generateestimatesizemethod(constructname, structname, fields)
-        Expr(:block,
-            Expr(:macrocall,
-                GlobalRef(Core, Symbol("@__doc__")),
-                source,
-                typedstructdef
-            ),
-            source, constructdef...,
-            source, serializedef,
-            source, deserializedef,
-            source, estimatesizedef,
-        )
+        defs = Vector()
+        push!(defs, Expr(:macrocall,
+            GlobalRef(Core, Symbol("@__doc__")),
+            source,
+            replacestructdef(structdef, infos)
+        ))
+        append!(defs, generateconstructdef(constructname, structname))
+        push!(defs, generateserializemethod(constructname, structname, fields))
+        push!(defs, generatedeserializemethod(constructname, structname, fields))
+        push!(defs, generateestimatesizemethod(constructname, structname, fields))
+        expr = Expr(:block)
+        for def in defs
+            push!(expr.args, source)
+            push!(expr.args, def)
+        end
+        expr
     else
         error("invalid syntax: @construct must be used with a struct type definition.")
     end
@@ -185,26 +185,26 @@ end
 
 function replacestructdef(structdef::Expr, infos::Vector{Union{FieldInfo, OtherStructInfo}})
     @assert structdef.head == :struct
-    stnodes = Vector()
-    sizehint!(stnodes, length(structdef.args[3].args))
+    bodyexpr = Expr(:block)
+    sizehint!(bodyexpr.args, length(structdef.args[3].args))
     for info in infos
         if info isa FieldInfo
             if info.hidden # omit hidden field
                 continue
             else
                 if !ismissing(info.line)
-                    push!(stnodes, info.line)
+                    push!(bodyexpr.args, info.line)
                 end
-                push!(stnodes, Expr(:(::), info.name, info.type))
+                push!(bodyexpr.args, Expr(:(::), info.name, info.type))
             end
         else
             if !ismissing(info.line)
-                push!(stnodes, info.line)
+                push!(bodyexpr.args, info.line)
             end
-            push!(stnodes, info.expr)
+            push!(bodyexpr.args, info.expr)
         end
     end
-    Expr(:struct, structdef.args[1], esc(structdef.args[2]), Expr(:block, stnodes...))
+    Expr(:struct, structdef.args[1], esc(structdef.args[2]), bodyexpr)
 end
 
 function generateconstructdef(constructname::Symbol, structname::Symbol)
