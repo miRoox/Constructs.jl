@@ -662,6 +662,12 @@ end
                 function Construct_(::Type_{STT_})
                     CTT_()
                 end
+                mutable struct CTN_ <: ShadowContainer_{STT_}
+                    ctnfields__
+                end
+                function Container_{STT_}()
+                    CTN_(ctnundefs__)
+                end
                 function serialize_(::CTT_, ss_::IO_, val_::STT_; scontextkw_...)
                     serializebody__
                 end
@@ -763,7 +769,7 @@ end
             @test Bitmap2 <: AbstractImage
             @test fieldnames(Bitmap2) == (:pixel,)
             @test fieldtype(Bitmap2, :pixel) == Matrix{UInt8}
-            @test_broken estimatesize(Bitmap2) == UnboundedSize(4 + 2 * sizeof(UInt16)) # known issue: should redesign container
+            @test estimatesize(Bitmap2) == UnboundedSize(4 + 2 * sizeof(UInt16))
             @test serialize(Bitmap2(UInt8[1 2 3; 7 8 9])) == b"BMP\x00\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09"
             @test deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09").pixel == UInt8[1 2 3; 7 8 9]
             @test_throws EOFError deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03")

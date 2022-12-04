@@ -111,6 +111,7 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
             replacestructdef(structdef, infos)
         ))
         append!(defs, generateconstructdef(constructname, structname))
+        append!(defs, generatecontainerdef(structname, fields))
         push!(defs, generateserializemethod(constructname, structname, fields))
         push!(defs, generatedeserializemethod(constructname, structname, fields))
         push!(defs, generateestimatesizemethod(constructname, structname, fields))
@@ -222,6 +223,36 @@ function generateconstructdef(constructname::Symbol, structname::Symbol)
             Expr(:block,
                 Expr(:call, esc(constructname))
             ),
+        )
+    )
+end
+
+function generatecontainerdef(structname::Symbol, fields::Vector{>:FieldInfo})
+    containername = gensym("ShadowContainer")
+    bodyexpr = Expr(:block)
+    sizehint!(bodyexpr.args, 2 * length(fields))
+    for field in fields
+        if !ismissing(field.line)
+            push!(bodyexpr.args, field.line)
+        end
+        push!(bodyexpr.args, Expr(:(::), field.name, Union{field.type, UndefProperty{field.type}}))
+    end
+    tuple(
+        Expr(:struct,
+            true,
+            Expr(:(<:), esc(containername), Expr(:curly, GlobalRef(Constructs, :ShadowContainer), esc(structname))),
+            bodyexpr,
+        ),
+        Expr(:function,
+            Expr(:call,
+                Expr(:curly, GlobalRef(Constructs, :Container), esc(structname)),
+            ),
+            Expr(:block,
+                Expr(:call,
+                    esc(containername),
+                    Iterators.map(field -> UndefProperty{field.type}(), fields)...
+                )
+            )
         )
     )
 end
