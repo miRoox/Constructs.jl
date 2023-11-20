@@ -85,6 +85,8 @@ end
         @test repr(UndefProperty()) == "#undef"
         @test_throws ArgumentError Container(1)
         @test Container(im).im
+        @test Container(Container(1//2)) == Container(1//2)
+        @test Container(Container(2//1)) != Container(1//2)
         @test Container{Complex{Bool}}().im == UndefProperty{Bool}()
         @test Container{Complex{Rational{Int}}}().im.num == UndefProperty{Int}()
         @test_throws ErrorException Container{Complex{Bool}}().i
