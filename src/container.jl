@@ -62,6 +62,9 @@ end
 setcontainerproperty!(obj::AnyContainer, name::Symbol, value::Any) = getfield(obj, 1)[name] = value
 setcontainerproperty!(obj::ShadowContainer, name::Symbol, value) = setfield!(obj, name, value)
 
+Base.:(==)(x::AnyContainer{T}, y::AnyContainer{T}) where {T} = all(p -> getproperty(x, p) == getproperty(y, p), fieldnames(T))
+Base.:(!=)(x::AnyContainer{T}, y::AnyContainer{T}) where {T} = any(p -> getproperty(x, p) != getproperty(y, p), fieldnames(T))
+
 Base.summary(io::IO, ::Container{T}) where {T} = show(io, Container{T})
 
 function Base.show(io::IO, obj::Container)
@@ -115,3 +118,4 @@ function Container(obj::T) where {T}
     end
     res
 end
+Container(c::Container) = c
