@@ -57,6 +57,7 @@ export
     Overwrite,
     Optional,
     Try,
+    IfThenElse,
     Sequence,
     SizedArray,
     PrefixedArray,
@@ -82,6 +83,7 @@ include("Const.jl")
 include("Overwrite.jl")
 include("Optional.jl")
 include("Try.jl")
+include("Conditional.jl")
 include("Sequence.jl")
 include("Array.jl")
 

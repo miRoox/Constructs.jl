@@ -464,6 +464,31 @@ end
             @test serialize(Try{Integer}(UInt32be, UInt16be, Int8), 0xfecc) == b"\xfe\xcc"
             @test_throws MethodError serialize(Try{Integer}(UInt16be, Int8), -2)
         end
+        @testset "IfThenElse" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(x -> IfThenElse(x > 0, UInt, Fruit), Int) <: Construct{Union{UInt, Fruit}}
+                @test Constructs.deducetype(x -> IfThenElse(x > 0, UInt16le, UInt16be), Int) <: Construct{UInt16}
+                @test Constructs.deducetype(x -> IfThenElse(x > 0, UInt, RaiseError("Less than 0")), Int) <: Construct{UInt}
+                @test Constructs.deducetype(x -> IfThenElse(() -> x > 0, UInt, Fruit), Int) <: Construct{Union{UInt, Fruit}}
+                @test Constructs.deducetype(x -> IfThenElse(() -> x > 0, UInt16le, UInt16be), Int) <: Construct{UInt16}
+                @test Constructs.deducetype(x -> IfThenElse(() -> x > 0, UInt, RaiseError("Less than 0")), Int) <: Construct{UInt}
+                @test Constructs.deducetype(x -> IfThenElse{Number}(x > 0, UInt64, Float64), Int) <: Construct{Number}
+                @test Constructs.deducetype(x -> IfThenElse{Number}(() -> x > 0, UInt64, Float64), Int) <: Construct{Number}
+            end
+            @testset "if $x > π" for x in 3:4
+                @test_throws MethodError IfThenElse{Number}(x > pi, UInt, Fruit)
+                @test_throws MethodError IfThenElse{Number}(() -> x > pi, UInt, Fruit)
+                @test estimatesize(IfThenElse(() -> x > pi, UInt16, Float64)) == RangedSize(2, 8)
+            end
+            let x = 0
+                @test serialize(IfThenElse(() -> x > 0, UInt16le, UInt16be), 0x1234) == b"\x12\x34"
+                @test deserialize(IfThenElse(() -> x > 0, UInt16le, UInt16be), b"\x12\x34") == 0x1234
+            end
+            let x = 1
+                @test serialize(IfThenElse(() -> x > 0, UInt16le, UInt16be), 0x1234) == b"\x34\x12"
+                @test deserialize(IfThenElse(() -> x > 0, UInt16le, UInt16be), b"\x12\x34") == 0x3412
+            end
+        end
     end
     @testset "collections" begin
         @testset "Sequence" begin
