@@ -166,7 +166,7 @@ end
 function deducefieldtypes!(fields::Vector{>:FieldInfo})
     for field in fields
         thistype = NamedTuple{tuple(map(field -> field.name, fields)...), Tuple{map(field -> field.type, fields)...}}
-        fieldconstype = deducetype(field.tfunc, thistype)
+        fieldconstype = @show(deducetype(field.tfunc, thistype))
         if fieldconstype !== Union{}
             field.constype = fieldconstype
             if hasmethod(constructtype2, Tuple{Type{field.constype}})
