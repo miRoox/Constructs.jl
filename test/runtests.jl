@@ -138,7 +138,6 @@ end
         @test_throws ValidationError deserialize(RaiseError(ValidationError("Invalid data.")), b"")
         @test_throws ErrorException serialize(RaiseError("Invalid data."), UndefProperty{Union{}}())
         @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), UndefProperty{Union{}}())
-        @test_throws MethodError serialize(RaiseError("Invalid data."), nothing)
     end
     @testset "JuliaSerializer" begin
         @test estimatesize(JuliaSerializer()) == UnboundedSize(0)
@@ -390,8 +389,8 @@ end
     @testset "Overwrite" begin
         @testset "deduce type" begin
             @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UInt8) <: Construct{UInt8}
-            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), Function) <: Construct{UInt8}
-            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UndefProperty) <: Construct{UInt8}
+            @test Constructs.deducetype((v) -> Overwrite(Int8, v), typeof(abs)) <: Construct{Int8}
+            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UndefProperty{UInt8}) <: Construct{UInt8}
         end
         @test_throws ArgumentError Overwrite(UInt8, () -> 0x01)
         @test serialize(Overwrite(UInt8, 0x01), 2) == b"\x01"

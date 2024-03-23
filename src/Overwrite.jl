@@ -42,6 +42,7 @@ julia> deserialize(Overwrite(UInt8, 0x01), b"\\x05")
 ```
 """
 Overwrite(subcon::Construct{T}, value::T) where {T} = Overwrite(subcon, ((obj; contextkw...) -> value))
+Overwrite(subcon::Construct{T}, value) where {T} = Overwrite(subcon, ((obj; contextkw...) -> convert(T, value)))
 Overwrite(::Type{T}, getter) where {T} = Overwrite(Construct(T), getter)
 
 encode(cons::Overwrite{T, TSubCon, GT}, obj::T; contextkw...) where {T, TSubCon, GT<:Function} = convert(T, apply_optional_contextkw(cons.getter, obj, contextkw))
