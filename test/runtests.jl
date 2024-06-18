@@ -171,6 +171,11 @@ end
             @test_throws ValidationError deserialize(Validator(Int8, (v; kw...) -> v >= get(kw, :min_value, 0)), b"\x00"; min_value=1)
         end
         @testset "type Adapter" begin
+            @testset "deduce type" begin
+                @test Constructs.deducetype(() -> Adapter(Int, Integer)) <: Construct{Integer}
+                @test Constructs.deducetype((b) -> b ? Adapter(Int, Integer) : Adapter(UInt, Integer), Bool) <: Construct{Integer}
+                @test Constructs.deducetype((b) -> Adapter(b ? Int : UInt, Integer), Bool) <: Construct{Integer}
+            end
             @test estimatesize(Adapter(UInt8, Int)) == sizeof(UInt8)
             @test serialize(Adapter(UInt8, Int), 10) == b"\x0a"
             @test_throws InexactError serialize(Adapter(UInt8, Int), 256)
