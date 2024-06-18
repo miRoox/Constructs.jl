@@ -138,7 +138,11 @@ end
         @test_throws ValidationError deserialize(RaiseError(ValidationError("Invalid data.")), b"")
         @test_throws ErrorException serialize(RaiseError("Invalid data."), UndefProperty{Union{}}())
         @test_throws ValidationError serialize(RaiseError(ValidationError("Invalid data.")), UndefProperty{Union{}}())
-        @test_throws MethodError serialize(RaiseError("Invalid data."), nothing)
+        @static if Base.VERSION >= v"1.10-"
+            @test_throws ArgumentError serialize(RaiseError("Invalid data."), nothing)
+        else
+            @test_throws MethodError serialize(RaiseError("Invalid data."), nothing)
+        end
     end
     @testset "JuliaSerializer" begin
         @test estimatesize(JuliaSerializer()) == UnboundedSize(0)
