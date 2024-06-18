@@ -394,8 +394,8 @@ end
     @testset "Overwrite" begin
         @testset "deduce type" begin
             @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UInt8) <: Construct{UInt8}
-            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), Function) <: Construct{UInt8}
-            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UndefProperty) <: Construct{UInt8}
+            @test Constructs.deducetype((v) -> Overwrite(Int8, v), typeof(abs)) <: Construct{Int8}
+            @test Constructs.deducetype((v) -> Overwrite(UInt8, v), UndefProperty{UInt8}) <: Construct{UInt8}
         end
         @test_throws ArgumentError Overwrite(UInt8, () -> 0x01)
         @test serialize(Overwrite(UInt8, 0x01), 2) == b"\x01"
@@ -643,8 +643,8 @@ end
         withoverwrite = quote
             @construct struct Bitmap <: AbstractImage
                 signature::Const(b"BMP")
-                width::Overwrite(UInt32, convert(UInt32, size(this.pixel, 2)))
-                height::Overwrite(UInt32, convert(UInt32, size(this.pixel, 1)))
+                width::Overwrite(UInt32, _ -> convert(UInt32, size(this.pixel, 2)))
+                height::Overwrite(UInt32, _ -> convert(UInt32, size(this.pixel, 1)))
                 ::Padded(8)
                 pixel::SizedArray(UInt8, this.height, this.width)
             end
@@ -652,8 +652,8 @@ end
         withhidden = quote
             @construct struct Bitmap <: AbstractImage
                 [signature]::Const(b"BMP")
-                [width]::Overwrite(UInt32, convert(UInt32, size(this.pixel, 2)))
-                [height]::Overwrite(UInt32, convert(UInt32, size(this.pixel, 1)))
+                [width]::Overwrite(UInt32, _ -> convert(UInt32, size(this.pixel, 2)))
+                [height]::Overwrite(UInt32, _ -> convert(UInt32, size(this.pixel, 1)))
                 ::Padded(8)
                 pixel::SizedArray(UInt8, this.height, this.width)
             end
