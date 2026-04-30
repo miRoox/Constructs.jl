@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^julia --project=\\. -e \"using Pkg; Pkg\\.test\\(\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
