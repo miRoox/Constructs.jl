@@ -104,17 +104,23 @@ function construct_impl(m::Module, source::LineNumberNode, constructname::Symbol
         fields = filter(info -> info isa FieldInfo, infos)
         deducefieldtypes!(fields)
         structname = getdefname(structdef)
+        # Helper: wrap a definition in Expr(:toplevel, ...) so that struct/method
+        # definitions don't introduce implicit local bindings in the caller's
+        # local scope (Julia >= 1.12 enforces stricter local-binding rules).
+        # The user-visible struct definition is kept at the original position
+        # so that names like `Bitmap` remain available in the surrounding scope.
+        astoplevel(def) = Expr(:toplevel, source, def)
         defs = Vector()
         push!(defs, Expr(:macrocall,
             GlobalRef(Core, Symbol("@__doc__")),
             source,
             replacestructdef(structdef, infos)
         ))
-        append!(defs, generateconstructdef(constructname, structname))
-        append!(defs, generatecontainerdef(structname, fields))
-        push!(defs, generateserializemethod(constructname, structname, fields))
-        push!(defs, generatedeserializemethod(constructname, structname, fields))
-        push!(defs, generateestimatesizemethod(constructname, structname, fields))
+        append!(defs, map(astoplevel, generateconstructdef(constructname, structname)))
+        append!(defs, map(astoplevel, generatecontainerdef(structname, fields)))
+        push!(defs, astoplevel(generateserializemethod(constructname, structname, fields)))
+        push!(defs, astoplevel(generatedeserializemethod(constructname, structname, fields)))
+        push!(defs, astoplevel(generateestimatesizemethod(constructname, structname, fields)))
         expr = Expr(:block)
         for def in defs
             push!(expr.args, source)
