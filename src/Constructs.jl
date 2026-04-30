@@ -4,7 +4,6 @@ Inspired by [Construct](https://construct.readthedocs.io/).
 """
 module Constructs
 
-using Requires
 using StringEncodings
 
 import Serialization
@@ -84,9 +83,5 @@ include("Optional.jl")
 include("Try.jl")
 include("Sequence.jl")
 include("Array.jl")
-
-function __init__()
-    @require StaticArrays="90137ffa-7385-5640-81b9-e52037218182" include("ext/StaticArrays.jl")
-end
 
 end

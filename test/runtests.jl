@@ -760,15 +760,15 @@ end
             @test fieldtype(Bitmap1, :signature) == Vector{UInt8}
             @test fieldtype(Bitmap1, :width) == UInt16
             @test fieldtype(Bitmap1, :pixel) == Matrix{UInt8}
-            @test estimatesize(Bitmap1) == UnboundedSize(sizeof(b"BMP") + 1 + 2 * sizeof(UInt16))
-            @test serialize(Bitmap1(b"BMP", 3, 2, UInt8[1 2 3; 7 8 9])) == b"BMP\x00\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09"
-            @test let res = deserialize(Bitmap1, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
+            @test Constructs.estimatesize(Bitmap1) == UnboundedSize(sizeof(b"BMP") + 1 + 2 * sizeof(UInt16))
+            @test Constructs.serialize(Bitmap1(b"BMP", 3, 2, UInt8[1 2 3; 7 8 9])) == b"BMP\x00\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09"
+            @test let res = Constructs.deserialize(Bitmap1, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
                 res.signature == b"BMP" && res.width == 3 && res.height == 2 && res.pixel == UInt8[1 2 3; 7 8 9]
             end
-            @test_throws DimensionMismatch serialize(Bitmap1(b"BMP", 3, 2, UInt8[1 2; 7 8]))
-            @test_throws ValidationError serialize(Bitmap1(b"PMB", 3, 2, UInt8[1 2 3; 7 8 9]))
-            @test_throws EOFError deserialize(Bitmap1, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03")
-            @test_throws ValidationError deserialize(Bitmap1, b"PMB\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
+            @test_throws DimensionMismatch Constructs.serialize(Bitmap1(b"BMP", 3, 2, UInt8[1 2; 7 8]))
+            @test_throws ValidationError Constructs.serialize(Bitmap1(b"PMB", 3, 2, UInt8[1 2 3; 7 8 9]))
+            @test_throws EOFError Constructs.deserialize(Bitmap1, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03")
+            @test_throws ValidationError Constructs.deserialize(Bitmap1, b"PMB\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
         end
         @testset "Bitmap2" begin
             @construct struct Bitmap2 <: AbstractImage
@@ -780,11 +780,11 @@ end
             @test Bitmap2 <: AbstractImage
             @test fieldnames(Bitmap2) == (:pixel,)
             @test fieldtype(Bitmap2, :pixel) == Matrix{UInt8}
-            @test estimatesize(Bitmap2) == UnboundedSize(4 + 2 * sizeof(UInt16))
-            @test serialize(Bitmap2(UInt8[1 2 3; 7 8 9])) == b"BMP\x00\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09"
-            @test deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09").pixel == UInt8[1 2 3; 7 8 9]
-            @test_throws EOFError deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03")
-            @test_throws ValidationError deserialize(Bitmap2, b"PMB\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
+            @test Constructs.estimatesize(Bitmap2) == UnboundedSize(4 + 2 * sizeof(UInt16))
+            @test Constructs.serialize(Bitmap2(UInt8[1 2 3; 7 8 9])) == b"BMP\x00\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09"
+            @test Constructs.deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09").pixel == UInt8[1 2 3; 7 8 9]
+            @test_throws EOFError Constructs.deserialize(Bitmap2, b"BMP\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03")
+            @test_throws ValidationError Constructs.deserialize(Bitmap2, b"PMB\xfe\x03\x00\x02\x00\x01\x07\x02\x08\x03\x09")
         end
     end
 end

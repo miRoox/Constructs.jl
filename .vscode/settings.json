@@ -1,0 +1,20 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^julia --project=\\. -e \"using Pkg; Pkg\\.test\\(\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^julia --project=test -e \"using Pkg; Pkg\\.instantiate\\(update_registry=false\\); Pkg\\.resolve\\(\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^julia --project=docs -e \"using Pkg; Pkg\\.instantiate\\(update_registry=false\\); Pkg\\.resolve\\(\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^julia --project=docs -e \"using Pkg; Pkg\\.upgrade_manifest\\(\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

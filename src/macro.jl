@@ -65,7 +65,7 @@ constructtype2(::Type{<:Type{T}}) where {T} = T
 
 mutable struct FieldInfo
     name::Symbol # name or generated name
-    rawtype::Any # raw expression for type
+    rawtype::Any # raw expression in the right side type declarations expression
     line::Union{LineNumberNode, Missing}
     hidden::Bool
     tfunc::Function
