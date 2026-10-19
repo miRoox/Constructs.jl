@@ -7,6 +7,9 @@ CurrentModule = Constructs
 A declarative deserialization-serialization for binary data.
 Inspired by [Construct](https://construct.readthedocs.io/).
 
+Constructs describes a binary layout with composable objects called constructs.
+The same layout reads bytes into Julia values and writes Julia values back to bytes.
+
 ## Installation
 
 `Constructs` can be installed with the Julia package manager.
@@ -17,6 +20,9 @@ Pkg.add("Constructs")
 ```
 
 ## Basic Usage
+
+Load the package with `using Constructs`. The examples in this manual assume that
+it has been loaded.
 
 [`@construct`](@ref) defines the `struct` type and the corresponding [`deserialize`](@ref)/[`serialize`](@ref) methods.
 The following `Bitmap` has a `BMP` header, width and height in `UInt16` little-endian format,
@@ -51,3 +57,16 @@ julia> serialize(Bitmap(3, 2, UInt8[1 2 3; 7 8 9]))
  0x03
  0x09
 ```
+
+## Reading the manual
+
+Start with [Concepts](@ref) for the serialization interface, context keywords,
+and size estimates. The basic chapters cover [numbers](basic/numbers.md),
+[enums](basic/enums.md), [sequences](basic/sequence.md),
+[arrays](basic/repeaters.md), and [conditional parsing](basic/conditional.md).
+[Other Constructs](@ref) covers constants, padding, strings, and value replacement.
+
+For named records and fields whose layouts depend on earlier values, see
+[The `@construct` Macro](@ref). To implement a new binary representation or
+adapt an existing one, see [Extending Constructs](@ref).
+The [API References](@ref) lists the available types and methods.

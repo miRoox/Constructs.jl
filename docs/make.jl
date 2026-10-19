@@ -15,6 +15,7 @@ end
 
 makedocs(;
     modules=[Constructs],
+    strict=true,
     authors="Yong-an Lu <miroox@outlook.com>",
     repo="https://github.com/miRoox/Constructs.jl/blob/{commit}{path}#{line}",
     sitename="Constructs.jl",
@@ -25,6 +26,19 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Basics" => [
+            "Concepts" => "basic/concept.md",
+            "Integers & Floats" => "basic/numbers.md",
+            "Enums" => "basic/enums.md",
+            "Sequences" => "basic/sequence.md",
+            "Repeaters" => "basic/repeaters.md",
+            "Conditional Constructs" => "basic/conditional.md",
+            "Other Constructs" => "basic/misc.md",
+        ],
+        "Advanced" => [
+            "The @construct Macro" => "advance/macro.md",
+            "Extending Constructs" => "advance/extend.md",
+        ],
         "References" => "reference.md",
     ],
 )
